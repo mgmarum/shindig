@@ -7,6 +7,8 @@ package org.apache.shindig.social.core.oauth;
  * 
  * K GOOD.
  * 
+ * GREAT.
+ * 
  * **/
 public class OAuth2AuthenticationHandler {
 
