@@ -27,6 +27,9 @@ import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.auth.AuthenticationMode;
 import org.apache.shindig.common.crypto.Crypto;
 import org.apache.shindig.social.core.oauth.OAuthSecurityToken;
+import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration;
+import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration.ClientType;
+import org.apache.shindig.social.opensocial.oauth.OAuth2DataStore;
 import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
 import org.apache.shindig.social.opensocial.oauth.OAuthEntry;
 import org.apache.shindig.social.sample.spi.JsonDbOpensocialService;
@@ -43,7 +46,7 @@ import net.oauth.OAuthServiceProvider;
 /**
  * Sample implementation for OAuth data store
  */
-public class SampleOAuthDataStore implements OAuthDataStore {
+public class SampleOAuthDataStore implements OAuthDataStore, OAuth2DataStore {
   // This needs to be long enough that an attacker can't guess it.  If the attacker can guess this
   // value before they exceed the maximum number of attempts, they can complete a session fixation
   // attack against a user.
@@ -174,5 +177,15 @@ public class SampleOAuthDataStore implements OAuthDataStore {
     return new OAuthSecurityToken(userId, null, consumerKey, domain, container, null,
                                   AuthenticationMode.OAUTH_CONSUMER_REQUEST.name());
 
+  }
+
+  @Override
+  public OAuth2ClientRegistration getClient(String clientId) {
+    OAuth2ClientRegistration client = new OAuth2ClientRegistration();
+    client.setClientId(clientId);
+    //TODO Change this eventually to use real registered values and fail if client is unregistered.
+    client.setClientSecret(clientId);
+    client.setType(ClientType.PUBLIC);
+    return null;
   }
 }

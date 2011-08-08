@@ -1,4 +1,4 @@
-package org.apache.shindig.social.core.oauth;
+package org.apache.shindig.social.core.oauth2;
 
 import org.apache.shindig.auth.AuthenticationHandler;
 import org.apache.shindig.auth.SecurityToken;
