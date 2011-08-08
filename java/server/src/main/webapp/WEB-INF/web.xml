@@ -238,6 +238,14 @@
       org.apache.shindig.social.sample.oauth.SampleOAuthServlet
     </servlet-class>
   </servlet>
+  
+  <!-- Serve sample OAuth2 apis -->
+  <servlet>
+    <servlet-name>sampleOAuth2</servlet-name>
+    <servlet-class>
+      org.apache.shindig.social.sample.oauth.SampleOAuth2Servlet
+    </servlet-class>
+  </servlet>
 
   <servlet>
     <servlet-name>rpcSwf</servlet-name>
@@ -303,6 +311,11 @@
   <servlet-mapping>
     <servlet-name>sampleOAuth</servlet-name>
     <url-pattern>/oauth/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>sampleOAuth2</servlet-name>
+    <url-pattern>/oauth2/*</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>
