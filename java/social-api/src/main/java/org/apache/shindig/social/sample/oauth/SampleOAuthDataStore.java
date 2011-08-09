@@ -24,22 +24,13 @@ import org.apache.shindig.auth.AuthenticationMode;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.crypto.Crypto;
 import org.apache.shindig.social.core.oauth.OAuthSecurityToken;
-import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration;
-import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration.ClientType;
-import org.apache.shindig.social.core.oauth2.OAuth2Exception;
-import org.apache.shindig.social.core.oauth2.OAuth2Token;
-import org.apache.shindig.social.opensocial.oauth.OAuth2DataStore;
 import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
 import org.apache.shindig.social.opensocial.oauth.OAuthEntry;
 import org.apache.shindig.social.sample.spi.JsonDbOpensocialService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
@@ -52,7 +43,7 @@ import com.google.inject.name.Named;
 /**
  * Sample implementation for OAuth data store
  */
-public class SampleOAuthDataStore implements OAuthDataStore, OAuth2DataStore {
+public class SampleOAuthDataStore implements OAuthDataStore {
   // This needs to be long enough that an attacker can't guess it.  If the attacker can guess this
   // value before they exceed the maximum number of attempts, they can complete a session fixation
   // attack against a user.
@@ -185,52 +176,5 @@ public class SampleOAuthDataStore implements OAuthDataStore, OAuth2DataStore {
 
   }
   
-  private List<OAuth2ClientRegistration> clients = new ArrayList<OAuth2ClientRegistration>();
-  private Map<String, OAuth2ClientRegistration> authCodes = new HashMap<String, OAuth2ClientRegistration>();
-
-  @Override
-  public OAuth2ClientRegistration getClient(String clientId) {
-    OAuth2ClientRegistration client = null;
-    if(clientId != null){
-      client = new OAuth2ClientRegistration();
-      client.setClientId(clientId);
-      //TODO Change this eventually to use real registered values and fail if client is unregistered.
-      client.setClientSecret(clientId);
-      client.setType(ClientType.PUBLIC);
-      clients.add(client);
-    }
-    return client;
-  }
-
-  @Override
-  public String generateAuthorizationCode(OAuth2ClientRegistration client) {
-    String code = System.currentTimeMillis()+"";
-    authCodes.put(code, client);
-    return code;
-  }
-
-  
-  //TODO Using naive Auth Code, need to issue unique short lived codes per client
-  @Override
-  public void validateAuthorizationCode(OAuth2ClientRegistration client, String code)
-      throws OAuth2Exception {
-    OAuth2ClientRegistration cl = authCodes.get(code);
-    if(cl != client){
-      throw new OAuth2Exception("Authorization code rejected");
-    }
-    
-  }
-
-  @Override
-  public OAuth2Token generateAccessToken(OAuth2ClientRegistration client) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public OAuth2Token generateRefreshToken(OAuth2ClientRegistration client) {
-    // TODO Auto-generated method stub
-    return null;
-  }
 
 }

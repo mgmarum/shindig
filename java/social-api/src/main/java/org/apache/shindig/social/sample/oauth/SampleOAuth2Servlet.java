@@ -2,11 +2,15 @@ package org.apache.shindig.social.sample.oauth;
 
 import org.apache.shindig.common.servlet.HttpUtil;
 import org.apache.shindig.common.servlet.InjectedServlet;
+import org.apache.shindig.social.core.oauth2.AuthorizationCode;
+import org.apache.shindig.social.core.oauth2.AuthorizationCodeGrant;
+import org.apache.shindig.social.core.oauth2.AuthorizationGrantHandler;
 import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration;
 import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration.ClientType;
 import org.apache.shindig.social.core.oauth2.OAuth2Exception;
 import org.apache.shindig.social.opensocial.oauth.OAuth2DataStore;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -36,27 +40,38 @@ public class SampleOAuth2Servlet extends InjectedServlet {
     this.dataStore = dataStore;
   }
   
+  //TODO Determine mechanism for adding additional grant types.. Injection?
+  private AuthorizationGrantHandler[] grantHandlers = null;
+  
+
+  @Override
+  public void init(ServletConfig config) throws ServletException {
+    super.init(config);
+    grantHandlers = new AuthorizationGrantHandler[]{injector.getInstance(AuthorizationCodeGrant.class)};
+  }
   
   @Override
   protected void doGet(HttpServletRequest servletRequest,
                        HttpServletResponse servletResponse) throws ServletException, IOException {
     HttpUtil.setNoCache(servletResponse);
     String path = servletRequest.getPathInfo();
-
-    // dispatch
-    if (path.endsWith("authorize")) {
-      authorizeRequest(servletRequest, servletResponse);
-    } else if (path.endsWith("access_token")) {
-      createAccessToken(servletRequest, servletResponse);
-    } else {
-      servletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown URL");
+    try{
+      // dispatch
+      if (path.endsWith("authorize")) {
+        authorizeRequest(servletRequest, servletResponse);
+      } else if (path.endsWith("access_token")) {
+        retreiveAccessToken(servletRequest, servletResponse);
+      } else {
+        servletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown URL");
+      }
+    } catch(OAuth2Exception ex) {
+      servletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, ex.getLocalizedMessage());
     }
 
   }
 
   private void authorizeRequest(HttpServletRequest servletRequest,
-      HttpServletResponse servletResponse) throws IOException{
-    try{
+      HttpServletResponse servletResponse) throws IOException, OAuth2Exception{
       OAuth2ClientRegistration clientReg = getClient(servletRequest);
       validateClient(clientReg,servletRequest);
       AuthorizationResponseType rtype = 
@@ -65,7 +80,7 @@ public class SampleOAuth2Servlet extends InjectedServlet {
         switch (rtype) {
         case TOKEN:
           // Implicit flow
-          handleAccessTokenRequest();
+          handleAccessTokenRequest(clientReg, servletRequest, servletResponse);
           break;
         case CODE:
           // Authorization Code flow
@@ -80,9 +95,7 @@ public class SampleOAuth2Servlet extends InjectedServlet {
         servletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing response_type");
       }
       
-    }catch(OAuth2Exception ex){
-      servletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, ex.getLocalizedMessage());
-    }
+
     
     
   }
@@ -106,8 +119,9 @@ public class SampleOAuth2Servlet extends InjectedServlet {
     }
 
     
-    String code = dataStore.generateAuthorizationCode(clientReg);
-    params.put("code", code);
+    AuthorizationCode code = dataStore.generateAuthorizationCode(clientReg);
+    code.setRedirectURI(redirectURI);
+    params.put("code", code.getAuthCode());
     if(state != null && !state.equals("")){
       params.put("state", state);
     }
@@ -127,9 +141,9 @@ public class SampleOAuth2Servlet extends InjectedServlet {
     
   }
 
-  private void handleAccessTokenRequest() {
+  private void handleAccessTokenRequest(OAuth2ClientRegistration clientReg, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
     // TODO IMPLEMENT ACCESS TOKEN REQUEST HANDLING
-    
+    servletResponse.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
   }
 
 
@@ -162,8 +176,19 @@ public class SampleOAuth2Servlet extends InjectedServlet {
   }
 
 
-  private void createAccessToken(HttpServletRequest servletRequest,
-      HttpServletResponse servletResponse) {
+  private void retreiveAccessToken(HttpServletRequest servletRequest,
+      HttpServletResponse servletResponse) throws OAuth2Exception{
+    String grantType = servletRequest.getParameter("grant_type");
+    if(grantType != null && !grantType.equals("")){
+      for (AuthorizationGrantHandler handler : grantHandlers) {
+        if(grantType.equals(handler.getGrantType())){
+          handler.validateGrant(servletRequest, servletResponse);
+        }
+      }
+    } else {
+      throw new OAuth2Exception("grant_type was not specified");
+    }
+
     //TODO IMPLEMENT ACCESS TOKEN SERVLET, expect an Authentication Code or Refresh Token
     
   }
