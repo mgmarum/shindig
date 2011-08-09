@@ -8,6 +8,7 @@ import org.apache.shindig.social.core.oauth2.OAuth2Exception;
 import org.apache.shindig.social.opensocial.oauth.OAuth2DataStore;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -58,7 +59,8 @@ public class SampleOAuth2Servlet extends InjectedServlet {
     try{
       OAuth2ClientRegistration clientReg = getClient(servletRequest);
       validateClient(clientReg,servletRequest);
-      AuthorizationResponseType rtype = AuthorizationResponseType.valueOf(servletRequest.getParameter("response_type"));
+      AuthorizationResponseType rtype = 
+        AuthorizationResponseType.getAuthResponseType(servletRequest);
       if(rtype != null){
         switch (rtype) {
         case TOKEN:
@@ -70,11 +72,12 @@ public class SampleOAuth2Servlet extends InjectedServlet {
           handleAuthorizationCodeRequest(clientReg, servletRequest, servletResponse);
           break;
         default:
-          servletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unsupported response_type.");
+          servletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, 
+              "Unsupported response_type");
           break;
         }
       } else {
-        servletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing response_type.");
+        servletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing response_type");
       }
       
     }catch(OAuth2Exception ex){
@@ -85,7 +88,8 @@ public class SampleOAuth2Servlet extends InjectedServlet {
   }
   
   private void handleAuthorizationCodeRequest(OAuth2ClientRegistration clientReg, 
-      HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws OAuth2Exception {
+      HttpServletRequest servletRequest, HttpServletResponse servletResponse) 
+      throws OAuth2Exception {
     String redirectURI = servletRequest.getParameter("redirect_uri");
     String state = servletRequest.getParameter("state"); //Must be preserved in response
     String scope = servletRequest.getParameter("scope"); //TODO IMPLEMENT SCOPING
@@ -96,8 +100,14 @@ public class SampleOAuth2Servlet extends InjectedServlet {
       redirectURI = clientReg.getRedirectionURI();
     }
     
-    //TODO Using hardcoded Auth Code, need to issue unique short lived codes per client
-    params.put("code", "123456789");
+    //TODO Do more thorough URL validation.
+    if (redirectURI == null || redirectURI.equals("") ) {
+       throw new OAuth2Exception("missing redirect_uri");
+    }
+
+    
+    String code = dataStore.generateAuthorizationCode(clientReg);
+    params.put("code", code);
     if(state != null && !state.equals("")){
       params.put("state", state);
     }
@@ -123,7 +133,8 @@ public class SampleOAuth2Servlet extends InjectedServlet {
   }
 
 
-  private void validateClient(OAuth2ClientRegistration clientReg, HttpServletRequest servletRequest) throws OAuth2Exception {
+  private void validateClient(OAuth2ClientRegistration clientReg, HttpServletRequest servletRequest)
+      throws OAuth2Exception {
     String clientId = servletRequest.getParameter("client_id");
     
     if(clientId.equals(clientReg.getClientId())){
@@ -140,10 +151,13 @@ public class SampleOAuth2Servlet extends InjectedServlet {
   }
 
 
-  private OAuth2ClientRegistration getClient(HttpServletRequest req){
+  private OAuth2ClientRegistration getClient(HttpServletRequest req) throws OAuth2Exception{
     String clientId = req.getParameter("client_id");
     //TODO can client_id be passed via BASIC auth?
     OAuth2ClientRegistration clientReg = dataStore.getClient(clientId);
+    if(clientReg == null){
+      throw new OAuth2Exception(clientId + " is not registered with OAuth2 provider");
+    }
     return clientReg;
   }
 
@@ -157,15 +171,27 @@ public class SampleOAuth2Servlet extends InjectedServlet {
   public enum AuthorizationResponseType{
     TOKEN("token"), CODE("code");
     
-    private String paramValue;
+    private String pValue;
     
-    AuthorizationResponseType(String value){
-      paramValue = value;
+    private AuthorizationResponseType(String paramValue){
+      pValue = paramValue;
     }
     
     @Override
     public String toString() {
-      return paramValue;
+      return pValue;
+    }
+    
+    public static AuthorizationResponseType getAuthResponseType(ServletRequest req){
+      String requestValue = req.getParameter("response_type");
+      if(requestValue != null){
+        if(requestValue.equalsIgnoreCase("token")){
+          return TOKEN;
+        } else if (requestValue.equalsIgnoreCase("code")){
+          return CODE;
+        }
+      }
+      return null;
     }
   }
 
