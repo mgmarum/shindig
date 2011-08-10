@@ -17,12 +17,6 @@
  */
 package org.apache.shindig.social.core.oauth;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
-
 import org.apache.shindig.auth.AuthenticationHandler;
 import org.apache.shindig.common.PropertiesModule;
 import org.apache.shindig.social.core.config.SocialApiGuiceModule;
@@ -31,6 +25,12 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 
 
 public class AuthenticationProviderHandlerTest extends Assert {
@@ -73,6 +73,7 @@ public class AuthenticationProviderHandlerTest extends Assert {
     @Override
     protected void configure() {
       bind(AuthenticationHandlerProvider.class).to(ProvidesNoHandlers.class);
+      
     }
   }
 }

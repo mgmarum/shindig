@@ -102,6 +102,7 @@
                 /login.jsp = authc
 
                 /oauth/authorize/** = authc
+                /oauth2/authorize/** = authc
 
             </param-value>
         </init-param>
@@ -121,6 +122,11 @@
   <filter-mapping>
       <filter-name>ShiroFilter</filter-name>
       <url-pattern>/oauth/authorize</url-pattern>
+  </filter-mapping>
+  
+  <filter-mapping>
+      <filter-name>ShiroFilter</filter-name>
+      <url-pattern>/oauth2/authorize</url-pattern>
   </filter-mapping>
 
   <filter-mapping>
