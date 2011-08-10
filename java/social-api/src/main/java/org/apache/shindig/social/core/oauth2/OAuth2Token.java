@@ -8,6 +8,8 @@ public class OAuth2Token {
   
   private TokenType type = TokenType.ACCESS;
   
+  private OAuth2ClientRegistration clientReg;
+  
   private String id;
   
   
@@ -33,6 +35,16 @@ public class OAuth2Token {
 
   public String getId() {
     return id;
+  }
+
+
+  public void setClientReg(OAuth2ClientRegistration clientReg) {
+    this.clientReg = clientReg;
+  }
+
+
+  public OAuth2ClientRegistration getClientReg() {
+    return clientReg;
   }
 
 }

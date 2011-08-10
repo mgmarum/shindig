@@ -2,9 +2,10 @@ package org.apache.shindig.social.sample.oauth;
 
 import org.apache.shindig.social.core.oauth2.AuthorizationCode;
 import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration;
+import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration.ClientType;
 import org.apache.shindig.social.core.oauth2.OAuth2Exception;
 import org.apache.shindig.social.core.oauth2.OAuth2Token;
-import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration.ClientType;
+import org.apache.shindig.social.core.oauth2.OAuth2Token.TokenType;
 import org.apache.shindig.social.opensocial.oauth.OAuth2DataStore;
 
 import java.util.ArrayList;
@@ -17,15 +18,16 @@ public class SampleOAuth2DataStore implements OAuth2DataStore {
   private List<OAuth2ClientRegistration> clients = new ArrayList<OAuth2ClientRegistration>();
   private Map<AuthorizationCode, OAuth2ClientRegistration> authCodes = 
         new HashMap<AuthorizationCode, OAuth2ClientRegistration>();
+  private List<OAuth2Token> tokens = new ArrayList<OAuth2Token>();
 
   @Override
-  public OAuth2ClientRegistration getClient(String clientId) {
-    OAuth2ClientRegistration client = null;
+  public OAuth2ClientRegistration lookupClient(String clientId) {
     for (OAuth2ClientRegistration rclient : clients) {
       if(rclient.getClientId().equals(clientId)){
-        return client;
+        return rclient;
       }
     }
+    OAuth2ClientRegistration client = null;
     if(clientId != null){
       client = new OAuth2ClientRegistration();
       client.setClientId(clientId);
@@ -48,19 +50,26 @@ public class SampleOAuth2DataStore implements OAuth2DataStore {
   
   //TODO Using naive Auth Code, need to issue unique short lived codes per client
   @Override
-  public void validateAuthorizationCode(OAuth2ClientRegistration client, String code)
+  public AuthorizationCode retreiveAuthorizationCode(OAuth2ClientRegistration client, String code)
       throws OAuth2Exception {
-    OAuth2ClientRegistration cl = authCodes.get(code);
-    if(cl != client){
-      throw new OAuth2Exception("Authorization code rejected");
+    for (AuthorizationCode authCode : authCodes.keySet()) {
+      if(authCode.getAuthCode().equals(code)){
+        OAuth2ClientRegistration cl = authCodes.get(authCode);
+        if(cl == client){
+          return authCode;
+        }
+      }
     }
-    
+    throw new OAuth2Exception("Authorization code rejected");
   }
 
   @Override
   public OAuth2Token generateAccessToken(OAuth2ClientRegistration client) {
-    // TODO Auto-generated method stub
-    return null;
+    OAuth2Token token = new OAuth2Token(client.getClientId() + ":" + System.currentTimeMillis());
+    token.setType(TokenType.ACCESS);
+    token.setClientReg(client);
+    tokens.add(token);
+    return token;
   }
 
   @Override
@@ -68,5 +77,16 @@ public class SampleOAuth2DataStore implements OAuth2DataStore {
     // TODO Auto-generated method stub
     return null;
   }
+
+  @Override
+  public OAuth2Token generateAccessToken(OAuth2ClientRegistration client, AuthorizationCode authCode) {
+    OAuth2Token token = new OAuth2Token(client.getClientId() + ":" + authCode.getAuthCode() 
+        + ":" + System.currentTimeMillis());
+    token.setType(TokenType.ACCESS);
+    token.setClientReg(client);
+    tokens.add(token);
+    return token;
+  }
+
 
 }

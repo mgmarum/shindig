@@ -40,14 +40,17 @@ public class SampleOAuth2Servlet extends InjectedServlet {
     this.dataStore = dataStore;
   }
   
-  //TODO Determine mechanism for adding additional grant types.. Injection?
   private AuthorizationGrantHandler[] grantHandlers = null;
   
-
   @Override
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
-    grantHandlers = new AuthorizationGrantHandler[]{injector.getInstance(AuthorizationCodeGrant.class)};
+    grantHandlers = registerGrantHandlers();
+  }
+
+  //TODO Determine mechanism for adding additional grant types.. Injection?
+  protected AuthorizationGrantHandler[] registerGrantHandlers(){
+    return new AuthorizationGrantHandler[]{new AuthorizationCodeGrant(dataStore)};
   }
   
   @Override
@@ -168,7 +171,7 @@ public class SampleOAuth2Servlet extends InjectedServlet {
   private OAuth2ClientRegistration getClient(HttpServletRequest req) throws OAuth2Exception{
     String clientId = req.getParameter("client_id");
     //TODO can client_id be passed via BASIC auth?
-    OAuth2ClientRegistration clientReg = dataStore.getClient(clientId);
+    OAuth2ClientRegistration clientReg = dataStore.lookupClient(clientId);
     if(clientReg == null){
       throw new OAuth2Exception(clientId + " is not registered with OAuth2 provider");
     }
@@ -183,8 +186,10 @@ public class SampleOAuth2Servlet extends InjectedServlet {
       for (AuthorizationGrantHandler handler : grantHandlers) {
         if(grantType.equals(handler.getGrantType())){
           handler.validateGrant(servletRequest, servletResponse);
+          return;
         }
       }
+      throw new OAuth2Exception(grantType + " is an unknown grant_type");
     } else {
       throw new OAuth2Exception("grant_type was not specified");
     }

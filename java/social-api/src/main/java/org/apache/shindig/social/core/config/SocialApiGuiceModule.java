@@ -18,8 +18,7 @@
 
 package org.apache.shindig.social.core.config;
 
-import java.util.List;
-import java.util.Set;
+import net.oauth.OAuthValidator;
 
 import org.apache.shindig.auth.AnonymousAuthenticationHandler;
 import org.apache.shindig.auth.AuthenticationHandler;
@@ -41,14 +40,15 @@ import org.apache.shindig.social.opensocial.service.MediaItemHandler;
 import org.apache.shindig.social.opensocial.service.MessageHandler;
 import org.apache.shindig.social.opensocial.service.PersonHandler;
 
-import com.google.inject.Singleton;
+import java.util.List;
+import java.util.Set;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
-
-import net.oauth.OAuthValidator;
 
 /**
  * Provides social api component injection. Implementor may want to replace this module if they need
