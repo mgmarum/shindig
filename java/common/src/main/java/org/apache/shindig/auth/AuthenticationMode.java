@@ -37,6 +37,12 @@ public enum AuthenticationMode {
    * receiving domain. viewerid should always be available
    */
   OAUTH,
+  
+  /**
+   * A fully validated 3-legged OAuth 2.0 call by a 3rd party on behalf of a user of the
+   * receiving domain. viewerid should always be available
+   */
+  OAUTH2,
 
   /**
    * A call by a validated 3rd party on its own behalf. Can emulate a call on behalf of a user

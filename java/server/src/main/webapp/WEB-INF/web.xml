@@ -117,8 +117,20 @@
     <filter-name>etagFilter</filter-name>
     <filter-class>org.apache.shindig.gadgets.servlet.ETagFilter</filter-class>
   </filter>
-
-
+<!-- Uncomment below to lock services when OAuth2 isn't being used -->
+<!--
+  <filter>
+    <filter-name>oauth2Filter</filter-name>
+    <filter-class>org.apache.shindig.social.core.oauth2.OAuth2Filter</filter-class>
+  </filter>
+  
+  <filter-mapping>
+    <filter-name>oauth2Filter</filter-name>
+    <url-pattern>/rest/*</url-pattern>
+    <url-pattern>/gadgets/api/rest/*</url-pattern>
+    <url-pattern>/social/rest/*</url-pattern>
+  </filter-mapping>
+-->
   <filter-mapping>
       <filter-name>ShiroFilter</filter-name>
       <url-pattern>/oauth/authorize</url-pattern>

@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.inject.Singleton;
+
+@Singleton
 public class SampleOAuth2DataStore implements OAuth2DataStore {
 
   private List<OAuth2ClientRegistration> clients = new ArrayList<OAuth2ClientRegistration>();
@@ -50,7 +53,7 @@ public class SampleOAuth2DataStore implements OAuth2DataStore {
   
   //TODO Using naive Auth Code, need to issue unique short lived codes per client
   @Override
-  public AuthorizationCode retreiveAuthorizationCode(OAuth2ClientRegistration client, String code)
+  public AuthorizationCode retrieveAuthorizationCode(OAuth2ClientRegistration client, String code)
       throws OAuth2Exception {
     for (AuthorizationCode authCode : authCodes.keySet()) {
       if(authCode.getAuthCode().equals(code)){
@@ -86,6 +89,16 @@ public class SampleOAuth2DataStore implements OAuth2DataStore {
     token.setClientReg(client);
     tokens.add(token);
     return token;
+  }
+
+  @Override
+  public OAuth2Token retrieveToken(String token) throws OAuth2Exception {
+    for (OAuth2Token otoken : tokens) {
+      if(otoken.getId().equals(token)){
+        return otoken;
+      }
+    }
+    throw new OAuth2Exception("Bad token: "+ token);
   }
 
 

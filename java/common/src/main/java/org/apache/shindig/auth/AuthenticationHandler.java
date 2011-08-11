@@ -17,9 +17,9 @@
  */
 package org.apache.shindig.auth;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.Map;
 
 /**
  * Implements a specific authentication mechanism and produces a SecurityToken when authentication

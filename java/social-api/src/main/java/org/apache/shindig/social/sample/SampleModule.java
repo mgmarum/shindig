@@ -17,7 +17,6 @@
  */
 package org.apache.shindig.social.sample;
 
-import org.apache.shindig.social.core.oauth2.AuthorizationGrantHandler;
 import org.apache.shindig.social.opensocial.oauth.OAuth2DataStore;
 import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
 import org.apache.shindig.social.opensocial.spi.ActivityService;

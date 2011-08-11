@@ -26,7 +26,7 @@ public class AuthorizationCodeGrant extends AuthorizationGrantHandler {
   public void validateGrant(HttpServletRequest servletRequest, HttpServletResponse servletResponse)
       throws OAuth2Exception {
     OAuth2ClientRegistration clientReg = dataStore.lookupClient(servletRequest.getParameter("client_id"));
-    AuthorizationCode authCode = dataStore.retreiveAuthorizationCode(clientReg, servletRequest.getParameter("code"));
+    AuthorizationCode authCode = dataStore.retrieveAuthorizationCode(clientReg, servletRequest.getParameter("code"));
     String redirectURI = servletRequest.getParameter("redirect_uri");
     if(redirectURI == null || redirectURI.equals("")){
       throw new OAuth2Exception("Redirect URI required for Authorization Code grants");

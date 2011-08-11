@@ -11,11 +11,12 @@ public interface OAuth2DataStore {
   
   AuthorizationCode generateAuthorizationCode(OAuth2ClientRegistration client);
   
-  AuthorizationCode retreiveAuthorizationCode(OAuth2ClientRegistration client, String code) throws OAuth2Exception;
+  AuthorizationCode retrieveAuthorizationCode(OAuth2ClientRegistration client, String code) throws OAuth2Exception;
   
   OAuth2Token generateAccessToken(OAuth2ClientRegistration client, AuthorizationCode authCode);
   OAuth2Token generateAccessToken(OAuth2ClientRegistration client);
   OAuth2Token generateRefreshToken(OAuth2ClientRegistration client);
+  OAuth2Token retrieveToken(String token) throws OAuth2Exception;
   
 
 }
