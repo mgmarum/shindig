@@ -23,6 +23,10 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
     this.store = store;
   }
 
+  /**
+   * Only denies authentication when an invalid bearer token is received.  
+   * Unauthenticated requests can pass through to other AuthenticationHandlers.
+   */
   @Override
   public SecurityToken getSecurityTokenFromRequest(HttpServletRequest request)
       throws InvalidAuthenticationException {

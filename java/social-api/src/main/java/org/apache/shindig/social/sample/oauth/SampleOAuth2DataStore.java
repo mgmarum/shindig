@@ -19,6 +19,19 @@ import com.google.inject.Singleton;
 public class SampleOAuth2DataStore implements OAuth2DataStore {
 
   private List<OAuth2ClientRegistration> clients = new ArrayList<OAuth2ClientRegistration>();
+  
+  /**
+   * Temporarily add a default test_client with a client secret and password, until we move this to JSON DB.
+   */
+  public SampleOAuth2DataStore(){
+    OAuth2ClientRegistration reg = new OAuth2ClientRegistration();
+    reg.setClientId("test_client");
+    reg.setClientSecret("secret");
+    reg.setRedirectionURI("https://localhost:8443/oauth2/");
+    reg.setType(ClientType.CONFIDENTIAL);
+    clients.add(reg);
+  }
+  
   private Map<AuthorizationCode, OAuth2ClientRegistration> authCodes = 
         new HashMap<AuthorizationCode, OAuth2ClientRegistration>();
   private List<OAuth2Token> tokens = new ArrayList<OAuth2Token>();
