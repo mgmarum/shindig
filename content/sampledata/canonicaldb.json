@@ -632,6 +632,34 @@
           "consumerSecret" : "secret",
           "icon" : "http://localhost:8080/samplecontainer/examples/icon.png"}
  },
+ 
+ // Registry of OAuth 2.0 clients with Shindig's service provider.
+ "oauth2" : {
+ 	"advancedOpenSocialClient" : {
+ 		"registration" : {
+ 			"id" : "advancedOpenSocialClient",
+ 			"secret": "advancedOpenSocialClient_secret",
+ 			"title": "Most Advanced OpenSocial Client Ever!",
+ 			"redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient",
+ 			"type" : "confidential"
+ 		},
+ 		"authorizationCodes" : {
+ 			"advancedClient_authcode_1" : {
+ 				// Authentication code has been consumed since associatedSignature exists
+ 				"redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient",
+ 				"associatedSignature" : "advancedClientOS_accesstoken_1"
+ 			},
+ 			"advancedClient_authcode_2" : {
+ 				"redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient"
+ 			}
+ 		},
+ 		"accessTokens" : {
+ 			"advancedClient_accesstoken_1" : {
+ 				"redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient"
+ 			}
+ 		}
+ 	}
+ },
 
  // duplicates userApplications as above..
  "permissions": {

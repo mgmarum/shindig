@@ -18,6 +18,9 @@
 
 package org.apache.shindig.social.core.config;
 
+import java.util.List;
+import java.util.Set;
+
 import net.oauth.OAuthValidator;
 
 import org.apache.shindig.auth.AnonymousAuthenticationHandler;
@@ -39,9 +42,6 @@ import org.apache.shindig.social.opensocial.service.AppDataHandler;
 import org.apache.shindig.social.opensocial.service.MediaItemHandler;
 import org.apache.shindig.social.opensocial.service.MessageHandler;
 import org.apache.shindig.social.opensocial.service.PersonHandler;
-
-import java.util.List;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
