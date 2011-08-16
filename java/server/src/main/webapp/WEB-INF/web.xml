@@ -258,11 +258,11 @@
     </servlet-class>
   </servlet>
   
-  <!-- Serve sample OAuth2 apis -->
+  <!-- Serve OAuth 2 APIs -->
   <servlet>
-    <servlet-name>sampleOAuth2</servlet-name>
+    <servlet-name>OAuth2Servlet</servlet-name>
     <servlet-class>
-      org.apache.shindig.social.sample.oauth.SampleOAuth2Servlet
+      org.apache.shindig.social.core.oauth2X.OAuth2Servlet
     </servlet-class>
   </servlet>
 
@@ -333,7 +333,7 @@
   </servlet-mapping>
   
   <servlet-mapping>
-    <servlet-name>sampleOAuth2</servlet-name>
+    <servlet-name>OAuth2Servlet</servlet-name>
     <url-pattern>/oauth2/*</url-pattern>
   </servlet-mapping>
 

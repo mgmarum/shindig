@@ -58,9 +58,11 @@ public class SampleOAuth2Servlet extends InjectedServlet {
                        HttpServletResponse servletResponse) throws ServletException, IOException {
     HttpUtil.setNoCache(servletResponse);
     String path = servletRequest.getPathInfo();
+    System.out.println("SampleOAuth2Servlet.doGet()");
     try{
       // dispatch
       if (path.endsWith("authorize")) {
+    	System.out.println("authorize request received");
         authorizeRequest(servletRequest, servletResponse);
       } else if (path.endsWith("access_token")) {
         retreiveAccessToken(servletRequest, servletResponse);
