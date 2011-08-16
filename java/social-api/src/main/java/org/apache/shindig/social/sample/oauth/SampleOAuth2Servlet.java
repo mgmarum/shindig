@@ -8,6 +8,7 @@ import org.apache.shindig.social.core.oauth2.AuthorizationGrantHandler;
 import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration;
 import org.apache.shindig.social.core.oauth2.OAuth2ClientRegistration.ClientType;
 import org.apache.shindig.social.core.oauth2.OAuth2Exception;
+import org.apache.shindig.social.core.oauth2.OAuth2Utils;
 import org.apache.shindig.social.opensocial.oauth.OAuth2DataStore;
 
 import javax.servlet.ServletConfig;
@@ -45,12 +46,13 @@ public class SampleOAuth2Servlet extends InjectedServlet {
   @Override
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
-    grantHandlers = registerGrantHandlers();
+    registerGrantHandlers();
   }
 
   //TODO Determine mechanism for adding additional grant types.. Injection?
-  protected AuthorizationGrantHandler[] registerGrantHandlers(){
-    return new AuthorizationGrantHandler[]{new AuthorizationCodeGrant(dataStore)};
+  public AuthorizationGrantHandler[] registerGrantHandlers(){
+    grantHandlers = new AuthorizationGrantHandler[]{new AuthorizationCodeGrant(dataStore)}; 
+    return grantHandlers;
   }
   
   @Override
@@ -157,12 +159,11 @@ public class SampleOAuth2Servlet extends InjectedServlet {
     if(clientId.equals(clientReg.getClientId())){
       if(clientReg.getType() == ClientType.CONFIDENTIAL){
         //TODO Implement Client Authentication via BASIC auth, other pluggable client auth providers
-        String clientSecret = servletRequest.getParameter("client_secret");
+        String clientSecret = OAuth2Utils.fetchClientSecretFromHttpRequest(clientId,servletRequest);
         if(!clientSecret.equals(clientReg.getClientSecret())){
           throw new OAuth2Exception("Unknown OAuth 2 client \"" + clientId + "\"");
         }
       }
-      
     }
     
   }

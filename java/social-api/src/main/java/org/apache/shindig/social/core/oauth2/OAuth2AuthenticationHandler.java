@@ -33,7 +33,10 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
     String bearer = OAuth2Utils.fetchBearerTokenFromHttpRequest(request);
     if(bearer != null){
       try{
-        store.retrieveToken(bearer);
+        OAuth2Token token = store.retrieveToken(bearer);
+        if(token == null){
+          throw new InvalidAuthenticationException("Access token does not exist", null);
+        }
       }catch(OAuth2Exception ex){
         throw new InvalidAuthenticationException("Request contains invalid token", ex);
       }
