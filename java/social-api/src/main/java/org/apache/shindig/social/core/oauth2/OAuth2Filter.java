@@ -1,7 +1,6 @@
 package org.apache.shindig.social.core.oauth2;
 
 import org.apache.shindig.common.servlet.GuiceServletContextListener;
-import org.apache.shindig.social.opensocial.oauth.OAuth2DataStore;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -35,11 +34,11 @@ public class OAuth2Filter implements Filter {
   protected Injector injector;
   protected transient boolean initialized = false;
   
-  protected OAuth2DataStore dataStore = null;
+  protected OAuth2Service dataStore = null;
   private String realm;
   
   @Inject
-  protected void setOAuth2DataStore(OAuth2DataStore store){
+  protected void setOAuth2Service(OAuth2Service store){
     dataStore = store;
   }
 

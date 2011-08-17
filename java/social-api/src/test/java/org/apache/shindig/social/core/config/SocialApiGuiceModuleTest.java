@@ -20,7 +20,8 @@ package org.apache.shindig.social.core.config;
 import org.apache.shindig.auth.AuthenticationHandler;
 import org.apache.shindig.common.PropertiesModule;
 import org.apache.shindig.social.core.oauth.AuthenticationHandlerProvider;
-import org.apache.shindig.social.opensocial.oauth.OAuth2DataStore;
+import org.apache.shindig.social.core.oauth2.OAuth2Service;
+import org.apache.shindig.social.core.oauth2.OAuth2ServiceImpl;
 import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
 import org.easymock.EasyMock;
 import org.junit.Assert;
@@ -45,7 +46,7 @@ public class SocialApiGuiceModuleTest extends Assert {
           @Override
           protected void configure() {
             bind(OAuthDataStore.class).toInstance(EasyMock.createMock(OAuthDataStore.class));
-            bind(OAuth2DataStore.class).toInstance(EasyMock.createMock(OAuth2DataStore.class));
+            bind(OAuth2Service.class).toInstance(EasyMock.createMock(OAuth2ServiceImpl.class));
           }
     });
   }
