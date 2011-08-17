@@ -31,6 +31,7 @@ public class RestfulJsonActivityEntryTest extends AbstractLargeRestfulTests{
   
   private static final String FIXTURE_LOC = "src/test/java/org/apache/shindig/social/dataservice/integration/fixtures/";
   
+  
   @Test
   public void testGetActivityEntryJsonById() throws Exception {
     String resp = getResponse("/activitystreams/john.doe/@self/1/activity1", "GET", null, ContentTypes.OUTPUT_JSON_CONTENT_TYPE);

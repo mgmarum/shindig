@@ -50,11 +50,13 @@ public class OAuth2AuthorizationHandler {
           // formulate response
           Map<String, String> returnParams = new HashMap<String, String>();
           returnParams.put("code", authCode.getValue());
-          if (normalizedReq.containsKey("state")) returnParams.put("state", normalizedReq.getString("state"));
+          if (normalizedReq.containsKey("state")) {
+            returnParams.put("state", normalizedReq.getString("state"));
+          }
           response.setHeader("Location", buildUrl(authCode.getRedirectUri(), returnParams));
           response.setStatus(HttpServletResponse.SC_FOUND);
           break;
-        case TOKEN: // requesting access token
+        case TOKEN: // requesting access token, IMPLICIT FLOW
           // TODO: implement
           break;
         default:
@@ -101,13 +103,20 @@ public class OAuth2AuthorizationHandler {
    */
   private String buildUrl(String url, Map<String, String> params) {
     if (params == null || params.isEmpty()) return url;
-    try {
-      URL uri = new URL(url);
-      char appendChar = (uri.getQuery() == null || uri.getQuery().isEmpty()) ? '?' : '&';
-      return url + appendChar + convertQueryString(params);
-    } catch (MalformedURLException e) {
-      e.printStackTrace();
-      return null;
+    StringBuffer buff = new StringBuffer(url);
+//    try {
+      //URL validation is tricky.. this doesn't allow relative URLs, for example, which is valid from an HTTP perspective.
+//      URL uri = new URL(url);
+    if(url.contains("?")){
+      buff.append('&');
+    } else {
+      buff.append('?');
     }
+    buff.append(convertQueryString(params));
+    return buff.toString();
+//    } catch (MalformedURLException e) {
+//      e.printStackTrace();
+//      return null;
+//    }
   }
 }

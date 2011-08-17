@@ -658,6 +658,13 @@
  				"redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient"
  			}
  		}
+ 	},
+	"testClient" : {
+ 		"registration" : {
+ 			"id" : "testClient",
+ 			"redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient",
+ 			"type" : "public"
+ 		}
  	}
  },
 

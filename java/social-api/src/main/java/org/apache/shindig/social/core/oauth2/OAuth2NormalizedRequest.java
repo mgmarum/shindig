@@ -44,6 +44,7 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
     normalizeResponseType();
   }
   
+
   private void normalizeClientSecret(HttpServletRequest request) {
     String clientSecret = OAuth2Utils.fetchClientSecretFromHttpRequest(getString("client_id"), request);
     put("client_secret", clientSecret);
@@ -77,27 +78,6 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
   public ResponseType getResponseType(){
     return (ResponseType)get("response_type");
   }
-  
-//  private void normalizeGrantType() throws OAuth2Exception {
-//    if(containsKey("grant_type")) {
-//      String respType = (String) get("grant_type");
-//      if (respType.equals(GrantType.REFRESH_TOKEN.toString())) {
-//        put("grant_type", GrantType.REFRESH_TOKEN);
-//      } else if (respType.equals(GrantType.AUTHORIZATION_CODE.toString())) {
-//        put("grant_type", GrantType.AUTHORIZATION_CODE);
-//      } else if (respType.equals(GrantType.PASSWORD.toString())) {
-//        put("grant_type", GrantType.PASSWORD);
-//      } else if (respType.equals(GrantType.CLIENT_CREDENTIALS.toString())) {
-//        put("grant_type", GrantType.CLIENT_CREDENTIALS);
-//      } else {
-//        throw new OAuth2Exception(ErrorType.UNSUPPORTED_GRANT_TYPE, "grant_type not supported");
-//      }
-//    }
-//  }
-  
-//  public GrantType getGrantType(){
-//    return (GrantType)get("grant_type");
-//  }
   
   private void normalizeScope() {
     // TODO: implement this

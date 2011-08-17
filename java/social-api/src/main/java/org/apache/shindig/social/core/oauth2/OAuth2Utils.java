@@ -17,7 +17,7 @@ public class OAuth2Utils {
     if(bearerToken == null || bearerToken.equals("")){
       String header = req.getHeader("Authorization");
       if(header != null && header.contains("Bearer")){
-        String[] parts = header.split(" \t\r\n");
+        String[] parts = header.split("\\s+");
         bearerToken = parts[parts.length-1];
       }
     }

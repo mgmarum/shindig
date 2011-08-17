@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 /**
@@ -26,6 +27,7 @@ import com.google.inject.name.Named;
  * 
  * TODO: additional auth_code use should cause invalidation of associated access_token
  */
+@Singleton
 public class OAuth2ServiceImpl implements OAuth2Service {
   
   private JSONObject oauthDB;                                 // the OAuth 2.0 JSON DB
@@ -80,39 +82,6 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "No redirect_uri registered or received in request");
     }
   }
-  
-//  public void validateRequestForAccessToken(OAuth2NormalizedRequest req) throws OAuth2Exception {
-//    String grantType = req.getString("grant_type");
-//    if(grantType != null && !grantType.equals("")){
-//      for (AuthorizationGrantHandler handler : grantHandlers) {
-//        if(grantType.equals(handler.getGrantType())){
-//          handler.validateGrant(req);
-//          return;
-//        }
-//      }
-//      throw new OAuth2Exception(grantType + " is an unknown grant_type");
-//    } else {
-//      throw new OAuth2Exception("grant_type was not specified");
-//    }
-//    switch ((GrantType) req.get("grant_type")) {
-//    case AUTHORIZATION_CODE:
-//      if (!req.containsKey("code")) throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "Missing authorization code");
-//      if (!req.containsKey("redirect_uri")) throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "Missing redirect_uri");
-//      List<OAuth2Code> clientCodes = authCodes.get(req.getString("client_id"));
-//      OAuth2Code authCode = null;
-//      for (OAuth2Code clientCode : clientCodes) {
-//        if (clientCode.getSignature().equals(req.getString("code"))) {
-//          authCode = clientCode;
-//        }
-//      }
-//      if (authCode == null) throw new OAuth2Exception(ErrorType.INVALID_GRANT, "The client does not own the authorization code");
-//      if (authCode.getExpiration() < System.currentTimeMillis()) throw new OAuth2Exception(ErrorType.INVALID_GRANT, "The authorization code has expired");
-//      if (!req.getString("redirect_uri").equals(authCode.getRedirectUri())) throw new OAuth2Exception(ErrorType.INVALID_GRANT, "redirect_uri mismatch");
-//      break;
-//    default:
-//      throw new RuntimeException("not yet implemented");
-//    }
-//  }
 
   public void validateRequestForResource(OAuth2NormalizedRequest req) {
     throw new RuntimeException("Not yet implemented");

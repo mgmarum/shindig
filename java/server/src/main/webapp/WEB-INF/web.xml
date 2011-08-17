@@ -262,7 +262,7 @@
   <servlet>
     <servlet-name>OAuth2Servlet</servlet-name>
     <servlet-class>
-      org.apache.shindig.social.core.oauth2X.OAuth2Servlet
+      org.apache.shindig.social.core.oauth2.OAuth2Servlet
     </servlet-class>
   </servlet>
 

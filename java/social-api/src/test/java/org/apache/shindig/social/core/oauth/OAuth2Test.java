@@ -2,9 +2,9 @@ package org.apache.shindig.social.core.oauth;
 
 import org.apache.http.util.ByteArrayBuffer;
 import org.apache.shindig.common.testing.FakeHttpServletRequest;
+import org.apache.shindig.social.core.oauth2.AuthorizationCodeGrant;
 import org.apache.shindig.social.core.oauth2.OAuth2Client;
 import org.apache.shindig.social.core.oauth2.OAuth2Client.ClientType;
-import org.apache.shindig.social.core.oauth2.AuthorizationCodeGrant;
 import org.apache.shindig.social.core.oauth2.OAuth2Code;
 import org.apache.shindig.social.core.oauth2.OAuth2NormalizedRequest;
 import org.apache.shindig.social.core.oauth2.OAuth2Service;
@@ -21,6 +21,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -70,7 +71,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests {
     replay();
     servlet.service(req, resp);
     writer.flush();
-    InputStream stream = getClass().getResourceAsStream("SimpleOAuth2AccessToken.json");
+    InputStream stream = new FileInputStream("src/test/java/org/apache/shindig/social/core/oauth/SimpleOAuth2AccessToken.json");
     InputStreamReader reader = new InputStreamReader(stream,"UTF-8");
     BufferedReader buff = new BufferedReader(reader);
     StringBuilder sb = new StringBuilder();
