@@ -29,6 +29,8 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
   @Override
   public SecurityToken getSecurityTokenFromRequest(HttpServletRequest request)
       throws InvalidAuthenticationException {
+    
+    
     String bearer = OAuth2Utils.fetchBearerTokenFromHttpRequest(request);
     OAuth2NormalizedRequest req;
     try {

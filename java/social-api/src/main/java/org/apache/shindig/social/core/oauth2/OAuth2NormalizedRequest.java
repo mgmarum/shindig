@@ -1,5 +1,6 @@
 package org.apache.shindig.social.core.oauth2;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
@@ -11,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
@@ -32,22 +34,40 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
   
   @SuppressWarnings("unchecked")
   public OAuth2NormalizedRequest(HttpServletRequest request) throws OAuth2Exception{
+    super();
     Enumeration<String> keys = request.getParameterNames();
     while (keys.hasMoreElements()) {
       String key = keys.nextElement();
       put(key, request.getParameter(key));
     }
-    normalizeBody(getBodyAsString(request));
     normalizeClientSecret(request);
     normalizeScope();
 //    normalizeGrantType();
     normalizeResponseType();
+    normalizeBody(getBodyAsString(request));
   }
   
 
   private void normalizeClientSecret(HttpServletRequest request) {
-    String clientSecret = OAuth2Utils.fetchClientSecretFromHttpRequest(getString("client_id"), request);
-    put("client_secret", clientSecret);
+    String secret = getString("client_secret");
+    if(secret == null || secret.equals("")){
+      String header = request.getHeader("Authorization");
+      if(header != null && header.contains("Basic")){
+        String[] parts = header.split("\\s+");
+        String temp = parts[parts.length-1];
+        byte[] decodedSecret = Base64.decodeBase64(secret);
+        try {
+          temp = new String(decodedSecret,"UTF-8");
+          parts = temp.split(":");
+          if(parts != null && parts.length == 2 && parts[0] == getString("client_id")){
+            secret = parts[1];
+          }
+        } catch (UnsupportedEncodingException e) {
+          return;
+        }
+      }
+    }
+    put("client_secret", secret);
   }
   
   public String getClientId(){
