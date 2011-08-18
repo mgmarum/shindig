@@ -52,5 +52,31 @@ public class OAuth2AuthenticationHandlerTest extends EasyMockTestCase {
     fail("Handler allowed invalid token without throwing exception");
     //Should not throw exception
   }
+  
+  @Test
+  public void testMissingClientId(){
+    expectAccessToken();
+    replay();
+    try {
+      handler.getSecurityTokenFromRequest(new FakeHttpServletRequest("http://localhost:8080/oauth2", "/authorize", "access_token="+ACCESS_TOKEN));
+    }catch(InvalidAuthenticationException ex){
+      return;
+    }
+    fail("Handler allowed invalid token without throwing exception");
+    //Should not throw exception
+  }
+  
+  @Test
+  public void testBadClientId(){
+    expectAccessToken();
+    replay();
+    try {
+      handler.getSecurityTokenFromRequest(new FakeHttpServletRequest("http://localhost:8080/oauth2", "/authorize", "client_id=client2&access_token="+ACCESS_TOKEN));
+    }catch(InvalidAuthenticationException ex){
+      return;
+    }
+    fail("Handler allowed invalid token without throwing exception");
+    //Should not throw exception
+  }
 
 }

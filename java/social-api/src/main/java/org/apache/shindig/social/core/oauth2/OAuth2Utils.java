@@ -29,7 +29,7 @@ public class OAuth2Utils {
     if(secret == null || secret.equals("")){
       String header = req.getHeader("Authorization");
       if(header != null && header.contains("Basic")){
-        String[] parts = header.split(" \t\r\n");
+        String[] parts = header.split("\\s+");
         String temp = parts[parts.length-1];
         byte[] decodedSecret = Base64.decodeBase64(secret);
         try {
