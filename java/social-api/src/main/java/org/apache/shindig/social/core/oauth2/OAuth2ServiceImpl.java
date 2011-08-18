@@ -1,13 +1,5 @@
 package org.apache.shindig.social.core.oauth2;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.protocol.ProtocolException;
@@ -17,6 +9,14 @@ import org.apache.shindig.social.core.oauth2.OAuth2Token.TokenType;
 import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import javax.servlet.http.HttpServletResponse;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -58,7 +58,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     this.authCodes = new HashMap<String, List<OAuth2Code>>();
     this.accessTokens = new HashMap<String, List<OAuth2Token>>();
     this.refreshTokens = new HashMap<String, List<OAuth2Token>>();
-    loadClientsFromCanonical();
+    loadFromCanonical();
     registerGrantHandlers();
   }
 
@@ -86,7 +86,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   public void validateRequestForResource(OAuth2NormalizedRequest req) throws OAuth2Exception {
     OAuth2Token token = retrieveAccessToken(req.getString("access_token"));
     if (token == null) throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token is invalid.");
-    if (token.getExpiration() < System.currentTimeMillis()) {
+    if (token.getExpiration() > -1 && token.getExpiration() < System.currentTimeMillis()) {
       throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token has expired.");
     }
   }
@@ -236,7 +236,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     throw new RuntimeException("not yet implemented");
   }
   
-  private void loadClientsFromCanonical() {
+  private void loadFromCanonical() {
     for (String clientId : JSONObject.getNames(oauthDB)) {
       JSONObject clientJson;
       try {
@@ -244,6 +244,22 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         OAuth2Client client = converter.convertToObject(clientJson.toString(), OAuth2Client.class);
         client.setType(clientJson.getString("type").equals("public") ? ClientType.PUBLIC : ClientType.CONFIDENTIAL);
         clients.add(client);
+        JSONObject authCodes = oauthDB.getJSONObject(clientId).getJSONObject("authorizationCodes");
+        for(String authCodeId : JSONObject.getNames(authCodes)){
+          OAuth2Code code = converter.convertToObject(authCodes.getJSONObject(authCodeId).toString(), OAuth2Code.class);
+          code.setValue(authCodeId);
+          code.setClient(client);
+          registerAuthorizationCode(clientId, code);
+        }
+        JSONObject accessTokens = oauthDB.getJSONObject(clientId).getJSONObject("accessTokens");
+        for(String accessTokenId : JSONObject.getNames(accessTokens)){
+          OAuth2Token code = converter.convertToObject(accessTokens.getJSONObject(accessTokenId).toString(), OAuth2Token.class);
+          code.setValue(accessTokenId);
+          code.setClient(client);
+          code.setType(TokenType.ACCESS);
+          registerAccessToken(clientId, code);
+        }
+        
       } catch (JSONException je) {
         throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, je.getMessage(), je);
       }

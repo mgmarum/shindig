@@ -2,85 +2,85 @@ package org.apache.shindig.social.core.oauth;
 
 import org.apache.http.util.ByteArrayBuffer;
 import org.apache.shindig.common.testing.FakeHttpServletRequest;
-import org.apache.shindig.social.core.oauth2.AuthorizationCodeGrant;
-import org.apache.shindig.social.core.oauth2.OAuth2Client;
-import org.apache.shindig.social.core.oauth2.OAuth2Client.ClientType;
-import org.apache.shindig.social.core.oauth2.OAuth2Code;
-import org.apache.shindig.social.core.oauth2.OAuth2NormalizedRequest;
-import org.apache.shindig.social.core.oauth2.OAuth2Service;
 import org.apache.shindig.social.core.oauth2.OAuth2Servlet;
-import org.apache.shindig.social.core.oauth2.OAuth2Token;
-import org.apache.shindig.social.core.oauth2.OAuth2Token.TokenType;
 import org.apache.shindig.social.dataservice.integration.AbstractLargeRestfulTests;
-import org.apache.shindig.social.dataservice.integration.TestUtils;
 import org.easymock.EasyMock;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 
-public class OAuth2Test extends AbstractLargeRestfulTests {
+public class OAuth2Test extends AbstractLargeRestfulTests{
 
   protected static final String SIMPLE_ACCESS_TOKEN = "TEST_TOKEN";
-  protected static final String PUBLIC_CLIENT_ID = "client";
-  protected static final String PUBLIC_AUTH_CODE = "SplxlOBeZQQYbYS6WxSbIA";
+  protected static final String PUBLIC_CLIENT_ID = "testClient";
+  protected static final String PUBLIC_AUTH_CODE = "testClient_authcode_1";
   
   protected OAuth2Servlet servlet = null;
-  protected OAuth2Service dataStore = null;
-  protected final OAuth2Client PUBLIC_CLIENT = new OAuth2Client();
   
   @Before
-  public void oauth2SetUp() throws Exception{
-    dataStore = mock(OAuth2Service.class);
+  @Override
+  public void abstractLargeRestfulBefore() throws Exception {
+    super.abstractLargeRestfulBefore();
     servlet = new OAuth2Servlet();
-    servlet.setOAuth2Service(dataStore);
-    PUBLIC_CLIENT.setId(PUBLIC_CLIENT_ID);
-    PUBLIC_CLIENT.setType(ClientType.PUBLIC);
-    EasyMock.expect(dataStore.getClientById(PUBLIC_CLIENT_ID)).andReturn(PUBLIC_CLIENT).anyTimes();
-    OAuth2Code code = new OAuth2Code(PUBLIC_AUTH_CODE);
-    code.setClient(PUBLIC_CLIENT);
-    EasyMock.expect(dataStore.retrieveAuthCode(PUBLIC_CLIENT_ID, PUBLIC_AUTH_CODE)).andReturn(code).anyTimes();
-  }
+    injector.injectMembers(servlet);
+  };
   
   @Test
   public void testGetAccessToken() throws Exception{
-    OAuth2Token token = new OAuth2Token(SIMPLE_ACCESS_TOKEN);
-    token.setClient(PUBLIC_CLIENT);
-    token.setType(TokenType.ACCESS);
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
-          "client_id=" + PUBLIC_CLIENT_ID + "&grant_type=authorization_code&redirect_uri=/redirect&code="+PUBLIC_AUTH_CODE);
+          "client_id=" + PUBLIC_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
+          +URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8")
+          +"&code="+PUBLIC_AUTH_CODE);
     req.setMethod("GET");
     req.setServletPath("/oauth2");
     req.setPathInfo("/access_token");
-    EasyMock.expect(dataStore.generateAccessToken(EasyMock.eq(new OAuth2NormalizedRequest(req)))).andReturn(token).anyTimes();
-    EasyMock.expect(dataStore.getAuthorizationGrantHandler("authorization_code")).andReturn(new AuthorizationCodeGrant(dataStore)).anyTimes();
     HttpServletResponse resp = mock(HttpServletResponse.class);
+    resp.setStatus(HttpServletResponse.SC_OK);
     MockServletOutputStream outputStream = new MockServletOutputStream();
-    PrintWriter writer = new PrintWriter(outputStream);
-    EasyMock.expect(resp.getWriter()).andReturn(writer);
     EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
-    resp.setCharacterEncoding("UTF-8");
+    PrintWriter writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
     replay();
     servlet.service(req, resp);
     writer.flush();
-    InputStream stream = new FileInputStream("src/test/java/org/apache/shindig/social/core/oauth/SimpleOAuth2AccessToken.json");
-    InputStreamReader reader = new InputStreamReader(stream,"UTF-8");
-    BufferedReader buff = new BufferedReader(reader);
-    StringBuilder sb = new StringBuilder();
-    String line;
-    while ((line = buff.readLine()) != null) {
-      sb.append(line);
-    }
-    String expected =  sb.toString();
-    TestUtils.jsonsEqual(expected, new String(outputStream.getBuffer(),"UTF-8"));
+
+    JSONObject tokenResponse = new JSONObject(new String(outputStream.getBuffer(),"UTF-8"));
+    
+    assertEquals("bearer",tokenResponse.getString("token_type"));
+    assertNotNull(tokenResponse.getString("access_token"));
+    assertTrue(tokenResponse.getLong("expires_in") > 0);
+    verify();
+  }
+  
+  @Test
+  public void testGetAccessTokenBadClient() throws Exception{
+    FakeHttpServletRequest req = 
+      new FakeHttpServletRequest("http://localhost:8080","/oauth2",
+          "client_id=BAD_CLIENT&grant_type=authorization_code&redirect_uri="
+          +URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8")
+          +"&code="+PUBLIC_AUTH_CODE);
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/access_token");
+    HttpServletResponse resp = mock(HttpServletResponse.class);
+    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    MockServletOutputStream outputStream = new MockServletOutputStream();
+    PrintWriter writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+    String response = new String(outputStream.getBuffer(),"UTF-8");
+    assertTrue(response == null || response.equals(""));
+    verify();
   }
   
   private class MockServletOutputStream extends ServletOutputStream {

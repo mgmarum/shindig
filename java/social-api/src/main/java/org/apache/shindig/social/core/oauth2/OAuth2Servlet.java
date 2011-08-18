@@ -15,9 +15,9 @@ import com.google.inject.Inject;
 public class OAuth2Servlet extends InjectedServlet {
 
   private static final long serialVersionUID = -4257719224664564922L;
-  private static OAuth2AuthorizationHandler authorizationHandler;
-  private static OAuth2TokenHandler tokenHandler;
-  private OAuth2Service service;
+  protected OAuth2AuthorizationHandler authorizationHandler;
+  protected OAuth2TokenHandler tokenHandler;
+  protected OAuth2Service service;
   
   @Inject
   public void setOAuth2Service(OAuth2Service service) {
