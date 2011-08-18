@@ -26,7 +26,7 @@ public class OAuth2AuthenticationHandlerTest extends EasyMockTestCase {
   private void expectAccessToken() {
       try {
         OAuth2Token token = new OAuth2Token(ACCESS_TOKEN);
-        EasyMock.expect(mockStore.retrieveAccessToken(EasyMock.eq(CLIENT_ID),EasyMock.eq(ACCESS_TOKEN))).andReturn(token);
+        EasyMock.expect(mockStore.retrieveAccessToken(EasyMock.eq(ACCESS_TOKEN))).andReturn(token);
       } catch (OAuth2Exception e) {
         e.printStackTrace();
       }
