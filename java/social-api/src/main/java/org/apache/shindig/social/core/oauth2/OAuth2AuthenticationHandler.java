@@ -29,26 +29,15 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
   @Override
   public SecurityToken getSecurityTokenFromRequest(HttpServletRequest request)
       throws InvalidAuthenticationException {
-    
-    
-    String bearer = OAuth2Utils.fetchBearerTokenFromHttpRequest(request);
-    OAuth2NormalizedRequest req;
+    OAuth2NormalizedRequest normalizedReq;
     try {
-        req = new OAuth2NormalizedRequest(request);
-    } catch (OAuth2Exception e) {
-      throw new InvalidAuthenticationException("Malformed OAuth2 request", e);
+      normalizedReq = new OAuth2NormalizedRequest(request);
+      store.validateRequestForResource(normalizedReq);
+    } catch (OAuth2Exception oae) {
+      oae.printStackTrace();
+      throw new InvalidAuthenticationException("Something went wrong: ", oae); // TODO: process OAuth2Exception
     }
-      if(bearer != null){
-        try{
-          OAuth2Token token = store.retrieveAccessToken(req.getClientId(), bearer);
-          if(token != null){
-            return null; //TODO create an appropriate SecurityToken
-          }
-        }catch(OAuth2Exception ex){
-          throw new InvalidAuthenticationException("Request contains invalid or expired token", ex);
-        }
-      }
-    throw new InvalidAuthenticationException("Missing access token", null);
+    return null;
   }
 
   @Override

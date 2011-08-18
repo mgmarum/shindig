@@ -26,14 +26,14 @@ public interface OAuth2Service {
   public AuthorizationGrantHandler getAuthorizationGrantHandler(String grantType) throws OAuth2Exception;
   
   /**
-   * Retreive the access token used by a client
+   * Retrieves an access token.
    */
-  public OAuth2Token retrieveAccessToken(String clientId, String accessToken) throws OAuth2Exception;
+  public OAuth2Token retrieveAccessToken(String accessToken) throws OAuth2Exception;
   
   /**
    * Validates a client's request to use access a resource.
    */
-  public void validateRequestForResource(OAuth2NormalizedRequest req);
+  public void validateRequestForResource(OAuth2NormalizedRequest req) throws OAuth2Exception;
   
   // ------------------------ TOKEN GENERATION SERVICES -----------------------
   /**
@@ -70,7 +70,7 @@ public interface OAuth2Service {
   /**
    * Registers an access token with a client.
    */
-  public void registerAccessToken(String clientId, OAuth2Code accessToken);
+  public void registerAccessToken(String clientId, OAuth2Token accessToken);
   
   /**
    * Unregisters an access token with a client.

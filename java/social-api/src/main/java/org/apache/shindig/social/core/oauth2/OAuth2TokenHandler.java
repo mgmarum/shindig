@@ -35,7 +35,7 @@ public class OAuth2TokenHandler {
       AuthorizationGrantHandler grantHandler = service.getAuthorizationGrantHandler(normalizedReq.getString("grant_type"));
       if(grantHandler != null){
         grantHandler.validateGrant(normalizedReq);
-        OAuth2Code accessToken = service.generateAccessToken(normalizedReq);
+        OAuth2Token accessToken = service.generateAccessToken(normalizedReq);
         service.registerAccessToken(normalizedReq.getString("client_id"), accessToken);
         sendAccessToken(response, accessToken);
       } else {

@@ -1,5 +1,13 @@
 package org.apache.shindig.social.core.oauth2;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.protocol.ProtocolException;
@@ -9,14 +17,6 @@ import org.apache.shindig.social.core.oauth2.OAuth2Token.TokenType;
 import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import javax.servlet.http.HttpServletResponse;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -83,8 +83,12 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     }
   }
 
-  public void validateRequestForResource(OAuth2NormalizedRequest req) {
-    throw new RuntimeException("Not yet implemented");
+  public void validateRequestForResource(OAuth2NormalizedRequest req) throws OAuth2Exception {
+    OAuth2Token token = retrieveAccessToken(req.getString("access_token"));
+    if (token == null) throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token is invalid.");
+    if (token.getExpiration() < System.currentTimeMillis()) {
+      throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token has expired.");
+    }
   }
   
   @SuppressWarnings("unchecked")
@@ -175,22 +179,24 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         }
       }
     }
-    throw new RuntimeException("signature not found");  // TODO: handle error
+    throw new RuntimeException("authorization code not found");  // TODO: handle error
   }
   
   @Override
-  public void registerAccessToken(String clientId, OAuth2Code accessToken) {
+  public void registerAccessToken(String clientId, OAuth2Token accessToken) {
+    System.out.println("Registering access token " + accessToken + " to client " + clientId);
     if (accessTokens.containsKey(clientId)) {
-      ((List<OAuth2Code>) authCodes.get(clientId)).add(accessToken);
+      ((List<OAuth2Token>) accessTokens.get(clientId)).add(accessToken);
     } else {
-      List<OAuth2Code> list = new ArrayList<OAuth2Code>();
+      List<OAuth2Token> list = new ArrayList<OAuth2Token>();
       list.add(accessToken);
-      authCodes.put(clientId, list);
+      accessTokens.put(clientId, list);
     }
   }
   
   @Override
   public void unregisterAccessToken(String clientId, String accessToken) {
+    System.out.println("Unregistering access token " + accessToken + " to client " + clientId);
     if (accessTokens.containsKey(clientId)) {
       List<OAuth2Token> tokens = accessTokens.get(clientId);
       for (OAuth2Token token : tokens) {
@@ -200,7 +206,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         }
       }
     }
-    throw new RuntimeException("signature not found");  // TODO: handle error
+    throw new RuntimeException("access token not found");  // TODO: handle error
   }
 
   public void registerRefreshToken(String clientId, OAuth2Code refreshToken) {
@@ -212,8 +218,9 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   }
   
   @Override
-  public OAuth2Token retrieveAccessToken(String clientId, String accessToken) throws OAuth2Exception {
-    if (accessTokens.containsKey(clientId)) {
+  public OAuth2Token retrieveAccessToken(String accessToken) throws OAuth2Exception {
+    System.out.println("Retrieving access token " + accessToken);
+    for (String clientId : accessTokens.keySet()) {
       List<OAuth2Token> tokens = accessTokens.get(clientId);
       for (OAuth2Token token : tokens) {
         if (token.getValue().equals(accessToken)) {
