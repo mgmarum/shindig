@@ -38,8 +38,20 @@ public class OAuth2AuthorizationHandler {
       if (normalizedReq.containsKey("response_type")) {
         switch ((ResponseType) normalizedReq.get("response_type")) {
         case CODE:
+
+          /**
+           *  In my rereading of the spec, I don't think the Authorization endpoint requires 
+           *  Client Credentials to generate an Authorization Code. 
+           *  
+           *  http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3.2.1
+           *  
+           *  Only the TOKEN endpoint MUST provide client credentials.
+           *
+           */
+//          service.authenticateClient(normalizedReq);
+
+
           // authorization code dance
-          service.authenticateClient(normalizedReq);
           service.validateRequestForAuthCode(normalizedReq);
           authorizeClient(request, response);
           OAuth2Code authCode = service.generateAuthorizationCode(normalizedReq);

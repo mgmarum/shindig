@@ -29,10 +29,16 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
   @Override
   public SecurityToken getSecurityTokenFromRequest(HttpServletRequest request)
       throws InvalidAuthenticationException {
-    OAuth2NormalizedRequest normalizedReq;
+    OAuth2NormalizedRequest normalizedReq = null;
     try {
       normalizedReq = new OAuth2NormalizedRequest(request);
-      store.validateRequestForResource(normalizedReq);
+    } catch(OAuth2Exception ex){
+      //Not likely an OAuth2 Request.. pass through.
+    }
+    try{
+      if(normalizedReq != null && normalizedReq.getAccessToken() != null){
+        store.validateRequestForResource(normalizedReq);
+      }
     } catch (OAuth2Exception oae) {
       oae.printStackTrace();
       throw new InvalidAuthenticationException("Something went wrong: ", oae); // TODO: process OAuth2Exception

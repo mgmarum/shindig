@@ -91,6 +91,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     }
   }
   
+  @Override
   @SuppressWarnings("unchecked")
   public OAuth2Code generateAuthorizationCode(OAuth2NormalizedRequest req) {
     OAuth2Code authCode = new OAuth2Code();
@@ -146,6 +147,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     return null;
   }
 
+  @Override
   public void registerAuthorizationCode(String clientId, OAuth2Code authCode) {
     if (authCodes.containsKey(clientId)) {
       ((List<OAuth2Code>) authCodes.get(clientId)).add(authCode);
@@ -156,21 +158,20 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     }
   }
 
+  @Override
   public void unregisterAuthorizationCode(String clientId, String authCode) {
     if (authCodes.containsKey(clientId)) {
       List<OAuth2Code> codes = authCodes.get(clientId);
       for (OAuth2Code code : codes) {
         if (code.getValue().equals(authCode)) {
           codes.remove(code);
-          return;
         }
       }
-    }
-    throw new RuntimeException("signature not found");  // TODO: handle error
+    } 
   }
   
   @Override
-  public OAuth2Code retrieveAuthCode(String clientId, String codeStr) {
+  public OAuth2Code retrieveAuthCode(String clientId, String codeStr) throws OAuth2Exception {
     if (authCodes.containsKey(clientId)) {
       List<OAuth2Code> codes = authCodes.get(clientId);
       for (OAuth2Code code : codes) {
@@ -179,7 +180,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         }
       }
     }
-    throw new RuntimeException("authorization code not found");  // TODO: handle error
+    throw new OAuth2Exception("authorization code not found");
   }
   
   @Override
@@ -209,10 +210,12 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     throw new RuntimeException("access token not found");  // TODO: handle error
   }
 
+  @Override
   public void registerRefreshToken(String clientId, OAuth2Code refreshToken) {
     throw new RuntimeException("not yet implemented");
   }
 
+  @Override
   public void unregisterRefreshToken(String clientId, String refreshToken) {
     throw new RuntimeException("not yet implemented");
   }
@@ -266,6 +269,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     }
   }
 
+  @Override
   public AuthorizationGrantHandler getAuthorizationGrantHandler(String grantType) throws OAuth2Exception {
     if(grantType != null && !grantType.equals("")){
       for (AuthorizationGrantHandler handler : grantHandlers) {

@@ -35,6 +35,7 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
   @SuppressWarnings("unchecked")
   public OAuth2NormalizedRequest(HttpServletRequest request) throws OAuth2Exception{
     super();
+    normalizeBody(getBodyAsString(request));
     Enumeration<String> keys = request.getParameterNames();
     while (keys.hasMoreElements()) {
       String key = keys.nextElement();
@@ -42,9 +43,24 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
     }
     normalizeClientSecret(request);
     normalizeScope();
-//    normalizeGrantType();
+    normalizeAccessToken(request);
     normalizeResponseType();
-    normalizeBody(getBodyAsString(request));
+  }
+  
+  private void normalizeAccessToken(HttpServletRequest req) {
+    String bearerToken = getString("access_token");
+    if(bearerToken == null || bearerToken.equals("")){
+      String header = req.getHeader("Authorization");
+      if(header != null && header.contains("Bearer")){
+        String[] parts = header.split("\\s+");
+        bearerToken = parts[parts.length-1];
+      }
+    }
+    put("access_token", bearerToken);
+  }
+
+  public String getAccessToken(){
+    return getString("access_token");
   }
   
 
@@ -52,14 +68,14 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
     String secret = getString("client_secret");
     if(secret == null || secret.equals("")){
       String header = request.getHeader("Authorization");
-      if(header != null && header.contains("Basic")){
+      if(header != null && header.startsWith("Basic")){
         String[] parts = header.split("\\s+");
         String temp = parts[parts.length-1];
-        byte[] decodedSecret = Base64.decodeBase64(secret);
+        byte[] decodedSecret = Base64.decodeBase64(temp);
         try {
           temp = new String(decodedSecret,"UTF-8");
           parts = temp.split(":");
-          if(parts != null && parts.length == 2 && parts[0] == getString("client_id")){
+          if(parts != null && parts.length == 2 && parts[0].equals(getString("client_id"))){
             secret = parts[1];
           }
         } catch (UnsupportedEncodingException e) {
