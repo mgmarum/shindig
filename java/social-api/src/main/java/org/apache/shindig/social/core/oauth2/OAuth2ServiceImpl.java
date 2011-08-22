@@ -93,7 +93,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   
   @Override
   @SuppressWarnings("unchecked")
-  public OAuth2Code generateAuthorizationCode(OAuth2NormalizedRequest req) {
+  public OAuth2Code generateAuthorizationCode(OAuth2NormalizedRequest req){
     OAuth2Code authCode = new OAuth2Code();
     authCode.setValue(UUID.randomUUID().toString());
     authCode.setExpiration(System.currentTimeMillis() + AUTH_EXPIRES);

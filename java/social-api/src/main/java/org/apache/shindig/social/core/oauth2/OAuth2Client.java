@@ -9,7 +9,7 @@ public class OAuth2Client {
   
   protected String id;
   protected String secret;
-  protected String redirectUri;
+  protected String redirectURL;
   protected String title;
   protected String iconUrl;
   protected ClientType type;
@@ -56,7 +56,7 @@ public class OAuth2Client {
    * @return String represents the client's redirect URI
    */
   public String getRedirectURI() {
-    return redirectUri;
+    return redirectURL;
   }
   
   /**
@@ -65,7 +65,7 @@ public class OAuth2Client {
    * @param redirectUri represents the client's redirect URI
    */
   public void setRedirectURI(String redirectUri) {
-    this.redirectUri = redirectUri;
+    this.redirectURL = redirectUri;
   }
   
   /**

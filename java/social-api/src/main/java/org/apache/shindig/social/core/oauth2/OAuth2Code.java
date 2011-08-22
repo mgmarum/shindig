@@ -11,7 +11,7 @@ import java.util.List;
 public class OAuth2Code implements Comparable<OAuth2Code> {
   
   private String value;
-  private String redirectUri;
+  private String redirectURI;
   private long expiration;
   private List<String> scope;
   private OAuth2Client client = null;
@@ -22,7 +22,7 @@ public class OAuth2Code implements Comparable<OAuth2Code> {
     
   public OAuth2Code(String value, String redirectUri, long expiration, List<String> scope) {
     this.value = value;
-    this.redirectUri = redirectUri;
+    this.redirectURI = redirectUri;
     this.expiration = expiration;
     this.scope = scope;
   }
@@ -39,12 +39,12 @@ public class OAuth2Code implements Comparable<OAuth2Code> {
     this.value = value;
   }
   
-  public String getRedirectUri() {
-    return redirectUri;
+  public String getRedirectURI() {
+    return redirectURI;
   }
   
   public void setRedirectUri(String redirectUri) {
-    this.redirectUri = redirectUri;
+    this.redirectURI = redirectUri;
   }
   
   public long getExpiration() {

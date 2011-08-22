@@ -25,7 +25,7 @@ public class AuthorizationCodeGrant extends AuthorizationGrantHandler {
     if(redirectURI == null || redirectURI.equals("")){
       throw new OAuth2Exception("Redirect URI required for Authorization Code grants");
     }
-    if(authCode.getRedirectUri() != null && !authCode.getRedirectUri().equals(redirectURI)){
+    if(authCode.getRedirectURI() != null && !authCode.getRedirectURI().equals(redirectURI)){
       throw new OAuth2Exception("Redirect URI does not match the one issued to this authorization code");
     }
   }

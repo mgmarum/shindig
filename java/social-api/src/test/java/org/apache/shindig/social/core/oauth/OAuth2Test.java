@@ -176,10 +176,10 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
   }
   
   /**
-   * Test retrieving an authorization code using a confidential client
+   * Test retrieving an authorization code using a confidential client without setting redirect URI
    * 
-   * Client authentication is not required for confidential clients accessing 
-   * the authorization endpoint
+   * The redirect URI is registered with this client, so omitting it should still generate a response
+   * using the registered redirect URI.
    * 
    * @throws Exception
    */
@@ -211,6 +211,40 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     String code = redirectURI.getValue().substring(redirectURI.getValue().indexOf("=")+1);
     UUID id = UUID.fromString(code);
     assertTrue(id != null);
+  }
+  
+  /**
+   * Test retrieving an authorization code using a confidential client with a bad redirect URI
+   * 
+   * The redirect URI is registered with this client, so passing a redirect that doesn't match the
+   * registered value should generate an error per the OAuth 2.0 spec.
+   * 
+   * See Section 3.1.2.3 under http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3.1.2
+   * 
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void testGetAuthorizationCodeBadRedirect() throws Exception{
+    FakeHttpServletRequest req = 
+      new FakeHttpServletRequest("http://localhost:8080","/oauth2",
+          "client_id=" + CONF_CLIENT_ID + "&response_type=code&redirect_uri=" 
+          + URLEncoder.encode("http://example.org/redirect/","UTF-8"));
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/authorize");
+    HttpServletResponse resp = mock(HttpServletResponse.class);
+    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    MockServletOutputStream outputStream = new MockServletOutputStream();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    PrintWriter writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+    String response = new String(outputStream.getBuffer(),"UTF-8");
+    assertTrue(response == null || response.equals(""));
+    verify();
   }
   
   

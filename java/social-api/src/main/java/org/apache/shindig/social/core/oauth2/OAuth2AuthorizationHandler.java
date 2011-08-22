@@ -51,7 +51,7 @@ public class OAuth2AuthorizationHandler {
 //          service.authenticateClient(normalizedReq);
 
           // authorization code dance
-
+          OAuth2Client client = service.getClientById(normalizedReq.getClientId());
           OAuth2Code authCode = service.generateAuthorizationCode(normalizedReq);
           service.registerAuthorizationCode(normalizedReq.getString("client_id"), authCode);
           
@@ -61,10 +61,13 @@ public class OAuth2AuthorizationHandler {
           if (normalizedReq.containsKey("state")) {
             returnParams.put("state", normalizedReq.getString("state"));
           }
-          if(authCode.getRedirectUri() == null){
+          if(authCode.getRedirectURI() == null){
             throw new OAuth2Exception("Missing redirect URI");
           }
-          response.setHeader("Location", buildUrl(authCode.getRedirectUri(), returnParams));
+          if(client.getRedirectURI() != null && !authCode.getRedirectURI().equals(client.getRedirectURI())){
+            throw new OAuth2Exception("Redirect URI in request does match registered URI for this client");
+          }
+          response.setHeader("Location", buildUrl(authCode.getRedirectURI(), returnParams));
           response.setStatus(HttpServletResponse.SC_FOUND);
           break;
         case TOKEN: // requesting access token, IMPLICIT FLOW
