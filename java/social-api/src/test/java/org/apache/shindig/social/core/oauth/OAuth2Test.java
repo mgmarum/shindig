@@ -175,6 +175,44 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     assertTrue(id != null);
   }
   
+  /**
+   * Test retrieving an authorization code using a confidential client
+   * 
+   * Client authentication is not required for confidential clients accessing 
+   * the authorization endpoint
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void testGetAuthorizationCodeNoRedirect() throws Exception{
+    FakeHttpServletRequest req = 
+      new FakeHttpServletRequest("http://localhost:8080","/oauth2",
+          "client_id=" + CONF_CLIENT_ID + "&response_type=code");
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/authorize");
+    HttpServletResponse resp = mock(HttpServletResponse.class);
+    Capture<String> redirectURI = new Capture<String>();
+    resp.setHeader(EasyMock.eq("Location"), EasyMock.capture(redirectURI));
+    Capture<Integer> respCode = new Capture<Integer>();
+    resp.setStatus(EasyMock.capture(respCode));
+    MockServletOutputStream outputStream = new MockServletOutputStream();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    PrintWriter writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+    String response = new String(outputStream.getBuffer(),"UTF-8");
+    assertTrue(response == null || response.equals(""));
+    verify();
+    assertEquals((Integer)302,respCode.getValue());
+    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/OpenSocialClient?code="));
+    String code = redirectURI.getValue().substring(redirectURI.getValue().indexOf("=")+1);
+    UUID id = UUID.fromString(code);
+    assertTrue(id != null);
+  }
+  
   
   /**
    * Test retrieving an auth code and using it to generate an access token

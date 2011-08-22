@@ -640,24 +640,24 @@
  			"id" : "advancedOpenSocialClient",
  			"secret": "advancedOpenSocialClient_secret",
  			"title": "Most Advanced OpenSocial Client Ever!",
- 			"redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient",
+ 			"redirectURI" : "http://localhost:8080/oauthclients/OpenSocialClient",
  			"type" : "confidential"
  		},
  		"authorizationCodes" : {
  			"advancedClient_authcode_1" : {
  				// Authentication code has been consumed since associatedSignature exists
- 				"redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient",
+ 				"redirectURI" : "http://localhost:8080/oauthclients/OpenSocialClient",
  				"associatedSignature" : "advancedClientOS_accesstoken_1",
  				"expiration" : -1
  			},
  			"advancedClient_authcode_2" : {
- 				"redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient",
+ 				"redirectURI" : "http://localhost:8080/oauthclients/OpenSocialClient",
  				"expiration" : -1
  			}
  		},
  		"accessTokens" : {
  			"advancedClient_accesstoken_1" : {
- 				"redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient",
+ 				"redirectURI" : "http://localhost:8080/oauthclients/OpenSocialClient",
  				"expiration" : -1
  			}
  		}
@@ -671,17 +671,17 @@
  		"authorizationCodes" : {
       "testClient_authcode_1" : {
         // Authentication code has been consumed since associatedSignature exists
-        "redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient",
+        "redirectURI" : "http://localhost:8080/oauthclients/OpenSocialClient",
         "expiration" : -1
       },
       "testClient_authcode_2" : {
-        "redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient",
+        "redirectURI" : "http://localhost:8080/oauthclients/OpenSocialClient",
         "expiration" : -1
       }
     },
     "accessTokens" : {
       "testClient_accesstoken_1" : {
-        "redirectUri" : "http://localhost:8080/oauthclients/OpenSocialClient",
+        "redirectURI" : "http://localhost:8080/oauthclients/OpenSocialClient",
         "expiration" : -1
       }
     }

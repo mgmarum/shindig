@@ -45,15 +45,13 @@ public class OAuth2AuthorizationHandler {
            *  
            *  http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3.2.1
            *  
-           *  Only the TOKEN endpoint MUST provide client credentials.
+           *  Only the TOKEN endpoint MUST be provided client credentials.
            *
            */
 //          service.authenticateClient(normalizedReq);
 
-
           // authorization code dance
-          service.validateRequestForAuthCode(normalizedReq);
-          authorizeClient(request, response);
+
           OAuth2Code authCode = service.generateAuthorizationCode(normalizedReq);
           service.registerAuthorizationCode(normalizedReq.getString("client_id"), authCode);
           
@@ -62,6 +60,9 @@ public class OAuth2AuthorizationHandler {
           returnParams.put("code", authCode.getValue());
           if (normalizedReq.containsKey("state")) {
             returnParams.put("state", normalizedReq.getString("state"));
+          }
+          if(authCode.getRedirectUri() == null){
+            throw new OAuth2Exception("Missing redirect URI");
           }
           response.setHeader("Location", buildUrl(authCode.getRedirectUri(), returnParams));
           response.setStatus(HttpServletResponse.SC_FOUND);
@@ -78,10 +79,6 @@ public class OAuth2AuthorizationHandler {
       // TODO: better error processing
       response.sendError(HttpServletResponse.SC_FORBIDDEN, oae.getLocalizedMessage());
     }
-  }
-  
-  private void authorizeClient(HttpServletRequest request, HttpServletResponse response) {
-    // TODO: return screen for user to "allow" or "deny"; current implementation doesn't work, need to validate client first
   }
   
   // ---------------------------- PRIVATE UTILITIES ---------------------------
