@@ -43,9 +43,6 @@
     // one-to-many association of urls to gadget sites
     this.urlToSite = {};
 
-    // one-to-one relationship of each url to the gadget metadata
-    this.urlToMetadata = {};
-
     // one-to-one relationship of each action to the url
     this.actionToUrl = {};
 
@@ -297,29 +294,6 @@
     this.getUrl = function(actionId) {
       return this.actionToUrl[actionId];
     };
-
-    /**
-     * Saves the metadata associated with a url
-     *
-     * @param {String}
-     *          url Gadget spec url.
-     * @param {Object}
-     *          metadata Metadata of the gadget.
-     */
-    this.setGadgetMetadata = function(url, metadata) {
-      this.urlToMetadata[url] = metadata;
-    };
-
-    /**
-     * Returns the metadata associated with a url
-     *
-     * @param {String}
-     *          url Gadget spec url.
-     * @return {Object} metadata Metadata for a gadget.
-     */
-    this.getGadgetMetadata = function(url) {
-      return this.urlToMetadata[url];
-    };
   };
 
   /**
@@ -399,7 +373,7 @@
   function addAction(actionObj, url) {
     registry.addAction(actionObj, url);
     // notify the container to display the action
-    showActionHandler(actionObj);
+    showActionHandlerProxy([actionObj]);
   };
 
   /**
@@ -414,7 +388,7 @@
     var actionObj = registry.getItemById(id);
     registry.removeAction(id);
     // notify the container to hide the action
-    hideActionHandler(actionObj);
+    hideActionHandlerProxy([actionObj]);
   };
 
   /**
@@ -451,7 +425,6 @@
     for (var url in response) {
       var metadata = response[url];
       if (!metadata.error) {
-        registry.setGadgetMetadata(url, metadata);
         if (metadata.modulePrefs) {
           var feature = metadata.modulePrefs.features['actions'];
           if (feature && feature.params) {
@@ -542,18 +515,26 @@
 
   // Function to handle RPC calls from the gadgets side
   function router(channel, object) {
-    var actionObj = object;
     switch (channel) {
     case 'bindAction':
-      bindAction(actionObj);
+      bindAction(object);
+      break;
+    case 'runAction':
+      container_.actions.runAction(object.id, object.selection);
       break;
     case 'removeAction':
-      hideActionHandler(object);
+      hideActionHandlerProxy([object]);
       break;
     case 'getActionsByPath':
       return container_.actions.getActionsByPath(object);
     case 'getActionsByDataType':
       return container_.actions.getActionsByDataType(object);
+    case 'addShowActionListener':
+      addShowActionListener(object);
+      break;
+    case 'addHideActionListener':
+      addHideActionListener(object);
+      break;
     }
   };
 
@@ -564,7 +545,21 @@
    *          actionObj The object with id, label, tooltip, icon and any other
    *          information for the container to use to render the action.
    */
-  var showActionHandler = function(actionObj) {};
+  var showActionHandler = function(actions) {};
+  var showActionListeners = [];
+  var showActionHandlerProxy = function(actions) {
+    showActionHandler(actions);
+    for (var i in showActionListeners)
+      showActionListeners[i](actions);
+  };
+
+  /**
+   * Function that adds a listener to the list of listeners that will
+   * be notified of show action events.
+   */
+  function addShowActionListener(listener) {
+    showActionListeners.push(listener);
+  };
 
   /**
    * Function that hides actions from the container's UI
@@ -573,7 +568,21 @@
    *          actionObj The object with id, label, tooltip, icon and any other
    *          information for the container to use to render the action.
    */
-  var hideActionHandler = function(actionObj) {};
+  var hideActionHandler = function(actions) {};
+  var hideActionListeners = [];
+  var hideActionHandlerProxy = function(actions) {
+    hideActionHandler(actions);
+    for (var i in hideActionListeners)
+      hideActionListeners[i](actions);
+  };
+
+  /**
+   * Function that adds a listener to the list of listeners that will
+   * be notified of hide action events.
+   */
+  function addHideActionListener(listener) {
+    hideActionListeners.push(listener);
+  };
 
   /**
    * Function that renders gadgets in container's UI
@@ -581,9 +590,9 @@
    * @param {String}
    *          gadgetSpecUrl The gadget spec url.
    * @param {Object}
-   *          gadgetMetadata  The gadget meta data.
+   *          opt_params  The optional parameters for rendering the gadget.
    */
-  var renderGadgetInContainer = function(gadgetSpecUrl, gadgetMetadata) {};
+  var renderGadgetInContainer = function(gadgetSpecUrl, opt_params) {};
 
   // instantiate the singleton action registry
   var registry = new ActionRegistry();
@@ -608,7 +617,6 @@
     }
 
     return /** @scope osapi.container.actions */ {
-
       /**
        * Registers a function to display actions in the container.
        *
@@ -617,7 +625,7 @@
        *          in its UI. The function takes the action object as
        *          a parameter.
        */
-      registerShowActionHandler: function(handler) {
+      registerShowActionsHandler: function(handler) {
         if (typeof handler === 'function') {
           showActionHandler = handler;
         }
@@ -631,7 +639,7 @@
        *          in its UI. The function takes the action object as
        *          a parameter.
        */
-      registerHideActionHandler: function(handler) {
+      registerHideActionsHandler: function(handler) {
         if (typeof handler === 'function') {
           hideActionHandler = handler;
         }
@@ -643,7 +651,7 @@
        * @param {function}
        *          The container's function to render gadgets in its UI.
        *          The function takes in two parameters: the gadget spec
-       *          url and the gadget metadata.
+       *          url and optional parameters.
        */
       registerNavigateGadgetHandler: function(renderGadgetFunction) {
         if (typeof renderGadgetFunction === 'function') {
@@ -660,23 +668,40 @@
       /**
        * Executes the action associated with the action id.
        *
-       * @param {String}
-       *          The action id.
+       * @param {String, Object}
+       *          The id of the action to execute..
+       *          The current selection. This is an optional parameter.
        */
-      runAction: function(actionId) {
-        if (registry.getItemById(actionId)) {
+      runAction: function(actionId, opt_selection) {
+        var action = registry.getItemById(actionId);
+        if (action) {
           // if gadget site has not been registered yet
           // the gadget needs to be rendered
           var gadgetSite = registry.getGadgetSite(actionId);
           if (!gadgetSite) {
             var gadgetUrl = registry.getUrl(actionId);
-            var gadgetMetadata = registry.getGadgetMetadata(gadgetUrl);
             pendingActions[actionId] = {
               selection: container_.selection.getSelection()
             };
-            renderGadgetInContainer(gadgetUrl, gadgetMetadata);
+
+            // set selection
+	    if (opt_selection != null) {
+	      pendingActions[actionId].selection = opt_selection;
+	    }
+
+            // set optional params
+            var opt_params = {};
+            if (action.view) {
+              opt_params[osapi.container.actions.OptParam.VIEW] = action.view;
+            }
+            if (action.viewTarget) {
+              opt_params[osapi.container.actions.OptParam.VIEW_TARGET] = action.viewTarget;
+            }
+
+            // render the gadget
+            renderGadgetInContainer(gadgetUrl, opt_params);
           } else {
-            runAction(actionId);
+            runAction(actionId, opt_selection);
           }
         }
       },

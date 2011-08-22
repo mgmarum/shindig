@@ -178,6 +178,8 @@
    *          navigateCallback: Callback function to be called with the embedded
    *          experience has rendered.
    * @param {Object}
+   *          dataModel: The embedded experiences data model.
+   * @param {Object}
    *          opt_params: These are optional parameters which can be used to
    *          open gadgets. The following parameters may be included in this
    *          object. {string} viewTarget: The view that indicates where to open
@@ -186,63 +188,62 @@
    */
   function openEE(resultCallback, navigateCallback, dataModel, opt_params) {
     var gadgetUrl = dataModel.gadget;
-    if (gadgetUrl) {
-      //Check to make sure we can actually reach the gadget we are going to try
-      //to render before we do anything else
-      context.preloadGadget(gadgetUrl, function(result) {
-        if (result[gadgetUrl] == null ||
-                (result[gadgetUrl] != null && result[gadgetUrl].error)) {
-          //There was an error, check to see if there is still the option to
-          //render the url, else just call the navigateCallback
-          if (!dataModel.url) {
-            if (navigateCallback != null) {
-              navigateCallback(null, result[gadgetUrl]);
-            }
-            return;
+
+    //Check to make sure we can actually reach the gadget we are going to try
+    //to render before we do anything else
+    context.preloadGadget(gadgetUrl, function(result) {
+      if (result[gadgetUrl] == null ||
+              (result[gadgetUrl] != null && result[gadgetUrl].error)) {
+        //There was an error, check to see if there is still the option to
+        //render the url, else just call the navigateCallback
+        if (!dataModel.url) {
+          if (navigateCallback != null) {
+            navigateCallback(null, result[gadgetUrl]);
           }
+          return;
         }
+      }
 
-        var viewTarget = '';
-        var viewParams = {};
-        if (opt_params != undefined) {
-          if (opt_params.viewTarget != undefined)
-            viewTarget = opt_params.viewTarget;
-          if (opt_params.viewParams != undefined)
-            viewParams = opt_params.viewParams;
-        }
+      var viewTarget = '';
+      var viewParams = {};
+      if (opt_params != undefined) {
+        if (opt_params.viewTarget != undefined)
+          viewTarget = opt_params.viewTarget;
+        if (opt_params.viewParams != undefined)
+          viewParams = opt_params.viewParams;
+      }
 
-        var element = context.views.createElementForEmbeddedExperience(
-            viewTarget);
+      var element = context.views.createElementForEmbeddedExperience(
+          viewTarget);
 
-        var gadgetRenderParams = {};
-        gadgetRenderParams[osapi.container.RenderParam.VIEW] =
-            osapi.container.ee.RenderParam.EMBEDDED;
-        gadgetRenderParams[osapi.container.RenderParam.WIDTH] = '100%';
-        gadgetRenderParams[osapi.container.RenderParam.HEIGHT] = '100%';
+      var gadgetRenderParams = {};
+      gadgetRenderParams[osapi.container.RenderParam.VIEW] =
+          osapi.container.ee.RenderParam.EMBEDDED;
+      gadgetRenderParams[osapi.container.RenderParam.WIDTH] = '100%';
+      gadgetRenderParams[osapi.container.RenderParam.HEIGHT] = '100%';
 
-        var urlRenderParams = {};
-        urlRenderParams[osapi.container.RenderParam.WIDTH] = '100%';
-        urlRenderParams[osapi.container.RenderParam.HEIGHT] = '100%';
+      var urlRenderParams = {};
+      urlRenderParams[osapi.container.RenderParam.WIDTH] = '100%';
+      urlRenderParams[osapi.container.RenderParam.HEIGHT] = '100%';
 
-        var eeRenderParams = {};
-        eeRenderParams[osapi.container.ee.RenderParam.GADGET_RENDER_PARAMS] =
-            gadgetRenderParams;
-        eeRenderParams[osapi.container.ee.RenderParam.URL_RENDER_PARAMS] =
-            urlRenderParams;
-        eeRenderParams[osapi.container.ee.RenderParam.GADGET_VIEW_PARAMS] =
-            viewParams;
+      var eeRenderParams = {};
+      eeRenderParams[osapi.container.ee.RenderParam.GADGET_RENDER_PARAMS] =
+          gadgetRenderParams;
+      eeRenderParams[osapi.container.ee.RenderParam.URL_RENDER_PARAMS] =
+          urlRenderParams;
+      eeRenderParams[osapi.container.ee.RenderParam.GADGET_VIEW_PARAMS] =
+          viewParams;
 
-        context.ee.navigate(element, dataModel, eeRenderParams, function(site,
-                metadata) {
-              if (metadata != null) {
-                processSiteAndCallbackInfo(site, resultCallback);
-              }
-              if (navigateCallback != null) {
-                navigateCallback(site, metadata);
-              }
-            });
-      });
-    }
+      context.ee.navigate(element, dataModel, eeRenderParams, function(site,
+              metadata) {
+            if (metadata != null) {
+              processSiteAndCallbackInfo(site, resultCallback);
+            }
+            if (navigateCallback != null) {
+              navigateCallback(site, metadata);
+            }
+          });
+    });
   }
 
 
@@ -332,21 +333,23 @@
 
   /**
    * Gets the dimensions of the container displaying the gadget.
+   *
+   * @param {function}
+   *          resultCallback: Callback function will be called with the return
+   *          value as a parameter.
    */
-  function getContainerDimensions() {
-    var el = document.documentElement; // Container
-    // element
-    if (el !== undefined)
-      // return client width and client height
-      return {
-        'width' : el.clientWidth,
-        'height' : el.clientHeight
-      };
-    else
-      return {
-        'width' : -1,
-        'height' : -1
-      };
+  function getContainerDimensions(resultCallback) {
+    if (resultCallback == null) {
+      return;
+    }
+    var el = document.documentElement; // Container element
+    var result = {'width' : -1, 'height': -1};
+    if (el !== undefined) {
+      result.width = el.clientWidth;
+      result.height = el.clientHeight;
+    }
+    // return client width and client height
+    resultCallback(result);
   }
 
   osapi.container.Container.addMixin('views', function(container) {

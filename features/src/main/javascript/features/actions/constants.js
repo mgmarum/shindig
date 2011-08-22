@@ -17,19 +17,20 @@
  */
 
 /**
- * @namespace The global gadgets namespace
- * @type {Object}
+ * @fileoverview Constants used throughout the container classes for
+ * actions.
  */
-gadgets = window['gadgets'] || {};
 
 /**
- * @namespace The global shindig namespace, used for shindig specific extensions and data
+ * Actions namespace
  * @type {Object}
  */
-shindig = window['shindig'] || {};
+osapi.container.actions = {};
 
 /**
- * @namespace The global osapi namespace, used for opensocial API specific extensions
- * @type {Object}
+ * Optional params for actions.
+ * @enum {string}
  */
-osapi = window['osapi'] || {};
+osapi.container.actions.OptParam = {};
+osapi.container.actions.OptParam.VIEW = 'view';
+osapi.container.actions.OptParam.VIEW_TARGET = 'viewTarget';
