@@ -5,7 +5,7 @@ import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
 /**
  * Represents an exception in OAuth 2.0 handshakes.
  * 
- * TODO: probably add Map<String, String> for error response body
+ * TODO: add Map<String, String> for error response body
  */
 public class OAuth2Exception extends Exception {
 

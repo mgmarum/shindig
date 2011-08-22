@@ -1,13 +1,18 @@
 package org.apache.shindig.social.core.oauth2;
 
-
-
 /**
- * Services to support OAuth 2.0 flows.
+ * Services to support the OAuth 2.0 specification flows and enforcement.
+ * 
+ * TODO: include grant methods?
  */
 public interface OAuth2Service {
   
-  // --------------------------- VALIDATION SERVICES --------------------------
+  /**
+   * Retrieves the underlying data service.
+   */
+  public OAuth2DataService getDataService();
+  
+  // --------------------------- VALIDATION SERVICES --------------------------  
   /**
    * Validates a client.
    */
@@ -18,22 +23,34 @@ public interface OAuth2Service {
    */
   public void validateRequestForAuthCode(OAuth2NormalizedRequest req) throws OAuth2Exception;
   
-  public OAuth2Code retrieveAuthCode(String clientId, String authCode) throws OAuth2Exception;
-  
   /**
-   * Used to validates a grant for an access token.
+   * Validates a client's request for an access token.
    */
-  public AuthorizationGrantHandler getAuthorizationGrantHandler(String grantType) throws OAuth2Exception;
-  
-  /**
-   * Retrieves an access token.
-   */
-  public OAuth2Token retrieveAccessToken(String accessToken) throws OAuth2Exception;
+  public void validateRequestForAccessToken(OAuth2NormalizedRequest req) throws OAuth2Exception;
   
   /**
    * Validates a client's request to use access a resource.
    */
   public void validateRequestForResource(OAuth2NormalizedRequest req) throws OAuth2Exception;
+  
+  // ------------------- GENERATION & REGISTRATION OF CODES -------------------
+  /**
+   * Grants an authorization code to the given client by generating and
+   * registering the code.
+   */
+  public OAuth2Code grantAuthorizationCode(OAuth2NormalizedRequest req);
+  
+  /**
+   * Grants an access token to the given client by generating and registering
+   * the access token.
+   */
+  public OAuth2Code grantAccessToken(OAuth2NormalizedRequest req);
+  
+  /**
+   * Grants a refresh token to the given client by generating and registering
+   * the refresh token.
+   */
+  public OAuth2Code grantRefreshToken(OAuth2NormalizedRequest req);
   
   // ------------------------ TOKEN GENERATION SERVICES -----------------------
   /**
@@ -44,46 +61,10 @@ public interface OAuth2Service {
   /**
    * Generates an access token from a client OAuth 2.0 request.
    */
-  public OAuth2Token generateAccessToken(OAuth2NormalizedRequest req);
+  public OAuth2Code generateAccessToken(OAuth2NormalizedRequest req);
   
   /**
    * Generates a refresh token from a client OAuth 2.0 request.
    */
-  public OAuth2Token generateRefreshToken(OAuth2NormalizedRequest req);
-  
-  // ------------------- CLIENT TOKEN MANAGEMENT SERVICES ---------------------
-  /**
-   * Retrieves a pre-registered client by ID.
-   */
-  public OAuth2Client getClientById(String clientId);
-  
-  /**
-   * Registers an authorization code with a client.
-   */
-  public void registerAuthorizationCode(String clientId, OAuth2Code authCode);
-  
-  /**
-   * Unregisters an authorization code with a client.
-   */
-  public void unregisterAuthorizationCode(String clientId, String authCode);
-  
-  /**
-   * Registers an access token with a client.
-   */
-  public void registerAccessToken(String clientId, OAuth2Token accessToken);
-  
-  /**
-   * Unregisters an access token with a client.
-   */
-  public void unregisterAccessToken(String clientId, String accessToken);
-  
-  /**
-   * Registers a refresh token with a client.
-   */
-  public void registerRefreshToken(String clientId, OAuth2Code refreshToken);
-  
-  /**
-   * Unregisters a refresh token with a client.
-   */
-  public void unregisterRefreshToken(String clientId, String refreshToken);
+  public OAuth2Code generateRefreshToken(OAuth2NormalizedRequest req); 
 }

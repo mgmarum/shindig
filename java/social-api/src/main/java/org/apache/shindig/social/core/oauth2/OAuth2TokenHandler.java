@@ -32,18 +32,11 @@ public class OAuth2TokenHandler {
       System.out.println("Normalized token request: ");
       System.out.println(normalizedReq.toString());
       service.authenticateClient(normalizedReq);
-      AuthorizationGrantHandler grantHandler = service.getAuthorizationGrantHandler(normalizedReq.getString("grant_type"));
-      if(grantHandler != null){
-        grantHandler.validateGrant(normalizedReq);
-        OAuth2Token accessToken = service.generateAccessToken(normalizedReq);
-        service.registerAccessToken(normalizedReq.getString("client_id"), accessToken);
-        sendAccessToken(response, accessToken);
-      } else {
-        throw new OAuth2Exception("Unknown grant handler: "+normalizedReq.getString("grant_type"));
-      }
+      service.validateRequestForAccessToken(normalizedReq);
+      OAuth2Code accessToken = service.grantAccessToken(normalizedReq);
+      sendAccessToken(response, accessToken);
     } catch(OAuth2Exception oae) {
-      // TODO: better error processing
-      response.sendError(HttpServletResponse.SC_FORBIDDEN, oae.getLocalizedMessage());
+      response.sendError(HttpServletResponse.SC_FORBIDDEN, oae.getLocalizedMessage()); // TODO: process error
     }
   }
 

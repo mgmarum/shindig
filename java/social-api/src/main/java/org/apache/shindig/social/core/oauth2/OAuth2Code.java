@@ -2,19 +2,23 @@ package org.apache.shindig.social.core.oauth2;
 
 import java.util.List;
 
+import org.apache.shindig.social.core.oauth2.OAuth2Types.CodeType;
+
 /**
- * Represents a "signature" string in an OAuth 2.0 handshake, including
+ * Represents a "code" string in an OAuth 2.0 handshake, including
  * authorization code, access token, or refresh token.  These signatures may
  * all expire.  They may also be associated with a redirect_url and/or another
- * signature.
+ * code.
  */
 public class OAuth2Code implements Comparable<OAuth2Code> {
   
   private String value;
-  private String redirectURI;
+  private String redirectUri;
   private long expiration;
   private List<String> scope;
-  private OAuth2Client client = null;
+  private OAuth2Client client;
+  private OAuth2Code associatedCode;
+  private CodeType type;
   
   public OAuth2Code() {
     
@@ -22,7 +26,7 @@ public class OAuth2Code implements Comparable<OAuth2Code> {
     
   public OAuth2Code(String value, String redirectUri, long expiration, List<String> scope) {
     this.value = value;
-    this.redirectURI = redirectUri;
+    this.redirectUri = redirectUri;
     this.expiration = expiration;
     this.scope = scope;
   }
@@ -39,12 +43,12 @@ public class OAuth2Code implements Comparable<OAuth2Code> {
     this.value = value;
   }
   
-  public String getRedirectURI() {
-    return redirectURI;
+  public String getRedirectUri() {
+    return redirectUri;
   }
   
   public void setRedirectUri(String redirectUri) {
-    this.redirectURI = redirectUri;
+    this.redirectUri = redirectUri;
   }
   
   public long getExpiration() {
@@ -73,5 +77,21 @@ public class OAuth2Code implements Comparable<OAuth2Code> {
 
   public OAuth2Client getClient() {
     return client;
+  }
+  
+  public void setType(CodeType type) {
+    this.type = type;
+  }
+  
+  public CodeType getType() {
+    return type;
+  }
+  
+  public void setAssociatedCode(OAuth2Code code) {
+    this.associatedCode = code;
+  }
+  
+  public OAuth2Code getAssociatedCode() {
+    return associatedCode;
   }
 }

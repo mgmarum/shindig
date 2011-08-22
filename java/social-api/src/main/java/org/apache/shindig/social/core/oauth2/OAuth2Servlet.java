@@ -1,29 +1,30 @@
 package org.apache.shindig.social.core.oauth2;
 
-import org.apache.shindig.common.servlet.HttpUtil;
-import org.apache.shindig.common.servlet.InjectedServlet;
+import java.io.IOException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
+import org.apache.shindig.common.servlet.HttpUtil;
+import org.apache.shindig.common.servlet.InjectedServlet;
 
 import com.google.inject.Inject;
 
+/**
+ * Main servlet to catch OAuth 2.0 requests.
+ */
 public class OAuth2Servlet extends InjectedServlet {
 
   private static final long serialVersionUID = -4257719224664564922L;
-  protected OAuth2AuthorizationHandler authorizationHandler;
-  protected OAuth2TokenHandler tokenHandler;
-  protected OAuth2Service service;
+  private static OAuth2AuthorizationHandler authorizationHandler;
+  private static OAuth2TokenHandler tokenHandler;
   
   @Inject
-  public void setOAuth2Service(OAuth2Service service) {
-    this.service = service;
-    authorizationHandler = new OAuth2AuthorizationHandler(service);
-    tokenHandler = new OAuth2TokenHandler(service);
+  public void setOAuth2Service(OAuth2Service oauthService) {
+    authorizationHandler = new OAuth2AuthorizationHandler(oauthService);
+    tokenHandler = new OAuth2TokenHandler(oauthService);
   }
   
   @Override
@@ -49,7 +50,6 @@ public class OAuth2Servlet extends InjectedServlet {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    System.out.println("OAuth2Servlet.doPost()");
     doGet(request, response);
   }
 }

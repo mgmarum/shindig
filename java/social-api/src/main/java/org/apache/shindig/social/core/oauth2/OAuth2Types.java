@@ -32,6 +32,27 @@ public class OAuth2Types {
   }
   
   /**
+   * Enumerated grant types in the OAuth 2.0 specification.
+   */
+  public static enum GrantType {
+    REFRESH_TOKEN("refresh_token"),
+    AUTHORIZATION_CODE("authorization_code"),
+    PASSWORD("password"),
+    CLIENT_CREDENTIALS("client_credentials"),
+    CUSTOM("custom");
+    
+    private final String name;
+    
+    private GrantType(String name) {
+      this.name = name;
+    }
+
+    public String toString() {
+      return name;
+    }
+  }
+  
+  /**
    * Enumerated response types in the OAuth 2.0 specification.
    */
   public static enum ResponseType {
@@ -49,7 +70,24 @@ public class OAuth2Types {
     }
   }
   
+  /**
+   * Enumerated token types in the OAuth 2.0 specification.
+   */
+  public static enum CodeType {
+    AUTHORIZATION_CODE("authorization_code"),
+    ACCESS_TOKEN("access_token"),
+    REFRESH_TOKEN("refresh_token");
+    
+    private final String name;
+    
+    private CodeType(String name) {
+      this.name = name;
+    }
 
+    public String toString() {
+      return name;
+    }
+  }
   
   /**
    * Enumerated token types in the OAuth 2.0 specification.

@@ -77,18 +77,12 @@ public class OAuth2Filter implements Filter {
     if(request instanceof HttpServletRequest){
       HttpServletRequest httpReq = (HttpServletRequest)request;
       HttpServletResponse httpResp = (HttpServletResponse)response;
-      OAuth2NormalizedRequest req = null;
-      try {
-        req = new OAuth2NormalizedRequest(httpReq);
-      } catch (OAuth2Exception e) {
-        //Bad OAuth2 request
-      }
-      if(req == null || (req.getAccessToken() == null || req.getAccessToken().equals(""))){
+      String bearerToken = OAuth2Utils.fetchBearerTokenFromHttpRequest(httpReq);
+      if(bearerToken == null || bearerToken.equals("")){
         httpResp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         httpResp.addHeader(WWW_AUTHENTICATE_HEADER, String.format("Bearer realm=\"%s\"", realm));
         return;
       }
-
     }
     chain.doFilter(request, response);
   }
