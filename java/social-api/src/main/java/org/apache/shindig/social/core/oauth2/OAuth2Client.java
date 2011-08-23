@@ -129,7 +129,7 @@ public class OAuth2Client {
    */
   public void setFlow(String flow) {
     if("client_credential".equals(flow)){
-      this.flow = Flow.CLIENT_CREDENTIAL;
+      this.flow = Flow.CLIENT_CREDENTIALS;
     } else if("authorization_code".equals(flow)){
       this.flow = Flow.AUTHORIZATION_CODE;
     } else if("implicit".equals(flow)){
@@ -174,7 +174,7 @@ public class OAuth2Client {
   }
   
   public static enum Flow{
-    CLIENT_CREDENTIAL("client_credential"),
+    CLIENT_CREDENTIALS("client_credentials"),
     AUTHORIZATION_CODE("authorization_code"),
     IMPLICIT("implicit");
     

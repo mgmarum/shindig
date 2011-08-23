@@ -31,6 +31,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     this.store = store;
     this.validators  = new ArrayList<OAuth2GrantValidator>();
     validators.add(new AuthCodeGrantValidator(store));
+    validators.add(new ClientCredentialsGrantValidator(store));
   }
 
   @Override
@@ -137,12 +138,14 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     accessToken.setValue(UUID.randomUUID().toString());
     accessToken.setExpiration(System.currentTimeMillis() + ACCESS_EXPIRES);
     
-    // associate with existing authorization code
-    OAuth2Code authCode = store.getAuthorizationCode(req.getClientId(), req.getAuthorizationCode());
-    accessToken.setAssociatedCode(authCode);
-    accessToken.setClient(authCode.getClient());
-    if (authCode.getScope() != null) {
-      accessToken.setScope(new ArrayList<String>(authCode.getScope()));
+    // associate with existing authorization code, if an auth code exists.
+    if(req.getAuthorizationCode() != null){
+      OAuth2Code authCode = store.getAuthorizationCode(req.getClientId(), req.getAuthorizationCode());
+      accessToken.setAssociatedCode(authCode);
+      accessToken.setClient(authCode.getClient());
+      if (authCode.getScope() != null) {
+        accessToken.setScope(new ArrayList<String>(authCode.getScope()));
+      }
     }
     
     return accessToken;

@@ -649,6 +649,7 @@
  				// Authentication code has been consumed since associatedSignature exists
  				"redirectURI" : "http://localhost:8080/oauthclients/OpenSocialClient",
  				"associatedSignature" : "advancedClientOS_accesstoken_1",
+ 				//Setting expiration to -1 makes code permanent
  				"expiration" : -1
  			},
  			"advancedClient_authcode_2" : {
@@ -688,15 +689,16 @@
 		  }
 		}
 	},
-  "testClientCredentialClient" : {
+  "testClientCredentialsClient" : {
     "registration" : {
-      "id" : "testClientCredentialClient",
+      "id" : "testClientCredentialsClient",
+      "secret": "clientCredentialsClient_secret",
       "redirectUri" : "http://localhost:8080/oauthclients/ClientCredentialClient",
-      "type" : "public",
-      "flow" : "client_credential"
+      "type" : "confidential",
+      "flow" : "client_credentials"
     },
     "accessTokens" : {
-      "testClientCredentialClient_accesstoken_1" : {
+      "testClientCredentialsClient_accesstoken_1" : {
         "redirectURI" : "http://localhost:8080/oauthclients/ClientCredentialClient",
         "expiration" : -1
       }

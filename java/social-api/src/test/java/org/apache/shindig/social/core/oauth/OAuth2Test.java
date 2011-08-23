@@ -28,6 +28,9 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
   protected static final String CONF_CLIENT_SECRET = "advancedAuthorizationCodeClient_secret";
   protected static final String CONF_AUTH_CODE = "advancedClient_authcode_1";
   
+  protected static final String CLIENT_CRED_CLIENT = "testClientCredentialsClient";
+  protected static final String CLIENT_CRED_SECRET = "clientCredentialsClient_secret";
+  
   protected OAuth2Servlet servlet = null;
   
   @Before
@@ -354,6 +357,66 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
           + URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8")
           + "&code=" + CONF_AUTH_CODE);
     req.setHeader("Authorization","Basic "+Base64.encodeBase64String((CONF_CLIENT_ID+":"+CONF_CLIENT_SECRET).getBytes("UTF-8")));
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/access_token");
+    HttpServletResponse resp = mock(HttpServletResponse.class);
+    resp.setStatus(HttpServletResponse.SC_OK);
+    MockServletOutputStream outputStream = new MockServletOutputStream();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    PrintWriter writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+
+    JSONObject tokenResponse = new JSONObject(new String(outputStream.getBuffer(),"UTF-8"));
+    
+    assertEquals("bearer",tokenResponse.getString("token_type"));
+    assertNotNull(tokenResponse.getString("access_token"));
+    assertTrue(tokenResponse.getLong("expires_in") > 0);
+    verify();
+  }
+  
+  /**
+   * Test using URL parameter with client cred flow
+   * @throws Exception
+   */
+  @Test
+  public void testGetAccessTokenClientCredFlowParams() throws Exception{
+    FakeHttpServletRequest req = 
+      new FakeHttpServletRequest("http://localhost:8080","/oauth2",
+          "client_id=" + CLIENT_CRED_CLIENT + "&grant_type=client_credentials&client_secret=" + CLIENT_CRED_SECRET);
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/access_token");
+    HttpServletResponse resp = mock(HttpServletResponse.class);
+    resp.setStatus(HttpServletResponse.SC_OK);
+    MockServletOutputStream outputStream = new MockServletOutputStream();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    PrintWriter writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+
+    JSONObject tokenResponse = new JSONObject(new String(outputStream.getBuffer(),"UTF-8"));
+    
+    assertEquals("bearer",tokenResponse.getString("token_type"));
+    assertNotNull(tokenResponse.getString("access_token"));
+    assertTrue(tokenResponse.getLong("expires_in") > 0);
+    verify();
+  }
+  
+  /**
+   * Test using basic authentication scheme for client cred flow
+   * @throws Exception
+   */
+  @Test
+  public void testGetAccessTokenClientCredFlowBasicAuth() throws Exception{
+    FakeHttpServletRequest req = 
+      new FakeHttpServletRequest("http://localhost:8080","/oauth2","grant_type=client_credentials");
+    req.setHeader("Authorization","Basic "+Base64.encodeBase64String((CLIENT_CRED_CLIENT+":"+CLIENT_CRED_SECRET).getBytes("UTF-8")));
     req.setMethod("GET");
     req.setServletPath("/oauth2");
     req.setPathInfo("/access_token");

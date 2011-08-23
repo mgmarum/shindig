@@ -149,8 +149,13 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
         try {
           temp = new String(decodedSecret,"UTF-8");
           parts = temp.split(":");
-          if(parts != null && parts.length == 2 && parts[0].equals(getString("client_id"))){
+          if(parts != null && parts.length == 2){
             secret = parts[1];
+            // Lets set the client id from the Basic auth header if not already set in query,
+            // needed for client_credential flow.
+            if(getString("client_id") == null){
+              put("client_id", parts[0]);
+            }
           }
         } catch (UnsupportedEncodingException e) {
           return;
