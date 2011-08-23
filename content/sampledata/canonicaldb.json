@@ -668,7 +668,7 @@
  	    "id" : "advancedImplicitClient",
  	    "title" : "Most Advanced Implicit Client Ever!",
  	    "type" : "public",
- 	    "redirectURI" : "http://localhost:8080/oauthclients/ImplicitClient"
+ 	    "redirectURI" : "http://localhost:8080/oauthclients/ImplicitClient/friends"
  	  }
  	}, "testClient" : {
  		"registration" : {

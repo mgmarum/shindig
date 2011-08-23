@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.shindig.social.core.oauth2.OAuth2Types.TokenFormat;
 
 /**
  * NOTE: I plan to bloat handle(), then re-factor into a "logic-tree" later... This is where it all comes together!!!
@@ -36,8 +37,7 @@ public class OAuth2AuthorizationHandler {
       System.out.println(normalizedReq.toString());
       if (normalizedReq.getResponseType() != null) {
         switch (normalizedReq.getEnumeratedResponseType()) {
-        case CODE:
-          // authorization code dance
+        case CODE:  // authorization code flow
           service.validateRequestForAuthCode(normalizedReq);
           OAuth2Code authCode = service.grantAuthorizationCode(normalizedReq);
           
@@ -50,8 +50,21 @@ public class OAuth2AuthorizationHandler {
           response.setHeader("Location", buildUrl(authCode.getRedirectUri(), returnParams));
           response.setStatus(HttpServletResponse.SC_FOUND);
           break;
-        case TOKEN: // requesting access token, IMPLICIT FLOW
-          // TODO: implement
+        case TOKEN: // implicit flow
+          service.validateRequestForAccessToken(normalizedReq);
+          OAuth2Code accessToken = service.grantAccessToken(normalizedReq);
+          
+          // formulate response
+          // TODO: refactor to utility method, handle scope
+          Map<String, String> params = new HashMap<String, String>();
+          params.put("access_token", accessToken.getValue());
+          params.put("token_type", TokenFormat.BEARER.toString());
+          params.put("expires_in", (accessToken.getExpiration() - System.currentTimeMillis()) + "");
+          if (normalizedReq.containsKey("state")) {
+            params.put("state", normalizedReq.getState());
+          }
+          response.setHeader("Location", buildUrl(accessToken.getRedirectUri(), params));
+          response.setStatus(HttpServletResponse.SC_FOUND);
           break;
         default:
           // TODO: unrecognized - throw error
@@ -60,6 +73,7 @@ public class OAuth2AuthorizationHandler {
       }
     } catch(OAuth2Exception oae) {
       // TODO: better error processing
+      oae.printStackTrace();
       response.sendError(HttpServletResponse.SC_FORBIDDEN, oae.getLocalizedMessage());
     }
   }

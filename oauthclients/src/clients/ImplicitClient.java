@@ -28,46 +28,24 @@ public class ImplicitClient extends HttpServlet {
 
 	private static final long serialVersionUID = -629835685914414480L;
 	private static final String clientId = "advancedImplicitClient";
-	private static final String redirectUri = "http://localhost:8080/oauthclients/ImplicitClient";
+	private static final String redirectUri = "http://localhost:8080/oauthclients/ImplicitClient/friends";
 	private String accessToken = null;
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		System.out.println("ImplicitClient.doGet()");
 		request.setAttribute("client", "ImplicitClient");
 		
-		// Get access token/friends if requested
-		if (request.getPathInfo() != null && request.getPathInfo().endsWith("/friends")) {
-			if (accessToken == null) {
-				accessToken = getAccessToken();
-			}
-			List<String> friends = getOpenSocialFriends();
-			if (friends != null) {
-				request.setAttribute("friends", friends);
-			}
-		}
-		
-		// Forward to friends servlet
-		this.getServletContext().getRequestDispatcher("/OpenSocialFriends.jsp").forward(request, response);
-	}
-	
-	private String getAccessToken() {
-		HttpConnection connection = new HttpConnection();
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("response_type", "token");
-		params.put("client_id", clientId);
-		params.put("redirect_uri", redirectUri);
-		System.out.println("Requesting access token");
-		Response resp = connection.get("http://localhost:8080/oauth2/authorize", null, params);
-		System.out.println("Response:\n" + resp.toString());
-		if (resp.getStatusCode() == 302) {
-			return parseAccessTokenFromUri(resp.getHeaders().get("Location"));
+		if (request.getPathInfo() == null) {
+			this.getServletContext().getRequestDispatcher("/OpenSocialFriends.jsp").forward(request, response);
 		} else {
-			throw new RuntimeException("Did not receive redirect as expected");
+			if (request.getParameter("access_token") == null) {
+				response.sendRedirect("http://localhost:8080/oauth2/authorize?client_id=" + clientId + "&response_type=token&redirect_uri=" + redirectUri);
+			} else {
+				accessToken = request.getParameter("access_token");
+				request.setAttribute("friends", getOpenSocialFriends());
+				this.getServletContext().getRequestDispatcher("/OpenSocialFriends.jsp").forward(request, response);
+			}
 		}
-	}
-	
-	private String parseAccessTokenFromUri(String uri) {
-		return "abc123";
 	}
 	
 	private List<String> getOpenSocialFriends() {
