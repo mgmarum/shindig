@@ -22,17 +22,17 @@ import org.json.JSONObject;
 /**
  * OpenSocial OAuth 2.0 client.
  */
-public class OpenSocialClient extends HttpServlet {
+public class AuthorizationCodeClient extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
-	private static String appId = "advancedOpenSocialClient";
-	private static String appSecret = "advancedOpenSocialClient_secret";
+	private static String appId = "advancedAuthorizationCodeClient";
+	private static String appSecret = "advancedAuthorizationCodeClient_secret";
 	private static String accessToken = null;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public OpenSocialClient() {
+    public AuthorizationCodeClient() {
         super();
     }
 
@@ -41,6 +41,7 @@ public class OpenSocialClient extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		System.out.println("doGet()");
+		request.setAttribute("client", "AuthorizationCodeClient");
 		
 		String path = request.getPathInfo();
 		if (path == null || path.isEmpty()) {	// serve JSP page
@@ -56,16 +57,16 @@ public class OpenSocialClient extends HttpServlet {
 					System.out.println("authorization code: " + request.getParameter("code"));
 					accessToken = getAccessToken(request.getParameter("code"));
 					System.out.println("Successfully received access token: " + accessToken);
-					this.getServletContext().getRequestDispatcher("/OpenSocialClient/friends").forward(request, response);
+					this.getServletContext().getRequestDispatcher("/AuthorizationCodeClient/friends").forward(request, response);
 				} else {	// Need to get authorization code
 					System.out.println("Requesting authorization code...");
-					System.out.println("http://localhost:8080/oauth2/authorize?client_id=" + appId + "&client_secret=" + appSecret + "&response_type=code&redirect_uri=http://localhost:8080/oauthclients/OpenSocialClient/friends");
-					response.sendRedirect("http://localhost:8080/oauth2/authorize?client_id=" + appId + "&client_secret=" + appSecret + "&response_type=code&redirect_uri=http://localhost:8080/oauthclients/OpenSocialClient/friends");
+					System.out.println("http://localhost:8080/oauth2/authorize?client_id=" + appId + "&client_secret=" + appSecret + "&response_type=code&redirect_uri=http://localhost:8080/oauthclients/AuthorizationCodeClient/friends");
+					response.sendRedirect("http://localhost:8080/oauth2/authorize?client_id=" + appId + "&client_secret=" + appSecret + "&response_type=code&redirect_uri=http://localhost:8080/oauthclients/AuthorizationCodeClient/friends");
 				}
 			} else {
 				System.out.println("Successfully retrieved friends");
 				request.setAttribute("friends", friends);
-				this.getServletContext().getRequestDispatcher("/OpenSocialClient").forward(request, response);
+				this.getServletContext().getRequestDispatcher("/AuthorizationCodeClient").forward(request, response);
 			}
 		}
 	}
@@ -84,7 +85,7 @@ public class OpenSocialClient extends HttpServlet {
 		HttpConnection connection = new HttpConnection();
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("client_id", appId);
-		params.put("redirect_uri", "http://localhost:8080/oauthclients/OpenSocialClient/friends");
+		params.put("redirect_uri", "http://localhost:8080/oauthclients/AuthorizationCodeClient/friends");
 		params.put("client_secret", appSecret);
 		params.put("code", authCode);
 		params.put("grant_type", "authorization_code");
