@@ -24,8 +24,8 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
   protected static final String SIMPLE_ACCESS_TOKEN = "TEST_TOKEN";
   protected static final String PUBLIC_CLIENT_ID = "testClient";
   protected static final String PUBLIC_AUTH_CODE = "testClient_authcode_1";
-  protected static final String CONF_CLIENT_ID = "advancedOpenSocialClient";
-  protected static final String CONF_CLIENT_SECRET = "advancedOpenSocialClient_secret";
+  protected static final String CONF_CLIENT_ID = "advancedAuthorizationCodeClient";
+  protected static final String CONF_CLIENT_SECRET = "advancedAuthorizationCodeClient_secret";
   protected static final String CONF_AUTH_CODE = "advancedClient_authcode_1";
   
   protected OAuth2Servlet servlet = null;
@@ -48,7 +48,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
       new FakeHttpServletRequest("http://localhost:8080/oauth2");
     req.setContentType("application/x-www-form-urlencoded");
     req.setPostData("client_id=" + PUBLIC_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
-        +URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8")
+        +URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8")
         +"&code="+PUBLIC_AUTH_CODE, "UTF-8");
     req.setMethod("GET");
     req.setServletPath("/oauth2");
@@ -81,7 +81,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
       new FakeHttpServletRequest("http://localhost:8080/oauth2");
     req.setContentType("application/x-www-form-urlencoded");
     req.setPostData("client_id=" + PUBLIC_CLIENT_ID + "&response_type=code&redirect_uri="
-          +URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8"),"UTF-8");
+          +URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8"),"UTF-8");
     req.setMethod("GET");
     req.setServletPath("/oauth2");
     req.setPathInfo("/authorize");
@@ -99,7 +99,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     String response = new String(outputStream.getBuffer(),"UTF-8");
     assertTrue(response == null || response.equals(""));
     verify();
-    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/OpenSocialClient?code="));
+    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/AuthorizationCodeClient?code="));
     String code = redirectURI.getValue().substring(redirectURI.getValue().indexOf("=")+1);
     UUID id = UUID.fromString(code);
     assertTrue(id != null);
@@ -114,7 +114,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + PUBLIC_CLIENT_ID + "&response_type=code&state=PRESERVEME&redirect_uri="
-          +URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8"));
+          +URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8"));
     req.setMethod("GET");
     req.setServletPath("/oauth2");
     req.setPathInfo("/authorize");
@@ -132,7 +132,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     String response = new String(outputStream.getBuffer(),"UTF-8");
     assertTrue(response == null || response.equals(""));
     verify();
-    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/OpenSocialClient?code="));
+    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/AuthorizationCodeClient?code="));
     URI uri = new URI(redirectURI.getValue());
     assertTrue(uri.getQuery().contains("state=PRESERVEME"));
     assertTrue(uri.getQuery().contains("code="));
@@ -151,7 +151,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + CONF_CLIENT_ID + "&response_type=code&redirect_uri="
-          +URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8"));
+          +URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8"));
     req.setMethod("GET");
     req.setServletPath("/oauth2");
     req.setPathInfo("/authorize");
@@ -169,7 +169,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     String response = new String(outputStream.getBuffer(),"UTF-8");
     assertTrue(response == null || response.equals(""));
     verify();
-    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/OpenSocialClient?code="));
+    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/AuthorizationCodeClient?code="));
     String code = redirectURI.getValue().substring(redirectURI.getValue().indexOf("=")+1);
     UUID id = UUID.fromString(code);
     assertTrue(id != null);
@@ -207,7 +207,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     assertTrue(response == null || response.equals(""));
     verify();
     assertEquals((Integer)302,respCode.getValue());
-    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/OpenSocialClient?code="));
+    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/AuthorizationCodeClient?code="));
     String code = redirectURI.getValue().substring(redirectURI.getValue().indexOf("=")+1);
     UUID id = UUID.fromString(code);
     assertTrue(id != null);
@@ -258,7 +258,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + CONF_CLIENT_ID + "&response_type=code&redirect_uri="
-          +URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8"));
+          +URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8"));
     req.setMethod("GET");
     req.setServletPath("/oauth2");
     req.setPathInfo("/authorize");
@@ -276,7 +276,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     String response = new String(outputStream.getBuffer(),"UTF-8");
     assertTrue(response == null || response.equals(""));
     verify();
-    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/OpenSocialClient?code="));
+    assertTrue(redirectURI.getValue().startsWith("http://localhost:8080/oauthclients/AuthorizationCodeClient?code="));
     String code = redirectURI.getValue().substring(redirectURI.getValue().indexOf("=")+1);
     UUID id = UUID.fromString(code);
     assertTrue(id != null);
@@ -287,7 +287,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + CONF_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
-          + URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8")
+          + URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8")
           + "&code=" + code + "&client_secret=" + CONF_CLIENT_SECRET);
     req.setMethod("GET");
     req.setServletPath("/oauth2");
@@ -320,7 +320,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + CONF_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
-          + URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8")
+          + URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8")
           + "&code=" + CONF_AUTH_CODE + "&client_secret=" + CONF_CLIENT_SECRET);
     req.setMethod("GET");
     req.setServletPath("/oauth2");
@@ -352,7 +352,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + CONF_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
-          + URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8")
+          + URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8")
           + "&code=" + CONF_AUTH_CODE);
     req.setHeader("Authorization","Basic "+Base64.encodeBase64String((CONF_CLIENT_ID+":"+CONF_CLIENT_SECRET).getBytes("UTF-8")));
     req.setMethod("GET");
@@ -385,7 +385,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + CONF_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
-          + URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8")
+          + URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8")
           + "&code=" + CONF_AUTH_CODE);
     req.setHeader("Authorization","Basic "+Base64.encodeBase64String(("BAD_ID:"+CONF_CLIENT_SECRET).getBytes("UTF-8")));
     req.setMethod("GET");
@@ -413,7 +413,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + CONF_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
-          + URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8")
+          + URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8")
           + "&code=" + CONF_AUTH_CODE + "&client_secret=BAD_SECRET");
     req.setMethod("GET");
     req.setServletPath("/oauth2");
@@ -442,7 +442,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=BAD_CLIENT&grant_type=authorization_code&redirect_uri="
-          +URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8")
+          +URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8")
           +"&code="+PUBLIC_AUTH_CODE);
     req.setMethod("GET");
     req.setServletPath("/oauth2");
@@ -471,7 +471,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + PUBLIC_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
-          +URLEncoder.encode("http://localhost:8080/oauthclients/OpenSocialClient","UTF-8")
+          +URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8")
           +"&code=BAD-CODE-OMG");
     req.setMethod("GET");
     req.setServletPath("/oauth2");

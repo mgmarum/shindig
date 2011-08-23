@@ -53,7 +53,11 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   
   @Override
   public void validateRequestForAuthCode(OAuth2NormalizedRequest req) throws OAuth2Exception {
-    String storedURI = store.getClient(req.getClientId()).getRedirectURI();
+    OAuth2Client client = store.getClient(req.getClientId());
+    if(client == null){
+      throw new OAuth2Exception(ErrorType.INVALID_REQUEST,"Invalid client");
+    }
+    String storedURI = client.getRedirectURI();
     if (storedURI == null
         && req.getRedirectUri() == null) {
       throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "No redirect_uri registered or received in request");

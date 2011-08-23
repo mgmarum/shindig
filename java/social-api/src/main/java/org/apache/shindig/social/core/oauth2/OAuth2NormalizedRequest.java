@@ -80,18 +80,6 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
     return getString("state");
   }
   
-  private void normalizeAccessToken(HttpServletRequest req) {
-    String bearerToken = getString("access_token");
-    if(bearerToken == null || bearerToken.equals("")){
-      String header = req.getHeader("Authorization");
-      if(header != null && header.startsWith("Bearer")){
-        String[] parts = header.split("\\s+");
-        bearerToken = parts[parts.length-1];
-      }
-    }
-    put("access_token", bearerToken);
-  }
-  
   public ResponseType getEnumeratedResponseType() throws OAuth2Exception {
     String respType = getResponseType();
     if (respType == null) return null;
@@ -137,12 +125,25 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
   }
   
   // -------------------------- PRIVATE HELPERS -------------------------------
+  
+  private void normalizeAccessToken(HttpServletRequest req) {
+    String bearerToken = getString("access_token");
+    if(bearerToken == null || bearerToken.equals("")){
+      String header = req.getHeader("Authorization");
+      if(header != null && header.startsWith("Bearer")){
+        String[] parts = header.split("[ \\t]+");
+        bearerToken = parts[parts.length-1];
+      }
+    }
+    put("access_token", bearerToken);
+  }
+  
   private void normalizeClientSecret(HttpServletRequest request) {
     String secret = getString("client_secret");
     if(secret == null || secret.equals("")){
       String header = request.getHeader("Authorization");
       if(header != null && header.startsWith("Basic")){
-        String[] parts = header.split("\\s+");
+        String[] parts = header.split("[ \\t]+");
         String temp = parts[parts.length-1];
         byte[] decodedSecret = Base64.decodeBase64(temp);
         try {
