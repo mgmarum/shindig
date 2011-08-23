@@ -35,6 +35,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
   
   protected OAuth2Servlet servlet = null;
   
+  
   @Before
   @Override
   public void abstractLargeRestfulBefore() throws Exception {
