@@ -51,7 +51,7 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
   }
 
   @Override
-  public OAuth2Code getAuthorizationCode(String clientId, String authCode) {
+  public OAuth2Code getAuthorizationCode(String clientId, String authCode){
     if (authCodes.containsKey(clientId)) {
       List<OAuth2Code> codes = authCodes.get(clientId);
       for (OAuth2Code code : codes) {
@@ -60,7 +60,7 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
         }
       }
     }
-    throw new RuntimeException("authorization code not found");  // TODO: handle error
+    return null;
   }
 
   @Override

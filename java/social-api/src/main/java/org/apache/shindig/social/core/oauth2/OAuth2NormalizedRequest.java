@@ -73,7 +73,7 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
   }
   
   public String getAuthorizationCode() {
-    return getString("authorization_code");
+    return getString("code");
   }
   
   public String getState() {

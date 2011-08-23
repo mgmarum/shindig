@@ -38,7 +38,6 @@ public class OAuth2AuthorizationHandler {
         switch (normalizedReq.getEnumeratedResponseType()) {
         case CODE:
           // authorization code dance
-          service.authenticateClient(normalizedReq);
           service.validateRequestForAuthCode(normalizedReq);
           OAuth2Code authCode = service.grantAuthorizationCode(normalizedReq);
           

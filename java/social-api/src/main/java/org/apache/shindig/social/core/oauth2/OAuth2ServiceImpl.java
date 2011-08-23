@@ -53,9 +53,15 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   
   @Override
   public void validateRequestForAuthCode(OAuth2NormalizedRequest req) throws OAuth2Exception {
-    if (store.getClient(req.getClientId()).getRedirectURI() == null
+    String storedURI = store.getClient(req.getClientId()).getRedirectURI();
+    if (storedURI == null
         && req.getRedirectUri() == null) {
       throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "No redirect_uri registered or received in request");
+    }
+    if(req.getRedirectUri() != null && storedURI != null){
+      if(!req.getRedirectUri().equals(storedURI)){
+        throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "Redirect URI does not match the one registered for this client");
+      }
     }
   }
   
@@ -77,7 +83,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   public void validateRequestForResource(OAuth2NormalizedRequest req) throws OAuth2Exception {
     OAuth2Code token = store.getAccessToken(req.getAccessToken());
     if (token == null) throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token is invalid.");
-    if (token.getExpiration() > 0 && token.getExpiration() < System.currentTimeMillis()) {
+    if (token.getExpiration() > -1 && token.getExpiration() < System.currentTimeMillis()) {
       throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token has expired.");
     }
   }

@@ -16,7 +16,10 @@ public class AuthCodeGrantValidator implements OAuth2GrantValidator {
 
   @Override
   public void validateRequest(OAuth2NormalizedRequest servletRequest) throws OAuth2Exception {
-    OAuth2Code authCode = service.getAuthorizationCode(servletRequest.getClientId(), servletRequest.getString("code"));
+    OAuth2Code authCode = service.getAuthorizationCode(servletRequest.getClientId(), servletRequest.getAuthorizationCode());
+    if(authCode == null){
+      throw new OAuth2Exception("Bad authorization code");
+    }
     String redirectURI = servletRequest.getString("redirect_uri");
     if(redirectURI == null || redirectURI.equals("")){
       throw new OAuth2Exception("Redirect URI required for Authorization Code grants");
