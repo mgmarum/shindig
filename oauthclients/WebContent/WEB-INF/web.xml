@@ -31,4 +31,15 @@
     <url-pattern>/AuthorizationCodeClient</url-pattern>
     <url-pattern>/AuthorizationCodeClient/*</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>ImplicitClient</display-name>
+    <servlet-name>ImplicitClient</servlet-name>
+    <servlet-class>clients.ImplicitClient</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ImplicitClient</servlet-name>
+    <url-pattern>/ImplicitClient</url-pattern>
+    <url-pattern>/ImplicitClient/*</url-pattern>
+  </servlet-mapping>
 </web-app>
