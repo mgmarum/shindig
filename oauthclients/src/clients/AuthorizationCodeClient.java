@@ -106,7 +106,7 @@ public class AuthorizationCodeClient extends HttpServlet {
 	}
 	
 	/**
-	 * Get list of Facebook friends.
+	 * Get list of OpenSocial friends.
 	 */
 	private List<String> getOpenSocialFriends() {
 		HttpConnection connection = new HttpConnection();

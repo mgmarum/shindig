@@ -1,5 +1,12 @@
 package org.apache.shindig.social.core.oauth2;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.protocol.ProtocolException;
@@ -8,13 +15,6 @@ import org.apache.shindig.social.core.oauth2.OAuth2Client.ClientType;
 import org.apache.shindig.social.core.oauth2.OAuth2Types.CodeType;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import javax.servlet.http.HttpServletResponse;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -172,7 +172,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
             registerAccessToken(clientId, code);
           }
         }
-        
       } catch (JSONException je) {
         throw new ProtocolException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, je.getMessage(), je);
       }

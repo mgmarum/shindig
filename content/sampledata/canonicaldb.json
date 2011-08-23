@@ -647,7 +647,7 @@
  		"authorizationCodes" : {
  			"advancedClient_authcode_1" : {
  				// Authentication code has been consumed since associatedSignature exists
- 				"redirectURI" : "http://localhost:8080/oauthclients/OpenSocialClient",
+ 				"redirectURI" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
  				"associatedSignature" : "advancedClientOS_accesstoken_1",
  				//Setting expiration to -1 makes code permanent
  				"expiration" : -1
@@ -656,15 +656,21 @@
  				"redirectURI" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
  				"expiration" : -1
  			}
- 		},
- 		"accessTokens" : {
+ 		}, "accessTokens" : {
  			"advancedClient_accesstoken_1" : {
  				"redirectURI" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
  				"expiration" : -1
  			}
  		}
  	},
-	"testClient" : {
+ 	"advancedImplicitClient" : {
+ 	  "registration" : {
+ 	    "id" : "advancedImplicitClient",
+ 	    "title" : "Most Advanced Implicit Client Ever!",
+ 	    "type" : "public",
+ 	    "redirectURI" : "http://localhost:8080/oauthclients/ImplicitClient"
+ 	  }
+ 	}, "testClient" : {
  		"registration" : {
  			"id" : "testClient",
  			"redirectUri" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
