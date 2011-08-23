@@ -675,7 +675,7 @@
  			"id" : "testClient",
  			"redirectUri" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
  			"type" : "public",
- 			"flow" : "authorization_code"
+      "flow" : "authorization_code"
  		},
  		"authorizationCodes" : {
       "testClient_authcode_1" : {

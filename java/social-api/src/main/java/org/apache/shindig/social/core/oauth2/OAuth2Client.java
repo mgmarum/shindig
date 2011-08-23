@@ -128,11 +128,11 @@ public class OAuth2Client {
    * @param flow
    */
   public void setFlow(String flow) {
-    if("client_credential".equals(flow)){
+    if(Flow.CLIENT_CREDENTIALS.toString().equals(flow)){
       this.flow = Flow.CLIENT_CREDENTIALS;
-    } else if("authorization_code".equals(flow)){
+    } else if(Flow.AUTHORIZATION_CODE.toString().equals(flow)){
       this.flow = Flow.AUTHORIZATION_CODE;
-    } else if("implicit".equals(flow)){
+    } else if(Flow.IMPLICIT.toString().equals(flow)){
       this.flow = Flow.IMPLICIT;
     } else {
       this.flow = null;

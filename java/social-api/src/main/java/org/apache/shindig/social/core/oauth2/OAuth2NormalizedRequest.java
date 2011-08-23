@@ -138,7 +138,7 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
     put("access_token", bearerToken);
   }
   
-  private void normalizeClientSecret(HttpServletRequest request) {
+  private void normalizeClientSecret(HttpServletRequest request) throws OAuth2Exception{
     String secret = getString("client_secret");
     if(secret == null || secret.equals("")){
       String header = request.getHeader("Authorization");
@@ -151,9 +151,13 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
           parts = temp.split(":");
           if(parts != null && parts.length == 2){
             secret = parts[1];
+            String queryId = getString("client_id");
+            if(queryId != null && !queryId.equals(parts[0])){
+              throw new OAuth2Exception(ErrorType.INVALID_REQUEST,"Request contains mismatched client ids");
+            }
             // Lets set the client id from the Basic auth header if not already set in query,
             // needed for client_credential flow.
-            if(getString("client_id") == null){
+            if(queryId == null){
               put("client_id", parts[0]);
             }
           }
