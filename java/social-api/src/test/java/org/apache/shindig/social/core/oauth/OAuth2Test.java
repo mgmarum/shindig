@@ -385,7 +385,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
    * @throws Exception
    */
   @Test
-  public void testGetAccessTokenClientCredFlowParams() throws Exception{
+  public void testClientCredFlowParams() throws Exception{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + CLIENT_CRED_CLIENT + "&grant_type=client_credentials&client_secret=" + CLIENT_CRED_SECRET);
@@ -415,7 +415,7 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
    * @throws Exception
    */
   @Test
-  public void testGetAccessTokenClientCredFlowBasicAuth() throws Exception{
+  public void testClientCredFlowBasicAuth() throws Exception{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2","grant_type=client_credentials");
     req.setHeader("Authorization","Basic "+Base64.encodeBase64String((CLIENT_CRED_CLIENT+":"+CLIENT_CRED_SECRET).getBytes("UTF-8")));
@@ -437,6 +437,60 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     assertEquals("bearer",tokenResponse.getString("token_type"));
     assertNotNull(tokenResponse.getString("access_token"));
     assertTrue(tokenResponse.getLong("expires_in") > 0);
+    verify();
+  }
+  
+  /**
+   * Test using basic authentication scheme for client cred flow
+   * @throws Exception
+   */
+  @Test
+  public void testClientCredFlowBadPass() throws Exception{
+    FakeHttpServletRequest req = 
+      new FakeHttpServletRequest("http://localhost:8080","/oauth2","grant_type=client_credentials");
+    req.setHeader("Authorization","Basic "+Base64.encodeBase64String((CLIENT_CRED_CLIENT+":badsecret").getBytes("UTF-8")));
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/access_token");
+    HttpServletResponse resp = mock(HttpServletResponse.class);
+    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    MockServletOutputStream outputStream = new MockServletOutputStream();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    PrintWriter writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+    
+    String response = new String(outputStream.getBuffer(),"UTF-8");
+    assertTrue(response == null || response.equals(""));
+    verify();
+  }
+  
+  /**
+   * Test using basic authentication scheme for client cred flow
+   * @throws Exception
+   */
+  @Test
+  public void testClientCredFlowBadHeader() throws Exception{
+    FakeHttpServletRequest req = 
+      new FakeHttpServletRequest("http://localhost:8080","/oauth2","grant_type=client_credentials");
+    req.setHeader("Authorization","Basic *^%#");
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/access_token");
+    HttpServletResponse resp = mock(HttpServletResponse.class);
+    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    MockServletOutputStream outputStream = new MockServletOutputStream();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    PrintWriter writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+    
+    String response = new String(outputStream.getBuffer(),"UTF-8");
+    assertTrue(response == null || response.equals(""));
     verify();
   }
   
@@ -475,10 +529,11 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
   @Test
   public void testGetAccessTokenBadConfidentialClientParams() throws Exception{
     FakeHttpServletRequest req = 
-      new FakeHttpServletRequest("http://localhost:8080","/oauth2",
-          "client_id=" + CONF_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
+      new FakeHttpServletRequest("http://localhost:8080/oauth2");
+    req.setContentType("application/x-www-form-urlencoded");
+    req.setPostData("client_id=" + CONF_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
           + URLEncoder.encode(REDIRECT_URI,"UTF-8")
-          + "&code=" + CONF_AUTH_CODE + "&client_secret=BAD_SECRET");
+          + "&code=" + CONF_AUTH_CODE + "&client_secret=BAD_SECRET","UTF-8");
     req.setMethod("GET");
     req.setServletPath("/oauth2");
     req.setPathInfo("/access_token");
