@@ -13,6 +13,7 @@ public class OAuth2Client {
   protected String title;
   protected String iconUrl;
   protected ClientType type;
+  private Flow flow;
   
   /**
    * Gets the client's ID.
@@ -123,6 +124,38 @@ public class OAuth2Client {
   }
   
   /**
+   * Sets the client's OAuth2 flow (via a String flow identifier)
+   * @param flow
+   */
+  public void setFlow(String flow) {
+    if("client_credential".equals(flow)){
+      this.flow = Flow.CLIENT_CREDENTIAL;
+    } else if("authorization_code".equals(flow)){
+      this.flow = Flow.AUTHORIZATION_CODE;
+    } else if("implicit".equals(flow)){
+      this.flow = Flow.IMPLICIT;
+    } else {
+      this.flow = null;
+    }
+  }
+  
+  /**
+   * Sets the client's OAuth2 flow
+   * @param flow
+   */
+  public void setFlowEnum(Flow flow) {
+    this.flow = flow;
+  }
+
+  /**
+   * Gets the client's OAuth2 flow
+   * @return
+   */
+  public Flow getFlow() {
+    return flow;
+  }
+
+  /**
    * Enumerated client types in the OAuth 2.0 specification.
    */
   public static enum ClientType {
@@ -132,6 +165,22 @@ public class OAuth2Client {
     private final String name;
     
     private ClientType(String name) {
+      this.name = name;
+    }
+
+    public String toString() {
+      return name;
+    }
+  }
+  
+  public static enum Flow{
+    CLIENT_CREDENTIAL("client_credential"),
+    AUTHORIZATION_CODE("authorization_code"),
+    IMPLICIT("implicit");
+    
+    private final String name;
+    
+    private Flow(String name) {
       this.name = name;
     }
 

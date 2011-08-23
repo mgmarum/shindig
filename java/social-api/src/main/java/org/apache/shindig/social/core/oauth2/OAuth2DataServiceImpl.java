@@ -152,20 +152,25 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
         OAuth2Client client = converter.convertToObject(clientJson.toString(), OAuth2Client.class);
         client.setType(clientJson.getString("type").equals("public") ? ClientType.PUBLIC : ClientType.CONFIDENTIAL);
         clients.add(client);
-        JSONObject authCodes = oauthDB.getJSONObject(clientId).getJSONObject("authorizationCodes");
-        for(String authCodeId : JSONObject.getNames(authCodes)){
-          OAuth2Code code = converter.convertToObject(authCodes.getJSONObject(authCodeId).toString(), OAuth2Code.class);
-          code.setValue(authCodeId);
-          code.setClient(client);
-          registerAuthorizationCode(clientId, code);
+        JSONObject clientJS = oauthDB.getJSONObject(clientId);
+        if(clientJS.has("authorizationCodes")){
+          JSONObject authCodes = clientJS.getJSONObject("authorizationCodes");
+          for(String authCodeId : JSONObject.getNames(authCodes)){
+            OAuth2Code code = converter.convertToObject(authCodes.getJSONObject(authCodeId).toString(), OAuth2Code.class);
+            code.setValue(authCodeId);
+            code.setClient(client);
+            registerAuthorizationCode(clientId, code);
+          }
         }
-        JSONObject accessTokens = oauthDB.getJSONObject(clientId).getJSONObject("accessTokens");
-        for(String accessTokenId : JSONObject.getNames(accessTokens)){
-          OAuth2Code code = converter.convertToObject(accessTokens.getJSONObject(accessTokenId).toString(), OAuth2Code.class);
-          code.setValue(accessTokenId);
-          code.setClient(client);
-          code.setType(CodeType.ACCESS_TOKEN);
-          registerAccessToken(clientId, code);
+        if(clientJS.has("accessTokens")){
+          JSONObject accessTokens = clientJS.getJSONObject("accessTokens");
+          for(String accessTokenId : JSONObject.getNames(accessTokens)){
+            OAuth2Code code = converter.convertToObject(accessTokens.getJSONObject(accessTokenId).toString(), OAuth2Code.class);
+            code.setValue(accessTokenId);
+            code.setClient(client);
+            code.setType(CodeType.ACCESS_TOKEN);
+            registerAccessToken(clientId, code);
+          }
         }
         
       } catch (JSONException je) {

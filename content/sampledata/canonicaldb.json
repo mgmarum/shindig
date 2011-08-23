@@ -641,7 +641,8 @@
  			"secret": "advancedAuthorizationCodeClient_secret",
  			"title": "Most Advanced Authorization Code Client Ever!",
  			"redirectURI" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
- 			"type" : "confidential"
+ 			"type" : "confidential",
+ 			"flow" : "authorization_code"
  		},
  		"authorizationCodes" : {
  			"advancedClient_authcode_1" : {
@@ -666,7 +667,8 @@
  		"registration" : {
  			"id" : "testClient",
  			"redirectUri" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
- 			"type" : "public"
+ 			"type" : "public",
+ 			"flow" : "authorization_code"
  		},
  		"authorizationCodes" : {
       "testClient_authcode_1" : {
@@ -678,10 +680,24 @@
         "redirectURI" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
         "expiration" : -1
       }
+		},
+		"accessTokens" : {
+		  "testClient_accesstoken_1" : {
+			"redirectURI" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
+			"expiration" : -1
+		  }
+		}
+	},
+  "testClientCredentialClient" : {
+    "registration" : {
+      "id" : "testClientCredentialClient",
+      "redirectUri" : "http://localhost:8080/oauthclients/ClientCredentialClient",
+      "type" : "public",
+      "flow" : "client_credential"
     },
     "accessTokens" : {
-      "testClient_accesstoken_1" : {
-        "redirectURI" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
+      "testClientCredentialClient_accesstoken_1" : {
+        "redirectURI" : "http://localhost:8080/oauthclients/ClientCredentialClient",
         "expiration" : -1
       }
     }
