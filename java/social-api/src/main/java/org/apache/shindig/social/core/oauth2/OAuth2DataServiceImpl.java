@@ -20,11 +20,11 @@ import com.google.inject.name.Named;
 
 public class OAuth2DataServiceImpl implements OAuth2DataService {
   
-  private JSONObject oauthDB;                                 // the OAuth 2.0 JSON DB
-  private BeanConverter converter;                            // the JSON<->Bean converter
-  private List<OAuth2Client> clients;                         // list of clients
-  private Map<String, List<OAuth2Code>> authCodes;            // authorization codes per client
-  private Map<String, List<OAuth2Code>> accessTokens;        // access tokens per client
+  private JSONObject oauthDB;            				// the OAuth 2.0 JSON DB
+  private BeanConverter converter;           			// the JSON<->Bean converter
+  private List<OAuth2Client> clients;             		// list of clients
+  private Map<String, List<OAuth2Code>> authCodes;      // authorization codes per client
+  private Map<String, List<OAuth2Code>> accessTokens;	// access tokens per client
   
   @Inject
   public OAuth2DataServiceImpl(@Named("shindig.canonical.json.db")

@@ -8,12 +8,19 @@
 <title>Your Friends</title>
 </head>
 <body>
-    <h1>Welcome to the most ADVANCED OpenSocial client EVER!!!</H1>
+	<% if (request.getAttribute("client") == null) {
+		%>Error: indicate the origin client!<%
+	}%>
+    <h1>Welcome to the most ADVANCED <%= request.getAttribute("client") %> EVER!!!</H1>
 	<%
 		if (request.getAttribute("friends") == null) {
-			%><form action="OpenSocialClient/friends" method="GET">
-				<input type="submit" value="Get OpenSocial Friends!">
-			</form><%
+			if (request.getAttribute("client") == null) {
+				%>Error: indicate the origin client!<%
+			} else {
+				%><form action="<%= request.getAttribute("client") %>/friends" method="GET">
+					<input type="submit" value="Get OpenSocial Friends!">
+				</form><%
+			}
 		} else {
 			List<String> friends = (List<String>)request.getAttribute("friends");
 			%>You have <%= friends.size() %> friends!

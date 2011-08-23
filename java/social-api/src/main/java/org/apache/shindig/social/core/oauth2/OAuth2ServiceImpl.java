@@ -132,7 +132,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     accessToken.setAssociatedCode(authCode);
     accessToken.setClient(authCode.getClient());
     if (authCode.getScope() != null) {
-      accessToken.setScope(new ArrayList<String>(authCode.getScope()));    
+      accessToken.setScope(new ArrayList<String>(authCode.getScope()));
     }
     
     return accessToken;
