@@ -74,14 +74,27 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   @Override
   public void validateRequestForAccessToken(OAuth2NormalizedRequest req)
       throws OAuth2Exception {
-    if (req.getGrantType() == null) throw new OAuth2Exception(ErrorType.INVALID_GRANT, "grant_type not specified");
-    for (OAuth2GrantValidator validator : validators) {
-      if (validator.getGrantType().equals(req.getGrantType())) {
-        validator.validateRequest(req);
-        return;
+    if (req.getGrantType() != null) {
+      for (OAuth2GrantValidator validator : validators) {
+        if (validator.getGrantType().equals(req.getGrantType())) {
+          validator.validateRequest(req);
+          return; // request validated
+        }
       }
+      throw new OAuth2Exception(ErrorType.UNSUPPORTED_GRANT_TYPE, "Unsupported grant type");
+    } else {  // implicit flow does not include grant type
+      if (req.getResponseType() == null || !req.getResponseType().equals("token")) {
+        throw new OAuth2Exception(ErrorType.UNSUPPORTED_RESPONSE_TYPE, "Unsupported response type");
+      }
+      if (req.getRedirectUri() == null && store.getClient(req.getClientId()).getRedirectURI() == null) {
+        throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "NO redirect_uri registered or received in request");
+      }
+      if (req.getRedirectUri() != null &&
+          !req.getRedirectUri().equals(store.getClient(req.getClientId()).getRedirectURI())) {
+        throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "Redirect URI does not match the one registered for this client");
+      }
+      return; // request validated
     }
-    throw new OAuth2Exception(ErrorType.INVALID_GRANT, "Given grant_type is not supported");
   }
 
   @Override
@@ -137,6 +150,11 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     accessToken.setType(CodeType.ACCESS_TOKEN);
     accessToken.setValue(UUID.randomUUID().toString());
     accessToken.setExpiration(System.currentTimeMillis() + ACCESS_EXPIRES);
+    if (req.getRedirectUri() != null) {
+    	accessToken.setRedirectUri(req.getRedirectUri());
+    } else {
+    	accessToken.setRedirectUri(store.getClient(req.getClientId()).getRedirectURI());
+    }
     
     // associate with existing authorization code, if an auth code exists.
     if(req.getAuthorizationCode() != null){

@@ -36,17 +36,21 @@ public class OAuth2TokenHandler {
       OAuth2Code accessToken = service.grantAccessToken(normalizedReq);
       sendAccessToken(response, accessToken);
     } catch(OAuth2Exception oae) {
+      oae.printStackTrace();
       response.sendError(HttpServletResponse.SC_FORBIDDEN, oae.getLocalizedMessage()); // TODO: process error
     }
   }
 
+  /**
+   * TODO: this does not preserve "state" if it was included
+   * TODO: if scope is null, don't return empty string
+   */
   private void sendAccessToken(HttpServletResponse response, OAuth2Code accessToken)
       throws IOException {
     Map<String, String> bodyMap = new HashMap<String, String>();
     bodyMap.put("access_token", accessToken.getValue());
     bodyMap.put("token_type", TokenFormat.BEARER.toString());
     bodyMap.put("expires_in", (accessToken.getExpiration() - System.currentTimeMillis()) + "");
-    //bodyMap.put("refresh_token", refreshToken.getSignature());
     bodyMap.put("scope", listToString(accessToken.getScope()));
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType("application/json");
