@@ -77,7 +77,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   public void validateRequestForResource(OAuth2NormalizedRequest req) throws OAuth2Exception {
     OAuth2Code token = store.getAccessToken(req.getAccessToken());
     if (token == null) throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token is invalid.");
-    if (token.getExpiration() < System.currentTimeMillis()) {
+    if (token.getExpiration() > 0 && token.getExpiration() < System.currentTimeMillis()) {
       throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token has expired.");
     }
   }
