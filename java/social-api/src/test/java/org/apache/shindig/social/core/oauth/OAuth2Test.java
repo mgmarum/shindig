@@ -247,7 +247,6 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     verify();
   }
   
-  
   /**
    * Test retrieving an auth code and using it to generate an access token
    * 
@@ -461,6 +460,34 @@ public class OAuth2Test extends AbstractLargeRestfulTests{
     verify();
   }
   
+  
+  /**
+   * Test attempting to get an access token with a bad grant type
+   * @throws Exception
+   */
+  @Test
+  public void testGetAccessTokenBadGrantType() throws Exception{
+    FakeHttpServletRequest req = 
+      new FakeHttpServletRequest("http://localhost:8080","/oauth2",
+          "client_id="+PUBLIC_CLIENT_ID+"&grant_type=BAD_GRANT&redirect_uri="
+          +URLEncoder.encode("http://localhost:8080/oauthclients/AuthorizationCodeClient","UTF-8")
+          +"&code="+PUBLIC_AUTH_CODE);
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/access_token");
+    HttpServletResponse resp = mock(HttpServletResponse.class);
+    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    MockServletOutputStream outputStream = new MockServletOutputStream();
+    PrintWriter writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+    String response = new String(outputStream.getBuffer(),"UTF-8");
+    assertTrue(response == null || response.equals(""));
+    verify();
+  }
   
   /**
    * Test attempting to get an access token with an invalid authorization code
