@@ -88,15 +88,15 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         throw new OAuth2Exception(ErrorType.UNSUPPORTED_RESPONSE_TYPE, "Unsupported response type");
       }
       OAuth2Client client = store.getClient(req.getClientId());
+      if(client == null || client.getFlow() != Flow.IMPLICIT){
+        throw new OAuth2Exception(ErrorType.INVALID_CLIENT,req.getClientId()+" is not a registered implicit client");
+      }
       if (req.getRedirectUri() == null && client.getRedirectURI() == null) {
         throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "NO redirect_uri registered or received in request");
       }
       if (req.getRedirectUri() != null &&
           !req.getRedirectUri().equals(client.getRedirectURI())) {
         throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "Redirect URI does not match the one registered for this client");
-      }
-      if(client.getFlow() != Flow.IMPLICIT){
-        throw new OAuth2Exception(ErrorType.INVALID_CLIENT,client.getId()+" is not registered as an implicit client");
       }
       return; // request validated
     }
