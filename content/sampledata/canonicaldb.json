@@ -668,7 +668,8 @@
  	    "id" : "advancedImplicitClient",
  	    "title" : "Most Advanced Implicit Client Ever!",
  	    "type" : "public",
- 	    "redirectURI" : "http://localhost:8080/oauthclients/ImplicitClient/friends"
+ 	    "redirectURI" : "http://localhost:8080/oauthclients/ImplicitClient/friends",
+ 	    "flow" : "implicit"
  	  }
  	}, "testClient" : {
  		"registration" : {
@@ -721,7 +722,7 @@
                   "http://localhost:8080/samplecontainer/examples/SocialActivitiesWorld.xml" : { "installed" : true}
    }
  },
-// Passwords for authenticaiton service
+// Passwords for authentication service
  "passwords" : {
     "john.doe" : "password",
     "jane.doe" : "password",

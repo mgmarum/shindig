@@ -47,7 +47,7 @@ public class OAuth2AuthorizationHandler {
           if (normalizedReq.containsKey("state")) {
             returnParams.put("state", normalizedReq.getState());
           }
-          response.setHeader("Location", buildUrl(authCode.getRedirectUri(), returnParams));
+          response.setHeader("Location", buildUrl(authCode.getRedirectUri(), returnParams, null));
           response.setStatus(HttpServletResponse.SC_FOUND);
           break;
         case TOKEN: // implicit flow
@@ -63,7 +63,7 @@ public class OAuth2AuthorizationHandler {
           if (normalizedReq.containsKey("state")) {
             params.put("state", normalizedReq.getState());
           }
-          response.setHeader("Location", buildUrl(accessToken.getRedirectUri(), params));
+          response.setHeader("Location", buildUrl(accessToken.getRedirectUri(), null, params));
           response.setStatus(HttpServletResponse.SC_FOUND);
           break;
         default:
@@ -103,24 +103,27 @@ public class OAuth2AuthorizationHandler {
    * new parameters will be added properly.
    * 
    * @param URL is the base URL to normalize
-   * @param parameters are parameters to add to the URL
+   * @param queryParams query parameters to add to the URL
+   * @param fragmentParams fragment params to add to the URL
    */
-  private String buildUrl(String url, Map<String, String> params) {
-    if (params == null || params.isEmpty()) return url;
+  private String buildUrl(String url, Map<String, String> queryParams, Map<String,String> fragmentParams) {
     StringBuffer buff = new StringBuffer(url);
-//    try {
-      //URL validation is tricky.. this doesn't allow relative URLs, for example, which is valid from an HTTP perspective.
-//      URL uri = new URL(url);
-    if(url.contains("?")){
-      buff.append('&');
-    } else {
-      buff.append('?');
+    if (queryParams != null && !queryParams.isEmpty()){
+      if(url.contains("?")){
+        buff.append('&');
+      } else {
+        buff.append('?');
+      }
+      buff.append(convertQueryString(queryParams));
     }
-    buff.append(convertQueryString(params));
+    if (fragmentParams != null && !fragmentParams.isEmpty()){
+      if(url.contains("#")){
+        buff.append('&');
+      } else {
+        buff.append('#');
+      }
+      buff.append(convertQueryString(fragmentParams));
+    }
     return buff.toString();
-//    } catch (MalformedURLException e) {
-//      e.printStackTrace();
-//      return null;
-//    }
   }
 }

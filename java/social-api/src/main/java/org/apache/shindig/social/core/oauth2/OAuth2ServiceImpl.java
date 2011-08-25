@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.shindig.social.core.oauth2.OAuth2Client.ClientType;
+import org.apache.shindig.social.core.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.social.core.oauth2.OAuth2Types.CodeType;
 import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
 
@@ -86,12 +87,16 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       if (req.getResponseType() == null || !req.getResponseType().equals("token")) {
         throw new OAuth2Exception(ErrorType.UNSUPPORTED_RESPONSE_TYPE, "Unsupported response type");
       }
-      if (req.getRedirectUri() == null && store.getClient(req.getClientId()).getRedirectURI() == null) {
+      OAuth2Client client = store.getClient(req.getClientId());
+      if (req.getRedirectUri() == null && client.getRedirectURI() == null) {
         throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "NO redirect_uri registered or received in request");
       }
       if (req.getRedirectUri() != null &&
-          !req.getRedirectUri().equals(store.getClient(req.getClientId()).getRedirectURI())) {
+          !req.getRedirectUri().equals(client.getRedirectURI())) {
         throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "Redirect URI does not match the one registered for this client");
+      }
+      if(client.getFlow() != Flow.IMPLICIT){
+        throw new OAuth2Exception(ErrorType.INVALID_CLIENT,client.getId()+" is not registered as an implicit client");
       }
       return; // request validated
     }
