@@ -139,7 +139,7 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
   }
   
   private void normalizeClientSecret(HttpServletRequest request) throws OAuth2Exception{
-    String secret = getString("client_secret");
+    String secret = getClientSecret();
     if(secret == null || secret.equals("")){
       String header = request.getHeader("Authorization");
       if(header != null && header.startsWith("Basic")){

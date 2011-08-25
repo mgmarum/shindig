@@ -700,13 +700,11 @@
     "registration" : {
       "id" : "testClientCredentialsClient",
       "secret": "clientCredentialsClient_secret",
-      "redirectUri" : "http://localhost:8080/oauthclients/ClientCredentialClient",
       "type" : "confidential",
       "flow" : "client_credentials"
     },
     "accessTokens" : {
       "testClientCredentialsClient_accesstoken_1" : {
-        "redirectURI" : "http://localhost:8080/oauthclients/ClientCredentialClient",
         "expiration" : -1
       }
     }

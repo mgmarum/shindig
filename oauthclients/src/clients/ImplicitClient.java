@@ -38,6 +38,10 @@ public class ImplicitClient extends HttpServlet {
 		if (request.getPathInfo() == null) {
 			this.getServletContext().getRequestDispatcher("/OpenSocialFriends.jsp").forward(request, response);
 		} else {
+			System.out.println(request.getPathInfo());
+			System.out.println(request.getContextPath());
+			System.out.println(request.getRequestURI());
+			System.out.println(request.getRequestURL().toString());
 			if (request.getParameter("access_token") == null) {
 				response.sendRedirect("http://localhost:8080/oauth2/authorize?client_id=" + clientId + "&response_type=token&redirect_uri=" + redirectUri);
 			} else {

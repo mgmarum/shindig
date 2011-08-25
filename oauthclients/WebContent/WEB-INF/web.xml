@@ -42,4 +42,15 @@
     <url-pattern>/ImplicitClient</url-pattern>
     <url-pattern>/ImplicitClient/*</url-pattern>
   </servlet-mapping>
+    <servlet>
+    <description></description>
+    <display-name>ClientCredentialsClient</display-name>
+    <servlet-name>ClientCredentialsClient</servlet-name>
+    <servlet-class>clients.ClientCredentialsClient</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ClientCredentialsClient</servlet-name>
+    <url-pattern>/ClientCredentialsClient</url-pattern>
+    <url-pattern>/ClientCredentialsClient/*</url-pattern>
+  </servlet-mapping>
 </web-app>
