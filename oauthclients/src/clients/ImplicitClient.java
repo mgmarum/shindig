@@ -27,28 +27,18 @@ import org.json.JSONObject;
 public class ImplicitClient extends HttpServlet {
 
 	private static final long serialVersionUID = -629835685914414480L;
-	private static final String clientId = "advancedImplicitClient";
-	private static final String redirectUri = "http://localhost:8080/oauthclients/ImplicitClient/friends";
 	private String accessToken = null;
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		System.out.println("ImplicitClient.doGet()");
 		request.setAttribute("client", "ImplicitClient");
 		
-		if (request.getPathInfo() == null) {
-			this.getServletContext().getRequestDispatcher("/OpenSocialFriends.jsp").forward(request, response);
+		if (request.getPathInfo() == null || request.getParameter("access_token") == null) {
+			this.getServletContext().getRequestDispatcher("/ImplicitClientHelper.html").forward(request, response);
 		} else {
-			System.out.println(request.getPathInfo());
-			System.out.println(request.getContextPath());
-			System.out.println(request.getRequestURI());
-			System.out.println(request.getRequestURL().toString());
-			if (request.getParameter("access_token") == null) {
-				response.sendRedirect("http://localhost:8080/oauth2/authorize?client_id=" + clientId + "&response_type=token&redirect_uri=" + redirectUri);
-			} else {
-				accessToken = request.getParameter("access_token");
-				request.setAttribute("friends", getOpenSocialFriends());
-				this.getServletContext().getRequestDispatcher("/OpenSocialFriends.jsp").forward(request, response);
-			}
+			accessToken = request.getParameter("access_token");
+			request.setAttribute("friends", getOpenSocialFriends());
+			this.getServletContext().getRequestDispatcher("/OpenSocialFriends.jsp").forward(request, response);
 		}
 	}
 	
