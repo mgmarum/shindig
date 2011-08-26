@@ -19,7 +19,7 @@ public class OAuth2ImplicitFlowTest extends AbstractLargeRestfulTests {
   
   public static final String IMPLICIT_CLIENT_ID = "advancedImplicitClient";
   
-  protected static final String REDIRECT_URI = "http://localhost:8080/oauthclients/ImplicitClient/friends";
+  protected static final String REDIRECT_URI = "http://localhost:8080/oauthclients/ImplicitClientHelper.html";
   
   @Before
   @Override
