@@ -116,14 +116,28 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       }
       OAuth2Client client = store.getClient(req.getClientId());
       if(client == null || client.getFlow() != Flow.IMPLICIT){
-        throw new OAuth2Exception(ErrorType.INVALID_CLIENT,req.getClientId()+" is not a registered implicit client");
+        OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+        resp.setError(ErrorType.INVALID_CLIENT.toString());
+        resp.setErrorDescription(req.getClientId()+" is not a registered implicit client");
+        resp.setBodyReturned(true);
+        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        throw new OAuth2Exception(resp);
       }
       if (req.getRedirectUri() == null && client.getRedirectURI() == null) {
-        throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "NO redirect_uri registered or received in request");
+        OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+        resp.setError(ErrorType.INVALID_REQUEST.toString());
+        resp.setErrorDescription("NO redirect_uri registered or received in request");
+        resp.setBodyReturned(true);
+        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        throw new OAuth2Exception(resp);
       }
       if (req.getRedirectUri() != null &&
           !req.getRedirectUri().equals(client.getRedirectURI())) {
-        throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "Redirect URI does not match the one registered for this client");
+        OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+        resp.setError(ErrorType.INVALID_REQUEST.toString());
+        resp.setErrorDescription("Redirect URI does not match the one registered for this client");
+        resp.setBodyReturned(true);
+        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
       }
       return; // request validated
     }

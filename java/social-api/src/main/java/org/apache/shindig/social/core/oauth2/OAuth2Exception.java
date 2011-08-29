@@ -2,6 +2,8 @@ package org.apache.shindig.social.core.oauth2;
 
 import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
 
+import javax.servlet.http.HttpServletResponse;
+
 
 /**
  * Represents an exception while dancing with OAuth 2.0.
@@ -27,6 +29,7 @@ public class OAuth2Exception extends Exception {
 	  this.response = new OAuth2NormalizedResponse();
 	  response.setError(errorType.toString());
 	  response.setErrorDescription(errorDescription);
+	  response.setStatus(HttpServletResponse.SC_FORBIDDEN);
   }
   
   public OAuth2Exception(String msg, Throwable cause){

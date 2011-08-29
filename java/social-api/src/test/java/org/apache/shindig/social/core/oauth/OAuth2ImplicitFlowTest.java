@@ -6,6 +6,7 @@ import org.apache.shindig.social.core.oauth2.OAuth2Servlet;
 import org.apache.shindig.social.dataservice.integration.AbstractLargeRestfulTests;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -113,7 +114,8 @@ public class OAuth2ImplicitFlowTest extends AbstractLargeRestfulTests {
     req.setPathInfo("/authorize");
     HttpServletResponse resp = mock(HttpServletResponse.class);
     
-    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+//    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    resp.setStatus(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN));
     MockServletOutputStream outputStream = new MockServletOutputStream();
     EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
     PrintWriter writer = new PrintWriter(outputStream);
@@ -123,8 +125,8 @@ public class OAuth2ImplicitFlowTest extends AbstractLargeRestfulTests {
     writer.flush();
 
     verify();
-    String response = new String(outputStream.getBuffer(),"UTF-8");
-    assertTrue(response == null || response.equals(""));
+//    String response = new String(outputStream.getBuffer(),"UTF-8");
+//    assertTrue(response == null || response.equals(""));
   }
   
   /**
@@ -142,8 +144,8 @@ public class OAuth2ImplicitFlowTest extends AbstractLargeRestfulTests {
     req.setServletPath("/oauth2");
     req.setPathInfo("/authorize");
     HttpServletResponse resp = mock(HttpServletResponse.class);
-    
-    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    resp.setStatus(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN));
+//    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
     MockServletOutputStream outputStream = new MockServletOutputStream();
     EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
     PrintWriter writer = new PrintWriter(outputStream);
@@ -154,7 +156,8 @@ public class OAuth2ImplicitFlowTest extends AbstractLargeRestfulTests {
 
     verify();
     String response = new String(outputStream.getBuffer(),"UTF-8");
-    assertTrue(response == null || response.equals(""));
+    JSONObject respObj = new JSONObject(response);
+    assertTrue(respObj.has("error"));
   }
   
   
