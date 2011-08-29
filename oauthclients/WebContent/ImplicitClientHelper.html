@@ -9,6 +9,7 @@
 			console.log("Retrieving access token");
 			window.location = "http://localhost:8080/oauth2/authorize?client_id=" + clientId + "&response_type=token&redirect_uri=" + redirectUri;
 		} else {
+			console.log('checking for access token in fragment');
 			var fragment = url.substring(url.search("#") + 1);
 			var accessToken = null;
 			var queryParams = fragment.split("&");

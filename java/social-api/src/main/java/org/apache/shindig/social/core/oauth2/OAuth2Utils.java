@@ -1,12 +1,20 @@
 package org.apache.shindig.social.core.oauth2;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -61,5 +69,85 @@ public class OAuth2Utils {
     } catch (IOException e){
       throw new OAuth2Exception(e);
     }      
+  }
+  
+  /**
+   * Converts a Map<String, String> to a URL query string.
+   * 
+   * @param params represents the Map of query parameters
+   * 
+   * @return String is the URL encoded parameter String
+   */
+  public static String convertQueryString(Map<String, String> params) {
+    if (params == null) return "";
+    List<NameValuePair> nvp = new ArrayList<NameValuePair>();
+    for (String key : new TreeSet<String>(params.keySet())) {
+      if (params.get(key) != null) {
+        nvp.add(new BasicNameValuePair(key, params.get(key)));
+      }
+    }
+    return URLEncodedUtils.format(nvp, "UTF-8");
+  }
+  
+  /**
+   * Normalizes a URL and parameters.  If the URL already contains parameters,
+   * new parameters will be added properly.
+   * 
+   * @param URL is the base URL to normalize
+   * @param queryParams query parameters to add to the URL
+   * @param fragmentParams fragment params to add to the URL
+   */
+  public static String buildUrl(String url, Map<String, String> queryParams, Map<String,String> fragmentParams) {
+    StringBuffer buff = new StringBuffer(url);
+    if (queryParams != null && !queryParams.isEmpty()){
+      if(url.contains("?")){
+        buff.append('&');
+      } else {
+        buff.append('?');
+      }
+      buff.append(convertQueryString(queryParams));
+    }
+    if (fragmentParams != null && !fragmentParams.isEmpty()){
+      if(url.contains("#")){
+        buff.append('&');
+      } else {
+        buff.append('#');
+      }
+      buff.append(convertQueryString(fragmentParams));
+    }
+    return buff.toString();
+  }
+  
+  /**
+   * Sends an OAuth 2.0 response based on an OAuth2NormalizedResponse object.
+   * 
+   * @param servletResp is the servlet's response object
+   * @param normalizedResp maintains the headers and body fields to respond with
+   * @param createBody defines whether or not to create a body from the response parameters
+   */
+  public static void sendOAuth2Response(HttpServletResponse servletResp, OAuth2NormalizedResponse normalizedResp) {
+    // set status
+    servletResp.setStatus(normalizedResp.getStatus());
+    
+    // set body parameters
+    Map<String, String> respParams = normalizedResp.getResponseParameters();
+    if (normalizedResp.isBodyReturned() && respParams != null) {
+      try {
+        servletResp.setHeader("Content-Type", "application/json");
+        PrintWriter out = servletResp.getWriter();
+        out.println(new JSONObject(respParams).toString());
+        out.flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    
+    // set headers
+    Map<String, String> headers = normalizedResp.getHeaders();
+    if (headers != null) {
+      for(String key : headers.keySet()) {
+        servletResp.setHeader(key, headers.get(key));
+      }
+    }
   }
 }

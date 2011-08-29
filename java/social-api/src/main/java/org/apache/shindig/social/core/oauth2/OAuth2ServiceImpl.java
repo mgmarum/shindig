@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.shindig.social.core.oauth2.OAuth2Client.ClientType;
 import org.apache.shindig.social.core.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.social.core.oauth2.OAuth2Types.CodeType;
@@ -43,12 +45,24 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   @Override
   public void authenticateClient(OAuth2NormalizedRequest req) throws OAuth2Exception {
     OAuth2Client client = store.getClient(req.getClientId());
-    if (client == null) throw new OAuth2Exception(ErrorType.INVALID_CLIENT, "The client is not registered.");
+    if (client == null) {
+      OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+      resp.setError(ErrorType.INVALID_CLIENT.toString());
+      resp.setErrorDescription("The client ID is invalid or not registered");
+      resp.setBodyReturned(true);
+      resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      throw new OAuth2Exception(resp);
+    }
     String realSecret = client.getSecret();
     String reqSecret = req.getClientSecret();
     if (realSecret != null || reqSecret != null || client.getType() == ClientType.CONFIDENTIAL) {
       if (realSecret == null || reqSecret == null || !realSecret.equals(reqSecret)) {
-        throw new OAuth2Exception(ErrorType.UNAUTHORIZED_CLIENT, "The client failed to authorize.");
+        OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+        resp.setError(ErrorType.UNAUTHORIZED_CLIENT.toString());
+        resp.setErrorDescription("The client failed to authorize");
+        resp.setBodyReturned(true);
+        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        throw new OAuth2Exception(resp);
       }
     }
   }
@@ -56,17 +70,30 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   @Override
   public void validateRequestForAuthCode(OAuth2NormalizedRequest req) throws OAuth2Exception {
     OAuth2Client client = store.getClient(req.getClientId());
-    if(client == null){
-      throw new OAuth2Exception(ErrorType.INVALID_REQUEST,"Invalid client");
+    if(client == null) {
+      OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+      resp.setError(ErrorType.INVALID_REQUEST.toString());
+      resp.setErrorDescription("The client is invalid or not registered");
+      resp.setBodyReturned(true);
+      resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      throw new OAuth2Exception(resp);
     }
     String storedURI = client.getRedirectURI();
-    if (storedURI == null
-        && req.getRedirectUri() == null) {
-      throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "No redirect_uri registered or received in request");
+    if (storedURI == null && req.getRedirectUri() == null) {
+      OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+      resp.setError(ErrorType.INVALID_REQUEST.toString());
+      resp.setErrorDescription("No redirect_uri registered or received in request");
+      resp.setBodyReturned(true);
+      resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      throw new OAuth2Exception(resp);
     }
     if(req.getRedirectUri() != null && storedURI != null){
       if(!req.getRedirectUri().equals(storedURI)){
-        throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "Redirect URI does not match the one registered for this client");
+        OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+        resp.setError(ErrorType.INVALID_REQUEST.toString());
+        resp.setErrorDescription("Redirect URI does not match the one registered for this client");
+        resp.setBodyReturned(true);
+        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
       }
     }
   }

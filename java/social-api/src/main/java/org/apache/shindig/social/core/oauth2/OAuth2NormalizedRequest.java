@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.NameValuePair;
@@ -23,7 +24,6 @@ import org.apache.shindig.social.core.oauth2.OAuth2Types.ResponseType;
 /** 
  * Normalizes an OAuth 2.0 request by extracting OAuth 2.0 related fields.
  * 
- * TODO: error code lookup, mapping errors to descriptions
  * TODO: process lists (like scope) correctly
  * TODO: extensions allow crazy grant_types and response_types
  * TODO: extract client_secret from authorization token
@@ -88,7 +88,13 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
     } else if (respType.equals("token")) {
       return ResponseType.TOKEN;
     } else {
-      throw new OAuth2Exception(ErrorType.UNSUPPORTED_RESPONSE_TYPE, "Unsupported response type");
+      OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+      resp.setError(ErrorType.UNSUPPORTED_RESPONSE_TYPE.toString());
+      resp.setErrorDescription("Unsupported response type");
+      resp.setStatus(HttpServletResponse.SC_FOUND);
+      resp.setBodyReturned(false);
+      resp.setHeader("Location", OAuth2Utils.buildUrl(getRedirectUri(), resp.getResponseParameters(), null));
+      throw new OAuth2Exception(resp);
     }
   }
   

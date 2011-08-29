@@ -2,19 +2,31 @@ package org.apache.shindig.social.core.oauth2;
 
 import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
 
+
 /**
- * Represents an exception in OAuth 2.0 handshakes.
+ * Represents an exception while dancing with OAuth 2.0.
  * 
- * TODO: add Map<String, String> for error response body
+ * TODO: Completely remove other constructors.
  */
 public class OAuth2Exception extends Exception {
 
   private static final long serialVersionUID = -5892464438773813010L;
-  private ErrorType errorType;
-  private String errorDescription;
+  private OAuth2NormalizedResponse response;
 
   public OAuth2Exception(String msg) {
     super(msg);
+  }
+  
+  public OAuth2Exception(OAuth2NormalizedResponse response) {
+	  super(response.getErrorDescription());
+	  this.response = response;
+  }
+  
+  public OAuth2Exception(ErrorType errorType, String errorDescription) {
+	  super(errorDescription);
+	  this.response = new OAuth2NormalizedResponse();
+	  response.setError(errorType.toString());
+	  response.setErrorDescription(errorDescription);
   }
   
   public OAuth2Exception(String msg, Throwable cause){
@@ -25,16 +37,7 @@ public class OAuth2Exception extends Exception {
     super(cause);
   }
   
-  public OAuth2Exception(ErrorType errorType, String errorDescription) {
-    this.errorType = errorType;
-    this.errorDescription = errorDescription;
-  }
-  
-  public ErrorType getErrorType() {
-    return errorType;
-  }
-  
-  public String getErrorDescription() {
-    return errorDescription;
+  public OAuth2NormalizedResponse getNormalizedResponse() {
+	  return response;
   }
 }
