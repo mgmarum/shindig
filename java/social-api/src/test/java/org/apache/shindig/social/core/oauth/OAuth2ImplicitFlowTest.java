@@ -114,7 +114,6 @@ public class OAuth2ImplicitFlowTest extends AbstractLargeRestfulTests {
     req.setPathInfo("/authorize");
     HttpServletResponse resp = mock(HttpServletResponse.class);
     
-//    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
     resp.setStatus(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN));
     MockServletOutputStream outputStream = new MockServletOutputStream();
     EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
@@ -125,8 +124,9 @@ public class OAuth2ImplicitFlowTest extends AbstractLargeRestfulTests {
     writer.flush();
 
     verify();
-//    String response = new String(outputStream.getBuffer(),"UTF-8");
-//    assertTrue(response == null || response.equals(""));
+    String response = new String(outputStream.getBuffer(),"UTF-8");
+    JSONObject respObj = new JSONObject(response);
+    assertTrue(respObj.has("error"));
   }
   
   /**
@@ -145,7 +145,6 @@ public class OAuth2ImplicitFlowTest extends AbstractLargeRestfulTests {
     req.setPathInfo("/authorize");
     HttpServletResponse resp = mock(HttpServletResponse.class);
     resp.setStatus(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN));
-//    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
     MockServletOutputStream outputStream = new MockServletOutputStream();
     EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
     PrintWriter writer = new PrintWriter(outputStream);
