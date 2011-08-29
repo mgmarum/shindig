@@ -1,5 +1,6 @@
 package org.apache.shindig.social.core.oauth2;
 
+import org.apache.shindig.auth.AnonymousSecurityToken;
 import org.apache.shindig.auth.AuthenticationHandler;
 import org.apache.shindig.auth.SecurityToken;
 
@@ -32,7 +33,10 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
     OAuth2NormalizedRequest normalizedReq;
     try {
       normalizedReq = new OAuth2NormalizedRequest(request);
-      store.validateRequestForResource(normalizedReq);
+      if(normalizedReq.getAccessToken() != null){
+        store.validateRequestForResource(normalizedReq);
+        return new AnonymousSecurityToken();  //Return your valid security token
+      }
     } catch (OAuth2Exception oae) {
       oae.printStackTrace();
       throw new InvalidAuthenticationException("Something went wrong: ", oae); // TODO: process OAuth2Exception

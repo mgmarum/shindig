@@ -42,7 +42,7 @@ public class OAuth2ClientCredentialFlowTest extends AbstractLargeRestfulTests {
     req.setServletPath("/oauth2");
     req.setPathInfo("/access_token");
     HttpServletResponse resp = mock(HttpServletResponse.class);
-    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    resp.setStatus(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN));
     MockServletOutputStream outputStream = new MockServletOutputStream();
     EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
     PrintWriter writer = new PrintWriter(outputStream);
@@ -52,7 +52,8 @@ public class OAuth2ClientCredentialFlowTest extends AbstractLargeRestfulTests {
     writer.flush();
     
     String response = new String(outputStream.getBuffer(),"UTF-8");
-    assertTrue(response == null || response.equals(""));
+    JSONObject respObj = new JSONObject(response);
+    assertTrue(respObj.has("error"));
     verify();
   }
 
@@ -69,7 +70,7 @@ public class OAuth2ClientCredentialFlowTest extends AbstractLargeRestfulTests {
     req.setServletPath("/oauth2");
     req.setPathInfo("/access_token");
     HttpServletResponse resp = mock(HttpServletResponse.class);
-    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    resp.setStatus(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN));
     MockServletOutputStream outputStream = new MockServletOutputStream();
     EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
     PrintWriter writer = new PrintWriter(outputStream);
@@ -79,7 +80,8 @@ public class OAuth2ClientCredentialFlowTest extends AbstractLargeRestfulTests {
     writer.flush();
     
     String response = new String(outputStream.getBuffer(),"UTF-8");
-    assertTrue(response == null || response.equals(""));
+    JSONObject respObj = new JSONObject(response);
+    assertTrue(respObj.has("error"));
     verify();
   }
 
