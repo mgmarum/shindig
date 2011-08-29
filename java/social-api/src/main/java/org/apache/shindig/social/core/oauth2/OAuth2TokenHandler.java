@@ -21,7 +21,7 @@ public class OAuth2TokenHandler {
     this.service = service;
   }
 
-  public void handle(HttpServletRequest request, HttpServletResponse response)
+  public OAuth2NormalizedResponse handle(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     try {
       // normalize the request
@@ -43,9 +43,9 @@ public class OAuth2TokenHandler {
       normalizedResp.setStatus(HttpServletResponse.SC_OK);
       normalizedResp.setBodyReturned(true);
       if (normalizedReq.getState() != null) normalizedResp.setState(normalizedReq.getState());
-      OAuth2Utils.sendOAuth2Response(response, normalizedResp);
+      return normalizedResp;
     } catch(OAuth2Exception oae) {
-      OAuth2Utils.sendOAuth2Response(response, oae.getNormalizedResponse());
+      return oae.getNormalizedResponse();
     }
   }
   

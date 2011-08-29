@@ -1,6 +1,8 @@
 package org.apache.shindig.social.core.oauth2;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -9,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.shindig.common.servlet.HttpUtil;
 import org.apache.shindig.common.servlet.InjectedServlet;
+import org.json.JSONObject;
 
 import com.google.inject.Inject;
 
@@ -39,9 +42,9 @@ public class OAuth2Servlet extends InjectedServlet {
     HttpUtil.setNoCache(response);
     String path = request.getPathInfo();
     if (path.endsWith("authorize")) {
-      authorizationHandler.handle(request, response);
+      sendOAuth2Response(response, authorizationHandler.handle(request, response));
     } else if (path.endsWith("token")) {
-      tokenHandler.handle(request, response);
+      sendOAuth2Response(response, tokenHandler.handle(request, response));
     } else {
       response.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown URL");
     }
@@ -51,5 +54,38 @@ public class OAuth2Servlet extends InjectedServlet {
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     doGet(request, response);
+  }
+  
+  /**
+   * Sends an OAuth 2.0 response based on an OAuth2NormalizedResponse object.
+   * 
+   * @param servletResp is the servlet's response object
+   * @param normalizedResp maintains the headers and body fields to respond with
+   * @param createBody defines whether or not to create a body from the response parameters
+   */
+  private void sendOAuth2Response(HttpServletResponse servletResp, OAuth2NormalizedResponse normalizedResp) {
+    // set status
+    servletResp.setStatus(normalizedResp.getStatus());
+    
+    // set body parameters
+    Map<String, String> respParams = normalizedResp.getResponseParameters();
+    if (normalizedResp.isBodyReturned() && respParams != null) {
+      try {
+        servletResp.setHeader("Content-Type", "application/json");
+        PrintWriter out = servletResp.getWriter();
+        out.println(new JSONObject(respParams).toString());
+        out.flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    
+    // set headers
+    Map<String, String> headers = normalizedResp.getHeaders();
+    if (headers != null) {
+      for(String key : headers.keySet()) {
+        servletResp.setHeader(key, headers.get(key));
+      }
+    }
   }
 }

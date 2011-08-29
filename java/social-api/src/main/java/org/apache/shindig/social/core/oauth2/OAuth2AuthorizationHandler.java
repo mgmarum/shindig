@@ -21,7 +21,7 @@ public class OAuth2AuthorizationHandler {
     this.service = service;
   }
   
-  public void handle(HttpServletRequest request, HttpServletResponse response)
+  public OAuth2NormalizedResponse handle(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {   
     try {
       // normalize the request
@@ -44,8 +44,7 @@ public class OAuth2AuthorizationHandler {
           normalizedResp.setHeader("Location", OAuth2Utils.buildUrl(authCode.getRedirectUri(), normalizedResp.getResponseParameters(), null));
           normalizedResp.setStatus(HttpServletResponse.SC_FOUND);
           normalizedResp.setBodyReturned(false);
-          OAuth2Utils.sendOAuth2Response(response, normalizedResp);
-          break;
+          return normalizedResp;
         case TOKEN:
           // implicit flow
           service.validateRequestForAccessToken(normalizedReq);
@@ -59,15 +58,16 @@ public class OAuth2AuthorizationHandler {
           normalizedResp.setHeader("Location", OAuth2Utils.buildUrl(accessToken.getRedirectUri(), null, normalizedResp.getResponseParameters()));
           normalizedResp.setStatus(HttpServletResponse.SC_FOUND);
           normalizedResp.setBodyReturned(false);
-          OAuth2Utils.sendOAuth2Response(response, normalizedResp);
-          break;
+          return normalizedResp;
         default:
           // TODO: formulate normalized response with error and send
           break;
         }
       }
     } catch(OAuth2Exception oae) {
-      OAuth2Utils.sendOAuth2Response(response, oae.getNormalizedResponse());
+      return oae.getNormalizedResponse();
     }
+    
+    return null;  // should never reach this, otherwise prepare for a NPE
   }
 }
