@@ -139,6 +139,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         resp.setErrorDescription("Redirect URI does not match the one registered for this client");
         resp.setBodyReturned(true);
         resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        throw new OAuth2Exception(resp);
       }
       return; // request validated
     }
