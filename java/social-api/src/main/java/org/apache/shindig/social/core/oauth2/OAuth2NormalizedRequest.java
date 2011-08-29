@@ -176,7 +176,7 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
   }
   
   private void normalizeBody(String body) throws OAuth2Exception{
-    if (body == null || body.isEmpty()) return;
+    if (body == null || body.length() == 0) return;
     List<NameValuePair> params;
     try {
       params = URLEncodedUtils.parse(new URI("http://localhost:8080?" + body), "UTF-8");
