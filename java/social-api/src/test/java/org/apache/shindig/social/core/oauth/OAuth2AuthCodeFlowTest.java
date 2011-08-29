@@ -394,7 +394,7 @@ public class OAuth2AuthCodeFlowTest extends AbstractLargeRestfulTests{
     req.setServletPath("/oauth2");
     req.setPathInfo("/access_token");
     HttpServletResponse resp = mock(HttpServletResponse.class);
-    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
     MockServletOutputStream outputStream = new MockServletOutputStream();
     EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
     PrintWriter writer = new PrintWriter(outputStream);
