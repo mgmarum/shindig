@@ -1,0 +1,29 @@
+<html>
+<head>
+	<script type="text/javascript">
+	var clientId = "advancedImplicitClient";
+	var redirectUri = "http://localhost:8080/oauthclients/ImplicitClientHelper.html";
+	window.onload = function () {
+		var url = document.location.href;
+		if (url.search("#") == -1) {
+			console.log("Retrieving access token");
+			window.location = "http://localhost:8080/oauth2/authorize?client_id=" + clientId + "&response_type=token&redirect_uri=" + redirectUri;
+		} else {
+			var fragment = url.substring(url.search("#") + 1);
+			var accessToken = null;
+			var queryParams = fragment.split("&");
+			for (i=0; i < queryParams.length; i++) {
+				var param = queryParams[i].split("=");
+				if (param[0] == "access_token") {
+					accessToken = param[1];
+				}
+			}
+			console.log("Retrieved access token from fragment: " + accessToken);
+
+			// send access token to ImplicitClient servlet to render friends
+			window.location="http://localhost:8080/oauthclients/ImplicitClient/friends?access_token=" + accessToken;
+		}
+	} 
+	</script>
+</head>
+</html>
