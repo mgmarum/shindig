@@ -65,7 +65,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
 
   @Override
   public void registerAuthorizationCode(String clientId, OAuth2Code authCode) {
-    System.out.println("Auth code's value : redirect URI: " + authCode.getValue() + " : " + authCode.getRedirectURI());
     if (authCodes.containsKey(clientId)) {
       ((List<OAuth2Code>) authCodes.get(clientId)).add(authCode);
     } else {
@@ -91,7 +90,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
 
   @Override
   public OAuth2Code getAccessToken(String accessToken) {
-    System.out.println("Retrieving access token " + accessToken);
     for (String clientId : accessTokens.keySet()) {
       List<OAuth2Code> tokens = accessTokens.get(clientId);
       for (OAuth2Code token : tokens) {
@@ -105,7 +103,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
 
   @Override
   public void registerAccessToken(String clientId, OAuth2Code accessToken) {
-    System.out.println("Registering access token " + accessToken + " to client " + clientId);
     if (accessTokens.containsKey(clientId)) {
       ((List<OAuth2Code>) accessTokens.get(clientId)).add(accessToken);
     } else {
@@ -117,7 +114,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
 
   @Override
   public void unregisterAccessToken(String clientId, String accessToken) {
-    System.out.println("Unregistering access token " + accessToken + " to client " + clientId);
     if (accessTokens.containsKey(clientId)) {
       List<OAuth2Code> tokens = accessTokens.get(clientId);
       for (OAuth2Code token : tokens) {
@@ -156,12 +152,10 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
         JSONObject clientJS = oauthDB.getJSONObject(clientId);
         if(clientJS.has("authorizationCodes")){
           JSONObject authCodes = clientJS.getJSONObject("authorizationCodes");
-          System.out.println("AUTH CODES:\n" + authCodes.toString());
           for(String authCodeId : JSONObject.getNames(authCodes)){
             OAuth2Code code = converter.convertToObject(authCodes.getJSONObject(authCodeId).toString(), OAuth2Code.class);
             code.setValue(authCodeId);
             code.setClient(client);
-            System.out.println("REDIRECT URI: " + code.getRedirectURI());
             registerAuthorizationCode(clientId, code);
           }
         }

@@ -85,7 +85,7 @@ public class OAuth2AuthCodeFlowTest extends AbstractLargeRestfulTests{
       new FakeHttpServletRequest("http://localhost:8080/oauth2");
     req.setContentType("application/x-www-form-urlencoded");
     req.setPostData("client_id=" + PUBLIC_CLIENT_ID + "&response_type=code&redirect_uri="
-          +URLEncoder.encode(REDIRECT_URI,"UTF-8"),"UTF-8");
+          +URLEncoder.encode(PUBLIC_REDIRECT_URI,"UTF-8"),"UTF-8");
     req.setMethod("GET");
     req.setServletPath("/oauth2");
     req.setPathInfo("/authorize");
@@ -103,7 +103,7 @@ public class OAuth2AuthCodeFlowTest extends AbstractLargeRestfulTests{
     String response = new String(outputStream.getBuffer(),"UTF-8");
     assertTrue(response == null || response.equals(""));
     verify();
-    assertTrue(redirectURI.getValue().startsWith(REDIRECT_URI+"?code="));
+    assertTrue(redirectURI.getValue().startsWith(PUBLIC_REDIRECT_URI+"?code="));
     String code = redirectURI.getValue().substring(redirectURI.getValue().indexOf("=")+1);
     UUID id = UUID.fromString(code);
     assertTrue(id != null);
@@ -118,7 +118,7 @@ public class OAuth2AuthCodeFlowTest extends AbstractLargeRestfulTests{
     FakeHttpServletRequest req = 
       new FakeHttpServletRequest("http://localhost:8080","/oauth2",
           "client_id=" + PUBLIC_CLIENT_ID + "&response_type=code&state=PRESERVEME&redirect_uri="
-          +URLEncoder.encode(REDIRECT_URI,"UTF-8"));
+          +URLEncoder.encode(PUBLIC_REDIRECT_URI,"UTF-8"));
     req.setMethod("GET");
     req.setServletPath("/oauth2");
     req.setPathInfo("/authorize");
@@ -136,7 +136,7 @@ public class OAuth2AuthCodeFlowTest extends AbstractLargeRestfulTests{
     String response = new String(outputStream.getBuffer(),"UTF-8");
     assertTrue(response == null || response.equals(""));
     verify();
-    assertTrue(redirectURI.getValue().startsWith(REDIRECT_URI+"?code="));
+    assertTrue(redirectURI.getValue().startsWith(PUBLIC_REDIRECT_URI+"?code="));
     URI uri = new URI(redirectURI.getValue());
     assertTrue(uri.getQuery().contains("state=PRESERVEME"));
     assertTrue(uri.getQuery().contains("code="));
