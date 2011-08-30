@@ -34,7 +34,7 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
     try {
       normalizedReq = new OAuth2NormalizedRequest(request);
       if(normalizedReq.getAccessToken() != null){
-        store.validateRequestForResource(normalizedReq);
+        store.validateRequestForResource(normalizedReq, null);
         return new AnonymousSecurityToken();  //Return your valid security token
       }
     } catch (OAuth2Exception oae) {

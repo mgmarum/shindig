@@ -28,8 +28,8 @@ import org.apache.shindig.social.core.oauth2.OAuth2Types.ResponseType;
  * TODO: extensions allow crazy grant_types and response_types
  * TODO: extract client_secret from authorization token
  * TODO: redirect_uri for AT optional if not included in ACRequest; must use default then
- * TODO: normalize scope
  * TODO: this should not be a map, use a delegator instead and rely on accessors
+ * TODO: implement scope handling
  */
 public class OAuth2NormalizedRequest extends HashMap<String, Object> {
 
