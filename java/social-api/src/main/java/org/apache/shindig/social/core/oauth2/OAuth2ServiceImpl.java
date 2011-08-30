@@ -79,7 +79,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       throw new OAuth2Exception(resp);
     }
     String storedURI = client.getRedirectURI();
-    if (storedURI == null && req.getRedirectUri() == null) {
+    if (storedURI == null && req.getRedirectURI() == null) {
       OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
       resp.setError(ErrorType.INVALID_REQUEST.toString());
       resp.setErrorDescription("No redirect_uri registered or received in request");
@@ -87,8 +87,8 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
       throw new OAuth2Exception(resp);
     }
-    if(req.getRedirectUri() != null && storedURI != null){
-      if(!req.getRedirectUri().equals(storedURI)){
+    if(req.getRedirectURI() != null && storedURI != null){
+      if(!req.getRedirectURI().equals(storedURI)){
         OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
         resp.setError(ErrorType.INVALID_REQUEST.toString());
         resp.setErrorDescription("Redirect URI does not match the one registered for this client");
@@ -129,7 +129,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
         throw new OAuth2Exception(resp);
       }
-      if (req.getRedirectUri() == null && client.getRedirectURI() == null) {
+      if (req.getRedirectURI() == null && client.getRedirectURI() == null) {
         OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
         resp.setError(ErrorType.INVALID_REQUEST.toString());
         resp.setErrorDescription("NO redirect_uri registered or received in request");
@@ -137,8 +137,8 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
         throw new OAuth2Exception(resp);
       }
-      if (req.getRedirectUri() != null &&
-          !req.getRedirectUri().equals(client.getRedirectURI())) {
+      if (req.getRedirectURI() != null &&
+          !req.getRedirectURI().equals(client.getRedirectURI())) {
         OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
         resp.setError(ErrorType.INVALID_REQUEST.toString());
         resp.setErrorDescription("Redirect URI does not match the one registered for this client");
@@ -180,18 +180,16 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     return refreshToken;
   }
   
-  @SuppressWarnings("unchecked")
   public OAuth2Code generateAuthorizationCode(OAuth2NormalizedRequest req) {
     OAuth2Code authCode = new OAuth2Code();
     authCode.setValue(UUID.randomUUID().toString());
     authCode.setExpiration(System.currentTimeMillis() + AUTH_EXPIRES);
     OAuth2Client client = store.getClient(req.getString("client_id"));
     authCode.setClient(client);
-    if (req.containsKey("scope")) authCode.setScope((List<String>) req.get("scope"));
-    if (req.containsKey("redirect_uri")) {
-      authCode.setRedirectUri(req.getString("redirect_uri"));
+    if (req.getRedirectURI() != null) {
+      authCode.setRedirectURI(req.getRedirectURI());
     } else {
-      authCode.setRedirectUri(client.getRedirectURI());
+      authCode.setRedirectURI(client.getRedirectURI());
     }
     return authCode;
   }
@@ -203,10 +201,10 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     accessToken.setType(CodeType.ACCESS_TOKEN);
     accessToken.setValue(UUID.randomUUID().toString());
     accessToken.setExpiration(System.currentTimeMillis() + ACCESS_EXPIRES);
-    if (req.getRedirectUri() != null) {
-    	accessToken.setRedirectUri(req.getRedirectUri());
+    if (req.getRedirectURI() != null) {
+    	accessToken.setRedirectURI(req.getRedirectURI());
     } else {
-    	accessToken.setRedirectUri(store.getClient(req.getClientId()).getRedirectURI());
+    	accessToken.setRedirectURI(store.getClient(req.getClientId()).getRedirectURI());
     }
     
     // associate with existing authorization code, if an auth code exists.

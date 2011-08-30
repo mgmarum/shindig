@@ -674,13 +674,12 @@
  	}, "testClient" : {
  		"registration" : {
  			"id" : "testClient",
- 			"redirectUri" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
+ 			"redirectURI" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
  			"type" : "public",
       "flow" : "authorization_code"
  		},
  		"authorizationCodes" : {
       "testClient_authcode_1" : {
-        // Authentication code has been consumed since associatedSignature exists
         "redirectURI" : "http://localhost:8080/oauthclients/AuthorizationCodeClient",
         "expiration" : -1
       },

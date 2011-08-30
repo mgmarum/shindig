@@ -29,6 +29,7 @@ import org.apache.shindig.social.core.oauth2.OAuth2Types.ResponseType;
  * TODO: extract client_secret from authorization token
  * TODO: redirect_uri for AT optional if not included in ACRequest; must use default then
  * TODO: normalize scope
+ * TODO: this should not be a map, use a delegator instead and rely on accessors
  */
 public class OAuth2NormalizedRequest extends HashMap<String, Object> {
 
@@ -64,7 +65,7 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
     return getString("grant_type");
   }
   
-  public String getRedirectUri() {
+  public String getRedirectURI() {
     return getString("redirect_uri");
   }
   
@@ -80,6 +81,10 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
     return getString("state");
   }
   
+  public String getScope() {
+    return getString("scope");
+  }
+  
   public ResponseType getEnumeratedResponseType() throws OAuth2Exception {
     String respType = getResponseType();
     if (respType == null) return null;
@@ -93,7 +98,7 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
       resp.setErrorDescription("Unsupported response type");
       resp.setStatus(HttpServletResponse.SC_FOUND);
       resp.setBodyReturned(false);
-      resp.setHeader("Location", OAuth2Utils.buildUrl(getRedirectUri(), resp.getResponseParameters(), null));
+      resp.setHeader("Location", OAuth2Utils.buildUrl(getRedirectURI(), resp.getResponseParameters(), null));
       throw new OAuth2Exception(resp);
     }
   }

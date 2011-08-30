@@ -26,6 +26,7 @@ public class OAuth2AuthCodeFlowTest extends AbstractLargeRestfulTests{
   protected static final String CONF_CLIENT_SECRET = "advancedAuthorizationCodeClient_secret";
   protected static final String CONF_AUTH_CODE = "advancedClient_authcode_1";
   
+  protected static final String PUBLIC_REDIRECT_URI = "http://localhost:8080/oauthclients/AuthorizationCodeClient";
   protected static final String REDIRECT_URI = "http://localhost:8080/oauthclients/AuthorizationCodeClient/friends";
   
 
@@ -51,7 +52,7 @@ public class OAuth2AuthCodeFlowTest extends AbstractLargeRestfulTests{
       new FakeHttpServletRequest("http://localhost:8080/oauth2");
     req.setContentType("application/x-www-form-urlencoded");
     req.setPostData("client_id=" + PUBLIC_CLIENT_ID + "&grant_type=authorization_code&redirect_uri="
-        +URLEncoder.encode(REDIRECT_URI,"UTF-8")
+        +URLEncoder.encode(PUBLIC_REDIRECT_URI,"UTF-8")
         +"&code="+PUBLIC_AUTH_CODE, "UTF-8");
     req.setMethod("GET");
     req.setServletPath("/oauth2");
@@ -514,16 +515,18 @@ public class OAuth2AuthCodeFlowTest extends AbstractLargeRestfulTests{
     req.setServletPath("/oauth2");
     req.setPathInfo("/access_token");
     HttpServletResponse resp = mock(HttpServletResponse.class);
-    resp.sendError(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN), EasyMock.anyObject(String.class));
+    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     MockServletOutputStream outputStream = new MockServletOutputStream();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
     PrintWriter writer = new PrintWriter(outputStream);
     EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
-    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
     replay();
     servlet.service(req, resp);
     writer.flush();
-    String response = new String(outputStream.getBuffer(),"UTF-8");
-    assertTrue(response == null || response.equals(""));
+
+    JSONObject tokenResponse = new JSONObject(new String(outputStream.getBuffer(),"UTF-8"));
+    
+    assertEquals("invalid_grant",tokenResponse.getString("error"));
     verify();
   }
 

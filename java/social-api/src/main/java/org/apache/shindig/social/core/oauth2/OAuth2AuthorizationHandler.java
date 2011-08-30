@@ -41,7 +41,7 @@ public class OAuth2AuthorizationHandler {
           // send response
           normalizedResp.setCode(authCode.getValue());
           if (normalizedReq.getState() != null) normalizedResp.setState(normalizedReq.getState());
-          normalizedResp.setHeader("Location", OAuth2Utils.buildUrl(authCode.getRedirectUri(), normalizedResp.getResponseParameters(), null));
+          normalizedResp.setHeader("Location", OAuth2Utils.buildUrl(authCode.getRedirectURI(), normalizedResp.getResponseParameters(), null));
           normalizedResp.setStatus(HttpServletResponse.SC_FOUND);
           normalizedResp.setBodyReturned(false);
           return normalizedResp;
@@ -55,7 +55,7 @@ public class OAuth2AuthorizationHandler {
           normalizedResp.setTokenType(TokenFormat.BEARER.toString());
           normalizedResp.setExpiresIn((accessToken.getExpiration() - System.currentTimeMillis()) + "");
           if (normalizedReq.getState() != null) normalizedResp.setState(normalizedReq.getState());
-          normalizedResp.setHeader("Location", OAuth2Utils.buildUrl(accessToken.getRedirectUri(), null, normalizedResp.getResponseParameters()));
+          normalizedResp.setHeader("Location", OAuth2Utils.buildUrl(accessToken.getRedirectURI(), null, normalizedResp.getResponseParameters()));
           normalizedResp.setStatus(HttpServletResponse.SC_FOUND);
           normalizedResp.setBodyReturned(false);
           return normalizedResp;

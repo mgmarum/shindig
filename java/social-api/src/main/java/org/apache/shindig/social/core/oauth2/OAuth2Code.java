@@ -13,7 +13,7 @@ import org.apache.shindig.social.core.oauth2.OAuth2Types.CodeType;
 public class OAuth2Code implements Comparable<OAuth2Code> {
   
   private String value;
-  private String redirectUri;
+  private String redirectURI;
   private long expiration;
   private List<String> scope;
   private OAuth2Client client;
@@ -24,9 +24,9 @@ public class OAuth2Code implements Comparable<OAuth2Code> {
     
   }
     
-  public OAuth2Code(String value, String redirectUri, long expiration, List<String> scope) {
+  public OAuth2Code(String value, String redirectURI, long expiration, List<String> scope) {
     this.value = value;
-    this.redirectUri = redirectUri;
+    this.redirectURI = redirectURI;
     this.expiration = expiration;
     this.scope = scope;
   }
@@ -43,12 +43,12 @@ public class OAuth2Code implements Comparable<OAuth2Code> {
     this.value = value;
   }
   
-  public String getRedirectUri() {
-    return redirectUri;
+  public String getRedirectURI() {
+    return redirectURI;
   }
   
-  public void setRedirectUri(String redirectUri) {
-    this.redirectUri = redirectUri;
+  public void setRedirectURI(String redirectURI) {
+    this.redirectURI = redirectURI;
   }
   
   public long getExpiration() {

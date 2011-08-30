@@ -65,6 +65,7 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
 
   @Override
   public void registerAuthorizationCode(String clientId, OAuth2Code authCode) {
+    System.out.println("Auth code's value : redirect URI: " + authCode.getValue() + " : " + authCode.getRedirectURI());
     if (authCodes.containsKey(clientId)) {
       ((List<OAuth2Code>) authCodes.get(clientId)).add(authCode);
     } else {
@@ -155,10 +156,12 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
         JSONObject clientJS = oauthDB.getJSONObject(clientId);
         if(clientJS.has("authorizationCodes")){
           JSONObject authCodes = clientJS.getJSONObject("authorizationCodes");
+          System.out.println("AUTH CODES:\n" + authCodes.toString());
           for(String authCodeId : JSONObject.getNames(authCodes)){
             OAuth2Code code = converter.convertToObject(authCodes.getJSONObject(authCodeId).toString(), OAuth2Code.class);
             code.setValue(authCodeId);
             code.setClient(client);
+            System.out.println("REDIRECT URI: " + code.getRedirectURI());
             registerAuthorizationCode(clientId, code);
           }
         }
