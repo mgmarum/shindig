@@ -50,7 +50,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
       resp.setError(ErrorType.INVALID_CLIENT.toString());
       resp.setErrorDescription("The client ID is invalid or not registered");
       resp.setBodyReturned(true);
-      resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       throw new OAuth2Exception(resp);
     }
     String realSecret = client.getSecret();
@@ -61,7 +61,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         resp.setError(ErrorType.UNAUTHORIZED_CLIENT.toString());
         resp.setErrorDescription("The client failed to authorize");
         resp.setBodyReturned(true);
-        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         throw new OAuth2Exception(resp);
       }
     }
@@ -110,7 +110,12 @@ public class OAuth2ServiceImpl implements OAuth2Service {
           return; // request validated
         }
       }
-      throw new OAuth2Exception(ErrorType.UNSUPPORTED_GRANT_TYPE, "Unsupported grant type");
+      OAuth2NormalizedResponse response = new OAuth2NormalizedResponse();
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.setError(ErrorType.UNSUPPORTED_GRANT_TYPE.toString());
+      response.setErrorDescription("Unsupported grant type");
+      response.setBodyReturned(true);
+      throw new OAuth2Exception(response);
     } else {  // implicit flow does not include grant type
       if (req.getResponseType() == null || !req.getResponseType().equals("token")) {
         throw new OAuth2Exception(ErrorType.UNSUPPORTED_RESPONSE_TYPE, "Unsupported response type");
