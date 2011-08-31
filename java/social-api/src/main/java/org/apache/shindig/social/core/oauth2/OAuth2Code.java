@@ -15,7 +15,7 @@ public class OAuth2Code implements Comparable<OAuth2Code> {
   private String value;
   private String redirectURI;
   private long expiration;
-  private List<String> scope;
+  private List<String> scope; // TODO: simply a string, interpret as a list during validation
   private OAuth2Client client;
   private OAuth2Code associatedCode;
   private CodeType type;

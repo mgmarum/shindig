@@ -1,6 +1,6 @@
 package org.apache.shindig.social.core.oauth2;
 
-import org.apache.shindig.common.servlet.GuiceServletContextListener;
+import java.io.IOException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -13,7 +13,7 @@ import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
+import org.apache.shindig.common.servlet.GuiceServletContextListener;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
