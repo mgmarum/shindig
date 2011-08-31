@@ -23,6 +23,7 @@ import org.apache.shindig.expressions.RootELResolver;
 import org.apache.shindig.gadgets.Gadget;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.oauth.OAuthModule;
+import org.apache.shindig.gadgets.oauth2.OAuth2Module;
 import org.apache.shindig.gadgets.parse.DefaultHtmlSerializer;
 import org.apache.shindig.gadgets.parse.GadgetHtmlParser;
 import org.apache.shindig.gadgets.parse.SocialDataTags;
@@ -61,7 +62,7 @@ public class TemplateBasedTagHandlerTest {
   
   @Before
   public void setUp() throws Exception {
-    Injector injector = Guice.createInjector(new DefaultGuiceModule(), new OAuthModule(), new PropertiesModule());
+    Injector injector = Guice.createInjector(new DefaultGuiceModule(), new OAuthModule(), new OAuth2Module(), new PropertiesModule());
     parser = injector.getInstance(GadgetHtmlParser.class);
     processor = injector.getInstance(TemplateProcessor.class);
     context = new TemplateContext(new Gadget(), null);
