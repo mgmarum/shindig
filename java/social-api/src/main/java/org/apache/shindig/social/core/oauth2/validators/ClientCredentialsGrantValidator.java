@@ -1,5 +1,9 @@
-package org.apache.shindig.social.core.oauth2;
+package org.apache.shindig.social.core.oauth2.validators;
 
+import org.apache.shindig.social.core.oauth2.OAuth2Client;
+import org.apache.shindig.social.core.oauth2.OAuth2DataService;
+import org.apache.shindig.social.core.oauth2.OAuth2Exception;
+import org.apache.shindig.social.core.oauth2.OAuth2NormalizedRequest;
 import org.apache.shindig.social.core.oauth2.OAuth2Client.ClientType;
 import org.apache.shindig.social.core.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;

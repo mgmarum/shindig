@@ -34,10 +34,12 @@ import org.apache.shindig.social.core.oauth2.OAuth2Types.ResponseType;
 public class OAuth2NormalizedRequest extends HashMap<String, Object> {
 
   private static final long serialVersionUID = -7849581704967135322L;
+  private HttpServletRequest httpReq = null;
   
   @SuppressWarnings("unchecked")
   public OAuth2NormalizedRequest(HttpServletRequest request) throws OAuth2Exception{
     super();
+    setHttpServletRequest(request);
     normalizeBody(getBodyAsString(request));
     Enumeration<String> keys = request.getParameterNames();
     while (keys.hasMoreElements()) {
@@ -209,5 +211,13 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
       ioe.printStackTrace();
       return null;
     }
+  }
+
+  public void setHttpServletRequest(HttpServletRequest httpReq) {
+    this.httpReq = httpReq;
+  }
+
+  public HttpServletRequest getHttpServletRequest() {
+    return httpReq;
   }
 }

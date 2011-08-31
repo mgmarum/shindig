@@ -1,15 +1,18 @@
 package org.apache.shindig.social.core.oauth2;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import org.apache.shindig.social.core.oauth2.OAuth2Client.ClientType;
+import org.apache.shindig.social.core.oauth2.OAuth2Types.CodeType;
+import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
+import org.apache.shindig.social.core.oauth2.validators.AccessTokenRequestValidator;
+import org.apache.shindig.social.core.oauth2.validators.AuthorizationCodeRequestValidator;
+import org.apache.shindig.social.core.oauth2.validators.DefaultResourceRequestValidator;
+import org.apache.shindig.social.core.oauth2.validators.OAuth2RequestValidator;
+import org.apache.shindig.social.core.oauth2.validators.OAuth2ProtectedResourceValidator;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.shindig.social.core.oauth2.OAuth2Client.ClientType;
-import org.apache.shindig.social.core.oauth2.OAuth2Client.Flow;
-import org.apache.shindig.social.core.oauth2.OAuth2Types.CodeType;
-import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
+import java.util.ArrayList;
+import java.util.UUID;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -24,7 +27,8 @@ import com.google.inject.Singleton;
 public class OAuth2ServiceImpl implements OAuth2Service {
   
   private OAuth2DataService store;                            // underlying OAuth data store
-  private List<OAuth2GrantValidator> validators;              // grant validators
+
+  
   private static final long AUTH_EXPIRES=5*60*1000;           // authorization codes expire after 5 minutes
   private static final long ACCESS_EXPIRES=5*60*60*1000;      // access tokens expire after 5 hours
   //private static final long REFRESH_EXPIRES=5*24*60*60*1000;  // authorization codes expire after 5 days
@@ -32,9 +36,9 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   @Inject
   public OAuth2ServiceImpl(OAuth2DataService store) {
     this.store = store;
-    this.validators  = new ArrayList<OAuth2GrantValidator>();
-    validators.add(new AuthCodeGrantValidator(store));
-    validators.add(new ClientCredentialsGrantValidator(store));
+    authCodeValidator = new AuthorizationCodeRequestValidator(store);
+    accessTokenValidator = new AccessTokenRequestValidator(store);
+    resourceReqValidator = new DefaultResourceRequestValidator(store);
   }
 
   public OAuth2DataService getDataService() {
@@ -65,98 +69,25 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     }
   }
   
+  private OAuth2RequestValidator authCodeValidator;
+  
   public void validateRequestForAuthCode(OAuth2NormalizedRequest req) throws OAuth2Exception {
-    OAuth2Client client = store.getClient(req.getClientId());
-    if(client == null) {
-      OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
-      resp.setError(ErrorType.INVALID_REQUEST.toString());
-      resp.setErrorDescription("The client is invalid or not registered");
-      resp.setBodyReturned(true);
-      resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-      throw new OAuth2Exception(resp);
-    }
-    String storedURI = client.getRedirectURI();
-    if (storedURI == null && req.getRedirectURI() == null) {
-      OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
-      resp.setError(ErrorType.INVALID_REQUEST.toString());
-      resp.setErrorDescription("No redirect_uri registered or received in request");
-      resp.setBodyReturned(true);
-      resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-      throw new OAuth2Exception(resp);
-    }
-    if(req.getRedirectURI() != null && storedURI != null){
-      if(!req.getRedirectURI().equals(storedURI)){
-        OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
-        resp.setError(ErrorType.INVALID_REQUEST.toString());
-        resp.setErrorDescription("Redirect URI does not match the one registered for this client");
-        resp.setBodyReturned(true);
-        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        throw new OAuth2Exception(resp);
-      }
-    }
+    authCodeValidator.validateRequest(req);
   }
+  
+  private OAuth2RequestValidator accessTokenValidator;
   
   public void validateRequestForAccessToken(OAuth2NormalizedRequest req)
       throws OAuth2Exception {
-    if (req.getGrantType() != null) {
-      for (OAuth2GrantValidator validator : validators) {
-        if (validator.getGrantType().equals(req.getGrantType())) {
-          validator.validateRequest(req);
-          return; // request validated
-        }
-      }
-      OAuth2NormalizedResponse response = new OAuth2NormalizedResponse();
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.setError(ErrorType.UNSUPPORTED_GRANT_TYPE.toString());
-      response.setErrorDescription("Unsupported grant type");
-      response.setBodyReturned(true);
-      throw new OAuth2Exception(response);
-    } else {  // implicit flow does not include grant type
-      if (req.getResponseType() == null || !req.getResponseType().equals("token")) {
-        throw new OAuth2Exception(ErrorType.UNSUPPORTED_RESPONSE_TYPE, "Unsupported response type");
-      }
-      OAuth2Client client = store.getClient(req.getClientId());
-      if(client == null || client.getFlow() != Flow.IMPLICIT){
-        OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
-        resp.setError(ErrorType.INVALID_CLIENT.toString());
-        resp.setErrorDescription(req.getClientId()+" is not a registered implicit client");
-        resp.setBodyReturned(true);
-        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        throw new OAuth2Exception(resp);
-      }
-      if (req.getRedirectURI() == null && client.getRedirectURI() == null) {
-        OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
-        resp.setError(ErrorType.INVALID_REQUEST.toString());
-        resp.setErrorDescription("NO redirect_uri registered or received in request");
-        resp.setBodyReturned(true);
-        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        throw new OAuth2Exception(resp);
-      }
-      if (req.getRedirectURI() != null &&
-          !req.getRedirectURI().equals(client.getRedirectURI())) {
-        OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
-        resp.setError(ErrorType.INVALID_REQUEST.toString());
-        resp.setErrorDescription("Redirect URI does not match the one registered for this client");
-        resp.setBodyReturned(true);
-        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        throw new OAuth2Exception(resp);
-      }
-      return; // request validated
-    }
+    accessTokenValidator.validateRequest(req);
   }
 
-  /**
-   * TODO: implement scope handling.
-   */
+  
+  
+  private OAuth2ProtectedResourceValidator resourceReqValidator;
+  
   public void validateRequestForResource(OAuth2NormalizedRequest req, Object resourceRequest) throws OAuth2Exception {
-    OAuth2Code token = store.getAccessToken(req.getAccessToken());
-    if (token == null) throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token is invalid.");
-    if (token.getExpiration() > -1 && token.getExpiration() < System.currentTimeMillis()) {
-      throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token has expired.");
-    }
-    if (resourceRequest != null) {
-      // TODO: validate that requested resource is within scope
-    }
+    resourceReqValidator.validateRequestForResource(req, resourceRequest);
   }
   
   public OAuth2Code grantAuthorizationCode(OAuth2NormalizedRequest req) {
