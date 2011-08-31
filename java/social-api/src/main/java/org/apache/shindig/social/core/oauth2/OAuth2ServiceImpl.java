@@ -148,13 +148,13 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   /**
    * TODO: implement scope handling.
    */
-  public void validateRequestForResource(OAuth2NormalizedRequest req, String requestedResource) throws OAuth2Exception {
+  public void validateRequestForResource(OAuth2NormalizedRequest req, Object resourceRequest) throws OAuth2Exception {
     OAuth2Code token = store.getAccessToken(req.getAccessToken());
     if (token == null) throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token is invalid.");
     if (token.getExpiration() > -1 && token.getExpiration() < System.currentTimeMillis()) {
       throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token has expired.");
     }
-    if (requestedResource != null) {
+    if (resourceRequest != null) {
       // TODO: validate that requested resource is within scope
     }
   }
