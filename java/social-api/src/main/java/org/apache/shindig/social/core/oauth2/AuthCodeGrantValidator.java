@@ -17,12 +17,10 @@ public class AuthCodeGrantValidator implements OAuth2GrantValidator {
     this.service = service;
   }
 
-  @Override
   public String getGrantType() {
     return "authorization_code";
   }
 
-  @Override
   public void validateRequest(OAuth2NormalizedRequest servletRequest) throws OAuth2Exception {
     OAuth2Client client = service.getClient(servletRequest.getClientId());
     if(client == null || client.getFlow() != Flow.AUTHORIZATION_CODE){

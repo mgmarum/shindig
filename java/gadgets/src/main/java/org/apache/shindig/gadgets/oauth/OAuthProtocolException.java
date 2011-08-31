@@ -46,7 +46,7 @@ import java.util.Set;
  * By default we assume most service provider errors fall into the second
  * category: we should ask for the user's permission again.
  */
-class OAuthProtocolException extends Exception {
+public class OAuthProtocolException extends Exception {
 
   /**
    * Problems that should force us to abort the protocol right away,

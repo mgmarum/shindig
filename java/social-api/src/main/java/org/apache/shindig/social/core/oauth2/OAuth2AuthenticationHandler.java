@@ -13,7 +13,6 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
   
   private OAuth2Service store;
 
-  @Override
   public String getName() {
     return "OAuth2";
   }
@@ -27,12 +26,16 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
    * Only denies authentication when an invalid bearer token is received.  
    * Unauthenticated requests can pass through to other AuthenticationHandlers.
    */
-  @Override
   public SecurityToken getSecurityTokenFromRequest(HttpServletRequest request)
       throws InvalidAuthenticationException {
     OAuth2NormalizedRequest normalizedReq;
-    try {
+    try{
       normalizedReq = new OAuth2NormalizedRequest(request);
+    }catch(OAuth2Exception oae){
+      //May not have been a real OAuth2 request?
+      return null;
+    }
+    try {
       if(normalizedReq.getAccessToken() != null){
         store.validateRequestForResource(normalizedReq, null);
         return new AnonymousSecurityToken();  //Return your valid security token
@@ -44,7 +47,6 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
     return null;
   }
 
-  @Override
   public String getWWWAuthenticateHeader(String realm) {
     return String.format("Bearer realm=\"%s\"", realm);
   }

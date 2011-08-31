@@ -31,7 +31,7 @@ public interface OAuth2Service {
   /**
    * Validates a client's request to use access a resource.
    */
-  public void validateRequestForResource(OAuth2NormalizedRequest req, String requestedResource) throws OAuth2Exception;
+  public void validateRequestForResource(OAuth2NormalizedRequest req, Object resourceRequest) throws OAuth2Exception;
   
   // ------------------- GENERATION & REGISTRATION OF CODES -------------------
   /**

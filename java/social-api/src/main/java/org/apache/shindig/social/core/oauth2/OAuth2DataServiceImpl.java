@@ -40,7 +40,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
     loadClientsFromCanonical();
   }
 
-  @Override
   public OAuth2Client getClient(String clientId) {
     for (OAuth2Client client : clients) {
       if (client.getId().equals(clientId)) {
@@ -50,7 +49,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
     return null;
   }
 
-  @Override
   public OAuth2Code getAuthorizationCode(String clientId, String authCode){
     if (authCodes.containsKey(clientId)) {
       List<OAuth2Code> codes = authCodes.get(clientId);
@@ -63,7 +61,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
     return null;
   }
 
-  @Override
   public void registerAuthorizationCode(String clientId, OAuth2Code authCode) {
     if (authCodes.containsKey(clientId)) {
       ((List<OAuth2Code>) authCodes.get(clientId)).add(authCode);
@@ -74,7 +71,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
     }
   }
 
-  @Override
   public void unregisterAuthorizationCode(String clientId, String authCode) {
     if (authCodes.containsKey(clientId)) {
       List<OAuth2Code> codes = authCodes.get(clientId);
@@ -88,7 +84,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
     throw new RuntimeException("signature not found");  // TODO: handle error
   }
 
-  @Override
   public OAuth2Code getAccessToken(String accessToken) {
     for (String clientId : accessTokens.keySet()) {
       List<OAuth2Code> tokens = accessTokens.get(clientId);
@@ -101,7 +96,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
     return null;
   }
 
-  @Override
   public void registerAccessToken(String clientId, OAuth2Code accessToken) {
     if (accessTokens.containsKey(clientId)) {
       ((List<OAuth2Code>) accessTokens.get(clientId)).add(accessToken);
@@ -112,7 +106,6 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
     }
   }
 
-  @Override
   public void unregisterAccessToken(String clientId, String accessToken) {
     if (accessTokens.containsKey(clientId)) {
       List<OAuth2Code> tokens = accessTokens.get(clientId);
@@ -126,17 +119,14 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
     throw new RuntimeException("access token not found");  // TODO: handle error
   }
 
-  @Override
   public OAuth2Code getRefreshToken(String refreshToken) {
     throw new RuntimeException("not yet implemented");
   }
 
-  @Override
   public void registerRefreshToken(String clientId, OAuth2Code refreshToken) {
     throw new RuntimeException("not yet implemented");
   }
 
-  @Override
   public void unregisterRefreshToken(String clientId, String refreshToken) {
     throw new RuntimeException("not yet implemented");
   }

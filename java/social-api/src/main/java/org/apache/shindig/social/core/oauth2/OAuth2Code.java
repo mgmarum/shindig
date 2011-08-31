@@ -17,7 +17,9 @@ public class OAuth2Code implements Comparable<OAuth2Code> {
   private long expiration;
   private List<String> scope; // TODO: simply a string, interpret as a list during validation
   private OAuth2Client client;
-  private OAuth2Code associatedCode;
+  private OAuth2Code relatedAuthCode;
+  private OAuth2Code relatedRefreshToken;
+  private OAuth2Code relatedAccessToken;
   private CodeType type;
   
   public OAuth2Code() {
@@ -87,11 +89,27 @@ public class OAuth2Code implements Comparable<OAuth2Code> {
     return type;
   }
   
-  public void setAssociatedCode(OAuth2Code code) {
-    this.associatedCode = code;
+  public void setRelatedAuthCode(OAuth2Code code) {
+    this.relatedAuthCode = code;
   }
   
-  public OAuth2Code getAssociatedCode() {
-    return associatedCode;
+  public OAuth2Code getRelatedAuthCode() {
+    return relatedAuthCode;
+  }
+
+  public void setRelatedRefreshToken(OAuth2Code relatedRefreshToken) {
+    this.relatedRefreshToken = relatedRefreshToken;
+  }
+
+  public OAuth2Code getRelatedRefreshToken() {
+    return relatedRefreshToken;
+  }
+
+  public void setRelatedAccessToken(OAuth2Code relatedAccessToken) {
+    this.relatedAccessToken = relatedAccessToken;
+  }
+
+  public OAuth2Code getRelatedAccessToken() {
+    return relatedAccessToken;
   }
 }

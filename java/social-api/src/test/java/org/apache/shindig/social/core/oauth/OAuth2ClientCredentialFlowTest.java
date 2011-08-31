@@ -42,7 +42,7 @@ public class OAuth2ClientCredentialFlowTest extends AbstractLargeRestfulTests {
     req.setServletPath("/oauth2");
     req.setPathInfo("/access_token");
     HttpServletResponse resp = mock(HttpServletResponse.class);
-    resp.setStatus(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN));
+    resp.setStatus(EasyMock.eq(HttpServletResponse.SC_BAD_REQUEST));
     MockServletOutputStream outputStream = new MockServletOutputStream();
     EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
     PrintWriter writer = new PrintWriter(outputStream);
@@ -70,7 +70,7 @@ public class OAuth2ClientCredentialFlowTest extends AbstractLargeRestfulTests {
     req.setServletPath("/oauth2");
     req.setPathInfo("/access_token");
     HttpServletResponse resp = mock(HttpServletResponse.class);
-    resp.setStatus(EasyMock.eq(HttpServletResponse.SC_FORBIDDEN));
+    resp.setStatus(EasyMock.eq(HttpServletResponse.SC_BAD_REQUEST));
     MockServletOutputStream outputStream = new MockServletOutputStream();
     EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
     PrintWriter writer = new PrintWriter(outputStream);

@@ -37,12 +37,10 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     validators.add(new ClientCredentialsGrantValidator(store));
   }
 
-  @Override
   public OAuth2DataService getDataService() {
     return store;
   }
 
-  @Override
   public void authenticateClient(OAuth2NormalizedRequest req) throws OAuth2Exception {
     OAuth2Client client = store.getClient(req.getClientId());
     if (client == null) {
@@ -67,7 +65,6 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     }
   }
   
-  @Override
   public void validateRequestForAuthCode(OAuth2NormalizedRequest req) throws OAuth2Exception {
     OAuth2Client client = store.getClient(req.getClientId());
     if(client == null) {
@@ -99,8 +96,6 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     }
   }
   
-
-  @Override
   public void validateRequestForAccessToken(OAuth2NormalizedRequest req)
       throws OAuth2Exception {
     if (req.getGrantType() != null) {
@@ -153,33 +148,29 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   /**
    * TODO: implement scope handling.
    */
-  @Override
-  public void validateRequestForResource(OAuth2NormalizedRequest req, String requestedResource) throws OAuth2Exception {
+  public void validateRequestForResource(OAuth2NormalizedRequest req, Object resourceRequest) throws OAuth2Exception {
     OAuth2Code token = store.getAccessToken(req.getAccessToken());
     if (token == null) throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token is invalid.");
     if (token.getExpiration() > -1 && token.getExpiration() < System.currentTimeMillis()) {
       throw new OAuth2Exception(ErrorType.ACCESS_DENIED, "Access token has expired.");
     }
-    if (requestedResource != null) {
+    if (resourceRequest != null) {
       // TODO: validate that requested resource is within scope
     }
   }
   
-  @Override
   public OAuth2Code grantAuthorizationCode(OAuth2NormalizedRequest req) {
     OAuth2Code authCode = generateAuthorizationCode(req);
     store.registerAuthorizationCode(req.getClientId(), authCode);
     return authCode;
   }
 
-  @Override
   public OAuth2Code grantAccessToken(OAuth2NormalizedRequest req) {
     OAuth2Code accessToken = generateAccessToken(req);
     store.registerAccessToken(req.getClientId(), accessToken);
     return accessToken;
   }
 
-  @Override
   public OAuth2Code grantRefreshToken(OAuth2NormalizedRequest req) {
     OAuth2Code refreshToken = generateRefreshToken(req);
     store.registerRefreshToken(req.getClientId(), refreshToken);
@@ -206,7 +197,6 @@ public class OAuth2ServiceImpl implements OAuth2Service {
   /**
    * TODO: Implement scope handling.
    */
-  @Override
   public OAuth2Code generateAccessToken(OAuth2NormalizedRequest req) {
     // generate token value
     OAuth2Code accessToken = new OAuth2Code();
@@ -222,7 +212,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     // associate with existing authorization code, if an auth code exists.
     if(req.getAuthorizationCode() != null){
       OAuth2Code authCode = store.getAuthorizationCode(req.getClientId(), req.getAuthorizationCode());
-      accessToken.setAssociatedCode(authCode);
+      accessToken.setRelatedAuthCode(authCode);
       accessToken.setClient(authCode.getClient());
       if (authCode.getScope() != null) {
         accessToken.setScope(new ArrayList<String>(authCode.getScope()));
@@ -232,7 +222,6 @@ public class OAuth2ServiceImpl implements OAuth2Service {
     return accessToken;
   }
 
-  @Override
   public OAuth2Code generateRefreshToken(OAuth2NormalizedRequest req) {
     throw new RuntimeException("not yet implemented");
   }
