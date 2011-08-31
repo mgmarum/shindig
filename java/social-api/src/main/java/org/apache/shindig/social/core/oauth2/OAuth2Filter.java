@@ -45,7 +45,6 @@ public class OAuth2Filter implements Filter {
   /**
    * Going to load DataStore from Guice binding
    */
-  @Override
   public void init(FilterConfig config) throws ServletException {
     ServletContext context = config.getServletContext();
     injector = (Injector) context.getAttribute(GuiceServletContextListener.INJECTOR_ATTRIBUTE);
@@ -71,7 +70,6 @@ public class OAuth2Filter implements Filter {
    * Totally incomplete...
    * TODO Finish.
    */
-  @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
     if(request instanceof HttpServletRequest){
@@ -89,7 +87,6 @@ public class OAuth2Filter implements Filter {
   
   
 
-  @Override
   public void destroy() {
 
   }

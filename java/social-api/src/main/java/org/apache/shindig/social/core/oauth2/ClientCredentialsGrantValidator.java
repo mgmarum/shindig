@@ -19,12 +19,10 @@ public class ClientCredentialsGrantValidator implements OAuth2GrantValidator {
     this.service = service;
   }
   
-  @Override
   public String getGrantType() {
     return "client_credentials";
   }
 
-  @Override
   public void validateRequest(OAuth2NormalizedRequest req) throws OAuth2Exception {
     OAuth2Client cl = service.getClient(req.getClientId());
     if(cl == null || cl.getFlow() != Flow.CLIENT_CREDENTIALS){

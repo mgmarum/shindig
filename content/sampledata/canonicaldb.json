@@ -648,7 +648,6 @@
  			"advancedClient_authcode_1" : {
  				// Authentication code has been consumed since associatedSignature exists
  				"redirectURI" : "http://localhost:8080/oauthclients/AuthorizationCodeClient/friends",
- 				"associatedSignature" : "advancedClientOS_accesstoken_1",
  				//Setting expiration to -1 makes code permanent
  				"expiration" : -1
  			},
