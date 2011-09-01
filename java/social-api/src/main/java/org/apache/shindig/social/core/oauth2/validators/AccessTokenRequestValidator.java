@@ -45,7 +45,11 @@ public class AccessTokenRequestValidator implements OAuth2RequestValidator {
       throw new OAuth2Exception(response);
     } else {  // implicit flow does not include grant type
       if (req.getResponseType() == null || !req.getResponseType().equals("token")) {
-        throw new OAuth2Exception(ErrorType.UNSUPPORTED_RESPONSE_TYPE, "Unsupported response type");
+        OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+        resp.setError(ErrorType.UNSUPPORTED_RESPONSE_TYPE.toString());
+        resp.setErrorDescription("Unsupported response type");
+        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        throw new OAuth2Exception(resp);
       }
       OAuth2Client client = store.getClient(req.getClientId());
       if(client == null || client.getFlow() != Flow.IMPLICIT){

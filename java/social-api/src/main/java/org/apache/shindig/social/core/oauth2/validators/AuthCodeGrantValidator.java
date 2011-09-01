@@ -30,7 +30,11 @@ public class AuthCodeGrantValidator implements OAuth2GrantValidator {
   public void validateRequest(OAuth2NormalizedRequest servletRequest) throws OAuth2Exception {
     OAuth2Client client = service.getClient(servletRequest.getClientId());
     if(client == null || client.getFlow() != Flow.AUTHORIZATION_CODE){
-      throw new OAuth2Exception(ErrorType.INVALID_CLIENT,"Invalid Client");
+      OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+      resp.setError(ErrorType.INVALID_CLIENT.toString());
+      resp.setErrorDescription("Invalid client");
+      resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      throw new OAuth2Exception(resp);
     }
     OAuth2Code authCode = service.getAuthorizationCode(servletRequest.getClientId(), servletRequest.getAuthorizationCode());
     if(authCode == null) {

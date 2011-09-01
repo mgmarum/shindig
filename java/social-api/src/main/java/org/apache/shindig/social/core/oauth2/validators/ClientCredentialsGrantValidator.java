@@ -1,9 +1,12 @@
 package org.apache.shindig.social.core.oauth2.validators;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.shindig.social.core.oauth2.OAuth2Client;
 import org.apache.shindig.social.core.oauth2.OAuth2DataService;
 import org.apache.shindig.social.core.oauth2.OAuth2Exception;
 import org.apache.shindig.social.core.oauth2.OAuth2NormalizedRequest;
+import org.apache.shindig.social.core.oauth2.OAuth2NormalizedResponse;
 import org.apache.shindig.social.core.oauth2.OAuth2Client.ClientType;
 import org.apache.shindig.social.core.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
@@ -30,15 +33,22 @@ public class ClientCredentialsGrantValidator implements OAuth2GrantValidator {
   public void validateRequest(OAuth2NormalizedRequest req) throws OAuth2Exception {
     OAuth2Client cl = service.getClient(req.getClientId());
     if(cl == null || cl.getFlow() != Flow.CLIENT_CREDENTIALS){
-      throw new OAuth2Exception(ErrorType.ACCESS_DENIED,"Bad client id or password");
+      throwAccessDenied("Bad client id or password");
     }
     if(cl.getType() != ClientType.CONFIDENTIAL){
-      throw new OAuth2Exception(ErrorType.ACCESS_DENIED,"Client credentials flow does not support public clients");
+      throwAccessDenied("Client credentials flow does not support public clients");
     }
     if(!cl.getSecret().equals(req.getClientSecret())){
-      throw new OAuth2Exception(ErrorType.ACCESS_DENIED,"Bad client id or password");
+      throwAccessDenied("Bad client id or password");
     }
-
+  }
+  
+  private void throwAccessDenied(String msg) throws OAuth2Exception {
+    OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
+    resp.setError(ErrorType.ACCESS_DENIED.toString());
+    resp.setErrorDescription(msg);
+    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+    throw new OAuth2Exception(resp);
   }
 
 }

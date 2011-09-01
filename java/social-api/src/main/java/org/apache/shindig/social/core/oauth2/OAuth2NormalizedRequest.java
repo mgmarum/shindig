@@ -166,7 +166,11 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
             secret = parts[1];
             String queryId = getString("client_id");
             if(queryId != null && !queryId.equals(parts[0])){
-              throw new OAuth2Exception(ErrorType.INVALID_REQUEST,"Request contains mismatched client ids");
+              OAuth2NormalizedResponse response = new OAuth2NormalizedResponse();
+              response.setError(ErrorType.INVALID_REQUEST.toString());
+              response.setErrorDescription("Request contains mismatched client ids");
+              response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+              throw new OAuth2Exception(response);
             }
             // Lets set the client id from the Basic auth header if not already set in query,
             // needed for client_credential flow.
@@ -191,7 +195,11 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
         put(param.getName(), param.getValue());
       }
     } catch (URISyntaxException e) {
-      throw new OAuth2Exception(ErrorType.INVALID_REQUEST, "The message body's syntax is incorrect");
+      OAuth2NormalizedResponse response = new OAuth2NormalizedResponse();
+      response.setError(ErrorType.INVALID_REQUEST.toString());
+      response.setErrorDescription("The message body's syntax is incorrect");
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      throw new OAuth2Exception(response);
     }
   }
   
