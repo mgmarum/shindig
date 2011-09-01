@@ -63,7 +63,7 @@ public class AccessTokenRequestValidator implements OAuth2RequestValidator {
       if (req.getRedirectURI() == null && client.getRedirectURI() == null) {
         OAuth2NormalizedResponse resp = new OAuth2NormalizedResponse();
         resp.setError(ErrorType.INVALID_REQUEST.toString());
-        resp.setErrorDescription("NO redirect_uri registered or received in request");
+        resp.setErrorDescription("No redirect_uri registered or received in request");
         resp.setBodyReturned(true);
         resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
         throw new OAuth2Exception(resp);

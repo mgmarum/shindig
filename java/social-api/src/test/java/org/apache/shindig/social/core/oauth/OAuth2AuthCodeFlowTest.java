@@ -1,5 +1,12 @@
 package org.apache.shindig.social.core.oauth;
 
+import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.shindig.common.testing.FakeHttpServletRequest;
 import org.apache.shindig.social.core.oauth2.OAuth2Servlet;
@@ -9,13 +16,6 @@ import org.easymock.EasyMock;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.servlet.http.HttpServletResponse;
-
-import java.io.PrintWriter;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.util.UUID;
 
 public class OAuth2AuthCodeFlowTest extends AbstractLargeRestfulTests{
 
@@ -528,6 +528,88 @@ public class OAuth2AuthCodeFlowTest extends AbstractLargeRestfulTests{
     
     assertEquals("invalid_grant",tokenResponse.getString("error"));
     verify();
+  }
+  
+  /**
+   * Test attempting to re-use an authorization code to get a new access token.
+   */
+  @Test
+  public void testReuseAuthorizationCode() throws Exception {
+    // get authorization code
+    FakeHttpServletRequest req = new FakeHttpServletRequest("http://localhost:8080","/oauth2", "client_id=" + CONF_CLIENT_ID + "&client_secret="+CONF_CLIENT_SECRET+"&response_type=code&redirect_uri="+URLEncoder.encode(REDIRECT_URI,"UTF-8"));
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/authorize");
+    HttpServletResponse resp = mock(HttpServletResponse.class);
+    Capture<String> redirectURI = new Capture<String>();
+    resp.setHeader(EasyMock.eq("Location"), EasyMock.capture(redirectURI));
+    resp.setStatus(EasyMock.eq(HttpServletResponse.SC_FOUND));
+    MockServletOutputStream outputStream = new MockServletOutputStream();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    PrintWriter writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+    String response = new String(outputStream.getBuffer(),"UTF-8");
+    assertTrue(response == null || response.equals(""));
+    verify();
+    assertTrue(redirectURI.getValue().startsWith(REDIRECT_URI+"?code="));
+    String code = redirectURI.getValue().substring(redirectURI.getValue().indexOf("=")+1);
+    UUID id = UUID.fromString(code);
+    assertTrue(id != null);
+    System.out.println("Retrieved authorization code: " + code);
+    
+    reset();
+    
+    // use authorization code to get access token
+    req = new FakeHttpServletRequest("http://localhost:8080","/oauth2", "client_id=" + CONF_CLIENT_ID + "&grant_type=authorization_code&redirect_uri=" + URLEncoder.encode(REDIRECT_URI,"UTF-8") + "&code=" + code + "&client_secret=" + CONF_CLIENT_SECRET);
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/access_token");
+    resp = mock(HttpServletResponse.class);
+    resp.setStatus(HttpServletResponse.SC_OK);
+    outputStream = new MockServletOutputStream();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+    JSONObject tokenResponse = new JSONObject(new String(outputStream.getBuffer(),"UTF-8"));
+    assertEquals("bearer",tokenResponse.getString("token_type"));
+    assertNotNull(tokenResponse.getString("access_token"));
+    assertTrue(tokenResponse.getLong("expires_in") > 0);
+    verify();
+    String accessToken = tokenResponse.getString("access_token");
+    System.out.println("Retrieved access token: " + accessToken);
+    
+    reset();
+    
+    // TODO: use access token to get a resource
+    
+    reset();
+    
+    // attempt to re-use authorization code to get new access token
+    req = new FakeHttpServletRequest("http://localhost:8080","/oauth2", "client_id=" + CONF_CLIENT_ID + "&grant_type=authorization_code&redirect_uri=" + URLEncoder.encode(REDIRECT_URI,"UTF-8") + "&code=" + code + "&client_secret=" + CONF_CLIENT_SECRET);
+    req.setMethod("GET");
+    req.setServletPath("/oauth2");
+    req.setPathInfo("/access_token");
+    resp = mock(HttpServletResponse.class);
+    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+    outputStream = new MockServletOutputStream();
+    EasyMock.expect(resp.getOutputStream()).andReturn(outputStream).anyTimes();
+    writer = new PrintWriter(outputStream);
+    EasyMock.expect(resp.getWriter()).andReturn(writer).anyTimes();
+    replay();
+    servlet.service(req, resp);
+    writer.flush();
+    tokenResponse = new JSONObject(new String(outputStream.getBuffer(),"UTF-8"));
+    System.out.println("Rejection response: " + tokenResponse.toString());
+    assertEquals("invalid_grant",tokenResponse.getString("error"));
+    verify();
+    
+    // TODO: use revoked access token to get a resource
   }
 
 }

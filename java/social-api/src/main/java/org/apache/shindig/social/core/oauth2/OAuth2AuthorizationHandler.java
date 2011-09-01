@@ -26,8 +26,6 @@ public class OAuth2AuthorizationHandler {
     try {
       // normalize the request
       OAuth2NormalizedRequest normalizedReq = new OAuth2NormalizedRequest(request);
-      System.out.println("Normalized token request: ");
-      System.out.println(normalizedReq.toString());
       
       // process request according to flow
       OAuth2NormalizedResponse normalizedResp = new OAuth2NormalizedResponse();

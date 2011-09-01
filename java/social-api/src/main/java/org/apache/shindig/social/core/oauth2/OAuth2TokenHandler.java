@@ -26,8 +26,6 @@ public class OAuth2TokenHandler {
     try {
       // normalize the request
       OAuth2NormalizedRequest normalizedReq = new OAuth2NormalizedRequest(request);
-      System.out.println("Normalized token request: ");
-      System.out.println(normalizedReq.toString());
       
       // grant access token
       service.authenticateClient(normalizedReq);

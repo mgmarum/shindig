@@ -28,6 +28,8 @@ public class OAuth2AuthenticationHandler implements AuthenticationHandler {
    */
   public SecurityToken getSecurityTokenFromRequest(HttpServletRequest request)
       throws InvalidAuthenticationException {
+    System.out.println("OAuth2AuthenticationHandler.getSecurityTokenFromRequest()");
+    
     OAuth2NormalizedRequest normalizedReq;
     try{
       normalizedReq = new OAuth2NormalizedRequest(request);

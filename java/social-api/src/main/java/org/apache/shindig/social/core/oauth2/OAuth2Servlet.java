@@ -38,7 +38,7 @@ public class OAuth2Servlet extends InjectedServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    System.out.println("OAuth2Servlet.doGet()");
+    System.out.println("OAuth2Servlet.doGet!()");
     HttpUtil.setNoCache(response);
     String path = request.getPathInfo();
     if (path.endsWith("authorize")) {

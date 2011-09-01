@@ -98,6 +98,8 @@ public class OAuth2ServiceImpl implements OAuth2Service {
 
   public OAuth2Code grantAccessToken(OAuth2NormalizedRequest req) {
     OAuth2Code accessToken = generateAccessToken(req);
+    OAuth2Code authCode = store.getAuthorizationCode(req.getClientId(), req.getAuthorizationCode());
+    authCode.setRelatedAccessToken(accessToken);
     store.registerAccessToken(req.getClientId(), accessToken);
     return accessToken;
   }

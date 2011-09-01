@@ -53,6 +53,17 @@ public class AuthCodeGrantValidator implements OAuth2GrantValidator {
       response.setBodyReturned(true);
       throw new OAuth2Exception(response);
     }
+    
+    // ensure authorization code has not already been used
+    if (authCode.getRelatedAccessToken() != null) {
+      service.unregisterAccessToken(client.getId(), authCode.getRelatedAccessToken().getValue());
+      OAuth2NormalizedResponse response = new OAuth2NormalizedResponse();
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      response.setError(ErrorType.INVALID_GRANT.toString());
+      response.setErrorDescription("The authorization code has already been used to generate an access token");
+      response.setBodyReturned(true);
+      throw new OAuth2Exception(response);
+    }
   }
 
 }
