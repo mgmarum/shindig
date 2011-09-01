@@ -26,7 +26,7 @@ import org.apache.shindig.common.PropertiesModule;
 import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.gadgets.DefaultGuiceModule;
 import org.apache.shindig.gadgets.oauth.OAuthModule;
-import org.apache.shindig.gadgets.oauth2.OAuth2Module;
+import org.apache.shindig.gadgets.oauth2.sample.OAuth2Module;
 import org.apache.shindig.gadgets.render.CajaResponseRewriter;
 import org.apache.shindig.gadgets.render.SanitizingResponseRewriter;
 import org.apache.shindig.gadgets.rewrite.ResponseRewriterList.RewriteFlow;

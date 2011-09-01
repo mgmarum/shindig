@@ -28,8 +28,7 @@ import org.apache.shindig.common.util.DateUtil;
 import org.apache.shindig.gadgets.AuthType;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.oauth.OAuthRequest;
-import org.apache.shindig.gadgets.oauth2.BasicOAuth2Request;
-import org.apache.shindig.gadgets.oauth2.OAuth2Request;
+import org.apache.shindig.gadgets.oauth2.sample.OAuth2Request;
 import org.apache.shindig.gadgets.rewrite.DefaultResponseRewriterRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -384,7 +383,7 @@ public class DefaultRequestPipelineTest {
 
   }
   
-  public static class FakeOAuth2RequestProvider implements Provider<OAuth2Request> {
+  public static class FakeOAuth2RequestProvider implements Provider<org.apache.shindig.gadgets.oauth2.OAuth2Request> {
 	    protected int fetchCount = 0;
 	    protected HttpRequest httpRequest;
 	    protected HttpResponse httpResponse;
@@ -393,7 +392,7 @@ public class DefaultRequestPipelineTest {
 	    }
 
 
-	    private final OAuth2Request oauth2Request = new BasicOAuth2Request(null, null) {
+	    private final org.apache.shindig.gadgets.oauth2.OAuth2Request oauth2Request = new OAuth2Request(null, null) {
 	      @Override
 	      public HttpResponse fetch(HttpRequest request) {
 	        fetchCount++;
@@ -402,7 +401,7 @@ public class DefaultRequestPipelineTest {
 	      }
 	    };
 
-	    public OAuth2Request get() {
+	    public org.apache.shindig.gadgets.oauth2.OAuth2Request get() {
 	      return oauth2Request;
 	    }
 
