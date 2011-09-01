@@ -22,8 +22,6 @@ import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.gadgets.http.HttpFetcher;
-import org.apache.shindig.gadgets.oauth.OAuthFetcherConfig;
-import org.apache.shindig.gadgets.oauth.OAuthModule.OAuthCrypterProvider;
 import org.apache.shindig.gadgets.oauth2.OAuth2FetcherConfig;
 import org.apache.shindig.gadgets.oauth2.OAuth2Request;
 import org.apache.shindig.gadgets.oauth2.OAuth2Store;
@@ -49,8 +47,6 @@ public class OAuth2Module extends AbstractModule {
 
   @Override
   protected void configure() {
-	this.bind(BlobCrypter.class).annotatedWith(Names.named(OAuthFetcherConfig.OAUTH_STATE_CRYPTER))
-        .toProvider(OAuth2CrypterProvider.class);
     // Used for persistent storage of OAuth2 access tokens.
     this.bind(OAuth2Store.class).toProvider(OAuth2StoreProvider.class);
     this.bind(OAuth2Request.class).toProvider(OAuth2RequestProvider.class);
