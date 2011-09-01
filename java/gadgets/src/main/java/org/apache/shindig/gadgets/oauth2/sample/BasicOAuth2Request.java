@@ -21,13 +21,13 @@ import com.google.inject.Inject;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
-public class OAuth2Request implements org.apache.shindig.gadgets.oauth2.OAuth2Request {
+public class BasicOAuth2Request implements org.apache.shindig.gadgets.oauth2.OAuth2Request {
   private final OAuth2Store store;
   private final HttpFetcher fetcher;
   private final OAuth2FetcherConfig config;
 
   @Inject
-  public OAuth2Request(final HttpFetcher fetcher, final OAuth2FetcherConfig config) {
+  public BasicOAuth2Request(final HttpFetcher fetcher, final OAuth2FetcherConfig config) {
     this.store = null;
     this.fetcher = fetcher;
     this.config = config;

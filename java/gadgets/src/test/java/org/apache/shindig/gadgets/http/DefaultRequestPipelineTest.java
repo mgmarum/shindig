@@ -28,7 +28,7 @@ import org.apache.shindig.common.util.DateUtil;
 import org.apache.shindig.gadgets.AuthType;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.oauth.OAuthRequest;
-import org.apache.shindig.gadgets.oauth2.sample.OAuth2Request;
+import org.apache.shindig.gadgets.oauth2.sample.BasicOAuth2Request;
 import org.apache.shindig.gadgets.rewrite.DefaultResponseRewriterRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -392,7 +392,7 @@ public class DefaultRequestPipelineTest {
 	    }
 
 
-	    private final org.apache.shindig.gadgets.oauth2.OAuth2Request oauth2Request = new OAuth2Request(null, null) {
+	    private final org.apache.shindig.gadgets.oauth2.OAuth2Request oauth2Request = new BasicOAuth2Request(null, null) {
 	      @Override
 	      public HttpResponse fetch(HttpRequest request) {
 	        fetchCount++;
