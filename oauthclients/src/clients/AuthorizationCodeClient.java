@@ -89,7 +89,9 @@ public class AuthorizationCodeClient extends HttpServlet {
 		params.put("client_secret", appSecret);
 		params.put("code", authCode);
 		params.put("grant_type", "authorization_code");
-		Response resp = connection.post("http://localhost:8080/oauth2/token", null, null, HttpConnection.convertQueryString(params));
+    Map<String, String> headers = new HashMap<String, String>();
+    headers.put("Content-Type", "application/x-www-form-urlencoded");
+		Response resp = connection.post("http://localhost:8080/oauth2/token", headers, null, HttpConnection.convertQueryString(params));
 		System.out.println("Done posting, response:");
 		System.out.println(resp.toString());
 		if (resp.getStatusCode() != 200) {

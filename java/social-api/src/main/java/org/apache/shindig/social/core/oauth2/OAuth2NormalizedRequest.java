@@ -1,5 +1,15 @@
 package org.apache.shindig.social.core.oauth2;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
+import org.apache.shindig.social.core.oauth2.OAuth2Types.GrantType;
+import org.apache.shindig.social.core.oauth2.OAuth2Types.ResponseType;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,16 +20,8 @@ import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.shindig.social.core.oauth2.OAuth2Types.ErrorType;
-import org.apache.shindig.social.core.oauth2.OAuth2Types.GrantType;
-import org.apache.shindig.social.core.oauth2.OAuth2Types.ResponseType;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** 
  * Normalizes an OAuth 2.0 request by extracting OAuth 2.0 related fields.
@@ -35,12 +37,19 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
 
   private static final long serialVersionUID = -7849581704967135322L;
   private HttpServletRequest httpReq = null;
+  private static final Pattern FORM_URL_REGEX = Pattern.compile("application/(x-www-)?form-url(-)?encoded");
   
   @SuppressWarnings("unchecked")
   public OAuth2NormalizedRequest(HttpServletRequest request) throws OAuth2Exception{
     super();
     setHttpServletRequest(request);
-    normalizeBody(getBodyAsString(request));
+    String contentType = request.getContentType();
+    if(contentType != null ){
+      Matcher match = FORM_URL_REGEX.matcher(contentType);
+      if(match.matches()){
+        normalizeBody(getBodyAsString(request));
+      }
+    }
     Enumeration<String> keys = request.getParameterNames();
     while (keys.hasMoreElements()) {
       String key = keys.nextElement();
@@ -195,6 +204,7 @@ public class OAuth2NormalizedRequest extends HashMap<String, Object> {
         put(param.getName(), param.getValue());
       }
     } catch (URISyntaxException e) {
+      e.printStackTrace();
       OAuth2NormalizedResponse response = new OAuth2NormalizedResponse();
       response.setError(ErrorType.INVALID_REQUEST.toString());
       response.setErrorDescription("The message body's syntax is incorrect");

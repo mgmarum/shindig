@@ -53,7 +53,9 @@ public class ClientCredentialsClient extends HttpServlet {
 		params.put("grant_type", "client_credentials");
 		params.put("client_id", clientId);
 		params.put("client_secret", clientSecret);
-		Response resp = connection.post("http://localhost:8080/oauth2/token", null, null, HttpConnection.convertQueryString(params));
+		Map<String, String> headers = new HashMap<String, String>();
+		headers.put("Content-Type", "application/x-www-form-urlencoded");
+		Response resp = connection.post("http://localhost:8080/oauth2/token", headers, null, HttpConnection.convertQueryString(params));
 		System.out.println("Done posting, response:");
 		System.out.println(resp.toString());
 		if (resp.getStatusCode() != 200) {
