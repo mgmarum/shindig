@@ -11,7 +11,9 @@ import java.util.List;
 
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
-import org.apache.shindig.gadgets.oauth2.core.Parameter;
+import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
+//import org.apache.shindig.gadgets.oauth2.core.Parameter;
+import net.oauth.OAuth.Parameter;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 

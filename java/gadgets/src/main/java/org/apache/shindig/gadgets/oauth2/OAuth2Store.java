@@ -7,10 +7,12 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
+import net.oauth.OAuthConsumer;
+
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
-import org.apache.shindig.gadgets.oauth2.core.Consumer;
+import org.apache.shindig.gadgets.oauth2.core.OAuth2Consumer;
 import org.apache.shindig.gadgets.oauth2.core.OAuth2ServiceProvider;
 import org.apache.shindig.gadgets.oauth2.core.Token;
 import org.apache.shindig.gadgets.oauth2.sample.OAuth2StoreConsumerIndex;
@@ -19,35 +21,81 @@ import org.apache.shindig.gadgets.oauth2.sample.OAuth2StoreConsumerKeyAndSecret;
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public interface OAuth2Store {
-  public void initFromConfigString(String oauthConfigStr) throws GadgetException;
 
-  public void setDefaultKey(final OAuth2StoreConsumerKeyAndSecret defaultKey);
+	/**
+	 * Information about an OAuth consumer.
+	 */
+	public static class ConsumerInfo {
+		private final OAuth2Consumer consumer;
+		private final String keyName;
+		private final String callbackUrl;
 
-  public void setDefaultCallbackUrl(final String defaultCallbackUrl);
+		/**
+		 * @param consumer
+		 *            the OAuth consumer
+		 * @param keyName
+		 *            the name of the key to use for this consumer (passed on
+		 *            query parameters to help with key rotation.)
+		 * @param callbackUrl
+		 *            callback URL associated with this consumer, likely to
+		 *            point to the shindig server.
+		 */
+		public ConsumerInfo(OAuth2Consumer consumer, String keyName,
+				String callbackUrl) {
+			this.consumer = consumer;
+			this.keyName = keyName;
+			this.callbackUrl = callbackUrl;
+		}
 
-  public void setConsumerKeyAndSecret(final OAuth2StoreConsumerIndex providerKey,
-      final OAuth2StoreConsumerKeyAndSecret keyAndSecret);
+		public OAuth2Consumer getConsumer() {
+			return consumer;
+		}
 
-  public void setHostProvider(final com.google.inject.Provider<Authority> hostProvider);
+		public String getKeyName() {
+			return keyName;
+		}
 
-  public Consumer getConsumerKeyAndSecret(final SecurityToken securityToken,
-      final String serviceName, final OAuth2ServiceProvider provider) throws GadgetException;
+		public String getCallbackUrl() {
+			return callbackUrl;
+		}
+	}
 
-  public Token getTokenInfo(final SecurityToken securityToken, final Consumer consumer,
-      final String serviceName, final String tokenName) throws GadgetException;
+	public void initFromConfigString(String oauthConfigStr)
+			throws GadgetException;
 
-  public void setTokenInfo(final SecurityToken securityToken, final Consumer consumer,
-      final String serviceName, final String tokenName, final Token OAuth2TokenInfo)
-      throws GadgetException;
+	public void setDefaultKey(final OAuth2StoreConsumerKeyAndSecret defaultKey);
 
-  public void removeToken(final SecurityToken securityToken, final Consumer consumer,
-      final String serviceName, final String tokenName) throws GadgetException;
+	public void setDefaultCallbackUrl(final String defaultCallbackUrl);
 
-  public int getConsumerKeyLookupCount();
+	public void setConsumerKeyAndSecret(
+			final OAuth2StoreConsumerIndex providerKey,
+			final OAuth2StoreConsumerKeyAndSecret keyAndSecret);
 
-  public int getAccessTokenLookupCount();
+	public void setHostProvider(
+			final com.google.inject.Provider<Authority> hostProvider);
 
-  public int getAccessTokenAddCount();
+	public OAuth2Consumer getConsumerKeyAndSecret(
+			final SecurityToken securityToken, final String serviceName,
+			final OAuth2ServiceProvider provider) throws GadgetException;
 
-  public int getAccessTokenRemoveCount();
+	public Token getTokenInfo(final SecurityToken securityToken,
+			final OAuth2Consumer consumer, final String serviceName,
+			final String tokenName) throws GadgetException;
+
+	public void setTokenInfo(final SecurityToken securityToken,
+			final OAuth2Consumer consumer, final String serviceName,
+			final String tokenName, final Token OAuth2TokenInfo)
+			throws GadgetException;
+
+	public void removeToken(final SecurityToken securityToken,
+			final OAuth2Consumer consumer, final String serviceName,
+			final String tokenName) throws GadgetException;
+
+	public int getConsumerKeyLookupCount();
+
+	public int getAccessTokenLookupCount();
+
+	public int getAccessTokenAddCount();
+
+	public int getAccessTokenRemoveCount();
 }

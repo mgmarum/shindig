@@ -10,9 +10,9 @@ package org.apache.shindig.gadgets.oauth2.core;
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public interface Context {
-  public Consumer getConsumer();
+  public OAuth2Consumer getConsumer();
 
-  public void setConsumer(Consumer consumer);
+  public void setConsumer(OAuth2Consumer consumer);
 
   public String getState();
 

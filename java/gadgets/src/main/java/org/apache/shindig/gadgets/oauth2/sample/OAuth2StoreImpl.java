@@ -16,7 +16,7 @@ import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Store;
-import org.apache.shindig.gadgets.oauth2.core.Consumer;
+import org.apache.shindig.gadgets.oauth2.core.OAuth2Consumer;
 import org.apache.shindig.gadgets.oauth2.core.OAuth2ServiceProvider;
 import org.apache.shindig.gadgets.oauth2.core.Token;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persistence;
@@ -82,12 +82,12 @@ public class OAuth2StoreImpl implements OAuth2Store {
   }
 
   private void storeConsumerInfo(final URI gadgetUri, final String serviceName,
-      final Consumer consumer) throws GadgetException {
+      final OAuth2Consumer consumer) throws GadgetException {
     this.realStoreConsumerInfo(gadgetUri, serviceName, consumer);
   }
 
   private void realStoreConsumerInfo(final URI gadgetUri, final String serviceName,
-      final Consumer consumer) {
+      final OAuth2Consumer consumer) {
     // final String callbackUrl = consumer.getCallbackUrl();
     // String consumerSecret = consumer.getConsumerSecret();
     // final String consumerKey = consumer.getConsumerKey();
@@ -145,7 +145,7 @@ public class OAuth2StoreImpl implements OAuth2Store {
     this.hostProvider = hostProvider;
   }
 
-  public Consumer getConsumerKeyAndSecret(final SecurityToken securityToken,
+  public OAuth2Consumer getConsumerKeyAndSecret(final SecurityToken securityToken,
       final String serviceName, final OAuth2ServiceProvider provider) throws GadgetException {
     final boolean bIsLogging = OAuth2StoreImpl.LOGGER.isLoggable(OAuth2StoreImpl.LOG_LEVEL);
     if (bIsLogging) {
@@ -286,7 +286,7 @@ public class OAuth2StoreImpl implements OAuth2Store {
     // final ConsumerInfo ret = new ConsumerInfo(consumer, cks.getKeyName(),
     // callback);
 
-    final Consumer ret = null;
+    final OAuth2Consumer ret = null;
 
     if (bIsLogging) {
       OAuth2StoreImpl.LOGGER.exiting(OAuth2StoreImpl.LOG_CLASS,
@@ -296,7 +296,7 @@ public class OAuth2StoreImpl implements OAuth2Store {
     return ret;
   }
 
-  public Token getTokenInfo(final SecurityToken securityToken, final Consumer consumer,
+  public Token getTokenInfo(final SecurityToken securityToken, final OAuth2Consumer consumer,
       final String serviceName, final String tokenName) {
     final boolean bIsLogging = OAuth2StoreImpl.LOGGER.isLoggable(OAuth2StoreImpl.LOG_LEVEL);
     if (bIsLogging) {
@@ -335,7 +335,7 @@ public class OAuth2StoreImpl implements OAuth2Store {
     return ret;
   }
 
-  public void setTokenInfo(final SecurityToken securityToken, final Consumer consumer,
+  public void setTokenInfo(final SecurityToken securityToken, final OAuth2Consumer consumer,
       final String serviceName, final String tokenName, final Token token) {
     final boolean bIsLogging = OAuth2StoreImpl.LOGGER.isLoggable(OAuth2StoreImpl.LOG_LEVEL);
     if (bIsLogging) {
@@ -396,7 +396,7 @@ public class OAuth2StoreImpl implements OAuth2Store {
     }
   }
 
-  public void removeToken(final SecurityToken securityToken, final Consumer consumer,
+  public void removeToken(final SecurityToken securityToken, final OAuth2Consumer consumer,
       final String serviceName, final String tokenName) {
     final boolean bIsLogging = OAuth2StoreImpl.LOGGER.isLoggable(OAuth2StoreImpl.LOG_LEVEL);
     if (bIsLogging) {

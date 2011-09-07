@@ -12,17 +12,19 @@ import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.GadgetContext;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.GadgetSpecFactory;
+import org.apache.shindig.gadgets.oauth.OAuthStore.ConsumerInfo;
 import org.apache.shindig.gadgets.oauth2.AccessorInfo.HttpMethod;
 import org.apache.shindig.gadgets.oauth2.AccessorInfo.OAuth2ParamLocation;
-import org.apache.shindig.gadgets.oauth2.core.Consumer;
+import org.apache.shindig.gadgets.oauth2.core.OAuth2Consumer;
 import org.apache.shindig.gadgets.oauth2.core.OAuth2ServiceProvider;
 import org.apache.shindig.gadgets.oauth2.core.Token;
 import org.apache.shindig.gadgets.spec.GadgetSpec;
 import org.apache.shindig.gadgets.spec.OAuth2Service;
 import org.apache.shindig.gadgets.spec.OAuth2Spec;
-import org.apache.shindig.gadgets.spec.OAuthService.Location;
-import org.apache.shindig.gadgets.spec.OAuthService.Method;
+import org.apache.shindig.gadgets.spec.OAuth2Service.Location;
+import org.apache.shindig.gadgets.spec.OAuth2Service.Method;
 import org.apache.shindig.gadgets.spec.SpecParserException;
+
 
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
@@ -94,15 +96,22 @@ public class GadgetOAuth2TokenStore {
     }
 
     // What consumer key/secret should we use?
-    Consumer consumer;
+    //todo !!!
+    //Consumer consumer;
+    /*
+    ConsumerInfo consumer;
     try {
       consumer = this.store.getConsumerKeyAndSecret(securityToken, arguments.getServiceName(),
           provider);
+     consumer = null;
+      
+      //accessorBuilder.setConsumer(consumer);
       accessorBuilder.setConsumer(consumer);
     } catch (final GadgetException e) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
           "Unable to retrieve consumer key", e);
     }
+    */
 
     // Should we use the OAuth access token? We never do this unless the client
     // allows it, and
@@ -110,8 +119,9 @@ public class GadgetOAuth2TokenStore {
     if (arguments.mayUseToken() && (securityToken.getViewerId() != null)) {
       if (((fetcherConfig != null) && fetcherConfig.isViewerAccessTokensEnabled())
           || securityToken.getViewerId().equals(securityToken.getOwnerId())) {
-        this.lookupToken(securityToken, consumer, arguments, clientState, accessorBuilder,
-            responseParams);
+    	//todo !!! fake my token here!!!  
+        /*this.lookupToken(securityToken, consumer, arguments, clientState, accessorBuilder,
+            responseParams);*/
       }
     }
 
@@ -138,25 +148,15 @@ public class GadgetOAuth2TokenStore {
               + arguments.getServiceName() + ".  Known services: "
               + Joiner.on(',').join(oauthSpec.getServices().keySet()) + '.');
     }
-    // In theory some one could specify different parameter locations for
-    // request token and
-    // access token requests, but that's probably not useful. We just use the
-    // request token
-    // rules for everything.
 
-    // TODO
+    accessorBuilder.setParameterLocation(
+    		getStoreLocation(service.getAuthorizationUrl().location, responseParams));
+    accessorBuilder.setMethod(
+    		getStoreMethod(service.getAuthorizationUrl().method, responseParams));
 
-    // accessorBuilder.setParameterLocation(
-    // getStoreLocation(service.getRequestUrl().location, responseParams));
-    // accessorBuilder.setMethod(getStoreMethod(service.getRequestUrl().method,
-    // responseParams));
-
-    // TODO
-    // return new OAuth2ServiceProvider(
-    // service.getRequestUrl().url.toJavaUri().toASCIIString(),
-    // service.getAuthorizationUrl().toJavaUri().toASCIIString(),
-    // service.getAccessUrl().url.toJavaUri().toASCIIString());
-    return null;
+    return new OAuth2ServiceProvider(
+    		service.getAuthorizationUrl().url.toJavaUri().toASCIIString(),
+    		service.getTokenUrl().url.toJavaUri().toASCIIString());
   }
 
   private OAuth2ServiceProvider loadProgrammaticConfig(final OAuth2Arguments arguments,
@@ -223,15 +223,15 @@ public class GadgetOAuth2TokenStore {
    * gadget container site, the service provider can create a preapproved
    * request token for that site and pass it to the gadget as a user preference.
    */
-  private void lookupToken(final SecurityToken securityToken, final Consumer Consumer,
+  private void lookupToken(final SecurityToken securityToken, final OAuth2Consumer consumer,
       final OAuth2Arguments arguments, final OAuth2ClientState clientState,
       final AccessorInfoBuilder accessorBuilder, final OAuth2ResponseParams responseParams)
       throws OAuth2RequestException {
-    if (clientState.getRequestToken() != null) {
+   /* if (clientState.getRequestToken() != null) {
       // We cached the request token on the client.
-      accessorBuilder.setRequestToken(clientState.getRequestToken());
-      accessorBuilder.setTokenSecret(clientState.getRequestTokenSecret());
-    } else if (clientState.getAccessToken() != null) {
+      //accessorBuilder.setRequestToken(clientState.getRequestToken());
+      //accessorBuilder.setTokenSecret(clientState.getRequestTokenSecret());
+    } else */if (clientState.getAccessToken() != null) {
       // We cached the access token on the client
       accessorBuilder.setAccessToken(clientState.getAccessToken());
       accessorBuilder.setTokenSecret(clientState.getAccessTokenSecret());
@@ -241,8 +241,8 @@ public class GadgetOAuth2TokenStore {
       // No useful client-side state, check persistent storage
       Token tokenInfo;
       try {
-        tokenInfo = this.store.getTokenInfo(securityToken, Consumer, arguments.getServiceName(),
-            arguments.getTokenName());
+        tokenInfo = this.store.getTokenInfo(securityToken, consumer, arguments.getServiceName(),
+           arguments.getTokenName());
       } catch (final GadgetException e) {
         throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
             "Unable to retrieve access token", e);
@@ -253,13 +253,13 @@ public class GadgetOAuth2TokenStore {
         accessorBuilder.setTokenSecret(tokenInfo.getSecret());
         accessorBuilder.setSessionHandle(tokenInfo.getSessionHandle());
         accessorBuilder.setTokenExpireMillis(tokenInfo.getTokenExpireMillis());
-      } else {
+      } /*else {
         // We don't have an access token yet, but the client sent us a
         // (hopefully) preapproved
         // request token.
-        accessorBuilder.setRequestToken(arguments.getRequestToken());
+        //accessorBuilder.setRequestToken(arguments.getRequestToken());
         accessorBuilder.setTokenSecret(arguments.getRequestTokenSecret());
-      }
+      }*/
     }
   }
 
@@ -304,7 +304,7 @@ public class GadgetOAuth2TokenStore {
   /**
    * Store an access token for the given user/gadget/service/token name
    */
-  public void storeTokenKeyAndSecret(final SecurityToken securityToken, final Consumer consumer,
+  public void storeTokenKeyAndSecret(final SecurityToken securityToken, final OAuth2Consumer consumer,
       final OAuth2Arguments arguments, final Token tokenInfo,
       final OAuth2ResponseParams responseParams) throws OAuth2RequestException {
     try {
@@ -319,15 +319,19 @@ public class GadgetOAuth2TokenStore {
   /**
    * Remove an access token for the given user/gadget/service/token name
    */
-  public void removeToken(final SecurityToken securityToken, final Consumer consumer,
+  public void removeToken(final SecurityToken securityToken, final ConsumerInfo consumer,
       final OAuth2Arguments arguments, final OAuth2ResponseParams responseParams)
       throws OAuth2RequestException {
-    try {
-      this.store.removeToken(securityToken, consumer, arguments.getServiceName(),
+    /*try {
+     //todo !!!
+    	this.store.removeToken(securityToken, consumer, arguments.getServiceName(),
           arguments.getTokenName());
     } catch (final GadgetException e) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
           "Unable to remove access token", e);
-    }
+    }*/
+	     throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
+	             "Unable to remove access token");
+	    
   }
 }

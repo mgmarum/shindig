@@ -7,8 +7,9 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
-import org.apache.shindig.gadgets.oauth2.core.Consumer;
 import org.apache.shindig.gadgets.oauth2.core.OAuth2Accessor;
+import org.apache.shindig.gadgets.oauth2.OAuth2Store.ConsumerInfo;
+
 
 /**
  * OAuth2 related data accessor
@@ -27,13 +28,13 @@ public class AccessorInfo {
   }
 
   private final OAuth2Accessor accessor;
-  private final Consumer consumer;
+  private final ConsumerInfo consumer;
   private final HttpMethod httpMethod;
   private final OAuth2ParamLocation paramLocation;
   private String sessionHandle;
   private long tokenExpireMillis;
 
-  public AccessorInfo(final OAuth2Accessor accessor, final Consumer consumer,
+  public AccessorInfo(final OAuth2Accessor accessor, final ConsumerInfo consumer,
       final HttpMethod httpMethod, final OAuth2ParamLocation paramLocation,
       final String sessionHandle, final long tokenExpireMillis) {
     this.accessor = accessor;
@@ -52,7 +53,7 @@ public class AccessorInfo {
     return this.accessor;
   }
 
-  public Consumer getConsumer() {
+  public ConsumerInfo getConsumer() {
     return this.consumer;
   }
 

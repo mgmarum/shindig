@@ -31,7 +31,6 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.google.inject.name.Names;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
@@ -94,7 +93,7 @@ public class OAuth2Module extends AbstractModule {
     }
 
     public OAuth2Request get() {
-      return new BasicOAuth2Request(this.fetcher, this.config);
+      return new BasicOAuth2Request(this.config, this.fetcher);
     }
   }
 

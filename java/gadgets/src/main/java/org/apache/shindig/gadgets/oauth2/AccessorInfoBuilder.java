@@ -10,8 +10,10 @@ package org.apache.shindig.gadgets.oauth2;
 
 import org.apache.shindig.gadgets.oauth2.AccessorInfo.HttpMethod;
 import org.apache.shindig.gadgets.oauth2.AccessorInfo.OAuth2ParamLocation;
-import org.apache.shindig.gadgets.oauth2.core.Consumer;
+import org.apache.shindig.gadgets.oauth2.OAuth2Store.ConsumerInfo;
 import org.apache.shindig.gadgets.oauth2.core.OAuth2Accessor;
+
+
 
 /**
  * Builder for AccessorInfo object.
@@ -21,8 +23,7 @@ import org.apache.shindig.gadgets.oauth2.core.OAuth2Accessor;
 
 public class AccessorInfoBuilder {
 
-  private Consumer consumer;
-  private String requestToken;
+  private ConsumerInfo consumer;
   private String accessToken;
   private String tokenSecret;
   private String sessionHandle;
@@ -42,25 +43,20 @@ public class AccessorInfoBuilder {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "no consumer");
     }
 
-    final OAuth2Accessor accessor = null; // TODO new
-                                          // OAuth2Accessor(consumer.getConsumer());
+    final OAuth2Accessor accessor = new OAuth2Accessor(consumer.getConsumer());
 
     // request token/access token/token secret can all be null, for signed
     // fetch, or if the OAuth
     // dance is just beginning
-    accessor.setRequestToken(this.requestToken);
-    accessor.setAccessToken(this.accessToken);
-    accessor.setTokenSecret(this.tokenSecret);
+    accessor.accessToken = accessToken;
+    accessor.tokenSecret = tokenSecret;
+
     return new AccessorInfo(accessor, this.consumer, this.method, this.location,
         this.sessionHandle, this.tokenExpireMillis);
   }
 
-  public void setConsumer(final Consumer consumer) {
+  public void setConsumer(final ConsumerInfo consumer) {
     this.consumer = consumer;
-  }
-
-  public void setRequestToken(final String requestToken) {
-    this.requestToken = requestToken;
   }
 
   public void setAccessToken(final String accessToken) {
