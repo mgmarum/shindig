@@ -133,9 +133,7 @@ public class OAuth2Module extends AbstractModule {
         final String oauthConfigString = ResourceLoader.getContent(OAuth2Module.OAUTH2_CONFIG);
         this.store.initFromConfigString(oauthConfigString);
       } catch (final IOException e) {
-        throw new RuntimeException(e);
       } catch (final GadgetException e) {
-        throw new RuntimeException(e);
       }
     }
 
