@@ -26,6 +26,7 @@ import org.apache.shindig.common.PropertiesModule;
 import org.apache.shindig.config.ContainerConfig;
 import org.apache.shindig.gadgets.DefaultGuiceModule;
 import org.apache.shindig.gadgets.oauth.OAuthModule;
+import org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersistenceModule;
 import org.apache.shindig.gadgets.oauth2.sample.OAuth2Module;
 import org.apache.shindig.gadgets.render.CajaResponseRewriter;
 import org.apache.shindig.gadgets.render.SanitizingResponseRewriter;
@@ -67,7 +68,7 @@ public class RewriteModuleTest {
   public void setUp() {
     injector = Guice.createInjector(
         new PropertiesModule(),
-        new DefaultGuiceModule(), new OAuthModule(), new OAuth2Module());
+        new DefaultGuiceModule(), new OAuthModule(), new OAuth2Module(), new OAuth2PersistenceModule());
   }
 
   @Test
