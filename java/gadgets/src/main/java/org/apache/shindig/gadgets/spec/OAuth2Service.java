@@ -66,21 +66,6 @@ public class OAuth2Service {
         tokenUrl = parseEndPoint("OAuth2/Service/Token", (Element)child, base);
       }
     }
-    if (authorizationUrl == null) {
-      throw new SpecParserException("/OAuth2/Service/Authorization is required");
-    }
-    if (tokenUrl == null) {
-      throw new SpecParserException("/OAuth2/Service/Token is required");
-    }
-
-    if (authorizationUrl.location != tokenUrl.location) {
-      throw new SpecParserException(
-          "Authorization@location must be identical to Token@location");
-    }
-    if (authorizationUrl.method != tokenUrl.method) {
-      throw new SpecParserException(
-          "Authorization@method must be identical to Token@method");
-    }
   }
 
   /**

@@ -10,5 +10,7 @@ package org.apache.shindig.gadgets.oauth2.persistence;
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public interface OAuth2Encrypter {
+  public String encrypt(String plainSecret) throws OAuth2EncryptionException;
 
+  public String decrypt(String encryptedSecret) throws OAuth2EncryptionException;
 }

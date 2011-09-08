@@ -1,10 +1,3 @@
-/**
- * This class is intended to be contributed back to the
- * Open Source Shindig project.  (Or at least submitted
- * for review.)  
- * 
- * NO IBM CONFIDENTIAL CODE OR INFORMATION!
- */
 package org.apache.shindig.gadgets.oauth2;
 
 import java.util.List;
@@ -16,7 +9,6 @@ import java.util.regex.Pattern;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.Pair;
 import org.apache.shindig.common.crypto.BlobCrypter;
-import org.apache.shindig.common.crypto.BlobCrypterException;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.http.HttpResponseBuilder;
@@ -26,9 +18,6 @@ import com.google.common.collect.Lists;
 /**
  * Container for OAuth specific data to include in the response to the client.
  */
-
-// NO IBM CONFIDENTIAL CODE OR INFORMATION!
-
 public class OAuth2ResponseParams {
   private static final Logger LOG = Logger.getLogger(OAuth2ResponseParams.class.getName());
 
@@ -42,11 +31,6 @@ public class OAuth2ResponseParams {
   public static final String APPROVAL_URL = "oauthApprovalUrl";
   public static final String ERROR_CODE = "oauthError";
   public static final String ERROR_TEXT = "oauthErrorText";
-
-  /**
-   * Transient state we want to cache client side.
-   */
-  private final OAuth2ClientState newClientState;
 
   /**
    * Security token used to authenticate request.
@@ -84,7 +68,6 @@ public class OAuth2ResponseParams {
       final BlobCrypter stateCrypter) {
     this.securityToken = securityToken;
     this.originalRequest = originalRequest;
-    this.newClientState = new OAuth2ClientState(stateCrypter);
   }
 
   /**
@@ -224,15 +207,6 @@ public class OAuth2ResponseParams {
    * Update a response with additional data to be returned to the application.
    */
   public void addToResponse(final HttpResponseBuilder response, final OAuth2RequestException e) {
-    if (!this.newClientState.isEmpty()) {
-      try {
-        response.setMetadata(OAuth2ResponseParams.CLIENT_STATE,
-            this.newClientState.getEncryptedState());
-      } catch (final BlobCrypterException cryptException) {
-        // Configuration error somewhere, this should never happen.
-        throw new RuntimeException(cryptException);
-      }
-    }
     if (this.aznUrl != null) {
       response.setMetadata(OAuth2ResponseParams.APPROVAL_URL, this.aznUrl);
     }
@@ -251,13 +225,6 @@ public class OAuth2ResponseParams {
 
       response.setMetadata(OAuth2ResponseParams.ERROR_TEXT, verboseError.toString());
     }
-  }
-
-  /**
-   * Get the state we will return to the client.
-   */
-  public OAuth2ClientState getNewClientState() {
-    return this.newClientState;
   }
 
   public String getAznUrl() {

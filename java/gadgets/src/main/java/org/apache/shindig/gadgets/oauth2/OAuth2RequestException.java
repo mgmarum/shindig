@@ -20,6 +20,11 @@ import com.google.common.base.Preconditions;
 public class OAuth2RequestException extends Exception {
 
   /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+
+  /**
    * Error code for the client.
    */
   private String error;

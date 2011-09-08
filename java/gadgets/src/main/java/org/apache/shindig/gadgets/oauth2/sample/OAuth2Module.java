@@ -21,10 +21,14 @@ import org.apache.shindig.common.crypto.Crypto;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.common.util.ResourceLoader;
+import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.http.HttpFetcher;
+import org.apache.shindig.gadgets.oauth2.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.OAuth2FetcherConfig;
 import org.apache.shindig.gadgets.oauth2.OAuth2Request;
 import org.apache.shindig.gadgets.oauth2.OAuth2Store;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -39,10 +43,13 @@ public class OAuth2Module extends AbstractModule {
   private static final Level LOG_LEVEL = Level.FINER;
   private static final Logger LOGGER = Logger.getLogger(OAuth2Module.LOG_CLASS);
 
-  private static final String OAUTH_CONFIG = "config/oauth.json";
-  private static final String OAUTH_SIGNING_KEY_FILE = "shindig.signing.key-file";
-  private static final String OAUTH_SIGNING_KEY_NAME = "shindig.signing.key-name";
-  private static final String OAUTH_CALLBACK_URL = "shindig.signing.global-callback-url";
+  private static final String OAUTH2_CONFIG = "config/oauth2.json";
+  private static final String OAUTH2_IMPORT_CONFIG = "config/oauth2.json";
+  private static final String OAUTH2_SIGNING_KEY_FILE = "shindig.signing.oauth2.key-file";
+  private static final String OAUTH2_SIGNING_KEY_NAME = "shindig.signing.oauth2.key-name";
+  private static final String OAUTH2_REDIRECT_URI = "shindig.signing.oauth2.global-redirect-uri";
+  private static final String OAUTH2_IMPORT = "shindig.oauth2.import";
+  private static final String OAUTH2_IMPORT_CLEAN = "shindig.oauth2.import.clean";
 
   @Override
   protected void configure() {
@@ -104,31 +111,43 @@ public class OAuth2Module extends AbstractModule {
 
     @Inject
     public OAuth2StoreProvider(
-        @Named(OAuth2Module.OAUTH_SIGNING_KEY_FILE) final String signingKeyFile,
-        @Named(OAuth2Module.OAUTH_SIGNING_KEY_NAME) final String signingKeyName,
-        @Named(OAuth2Module.OAUTH_CALLBACK_URL) final String defaultCallbackUrl,
-        final Provider<Authority> hostProvider) {
-      this.store = new OAuth2StoreImpl(null);
+        @Named(OAuth2Module.OAUTH2_SIGNING_KEY_FILE) final String signingKeyFile,
+        @Named(OAuth2Module.OAUTH2_SIGNING_KEY_NAME) final String signingKeyName,
+        @Named(OAuth2Module.OAUTH2_REDIRECT_URI) final String defaultRedirectUri,
+        @Named(OAuth2Module.OAUTH2_IMPORT) final boolean importFromConfig,
+        @Named(OAuth2Module.OAUTH2_IMPORT_CLEAN) final boolean importClean,
+        final Provider<Authority> hostProvider, final OAuth2Cache cache,
+        final OAuth2Persister persister) {
+      this.store = new BasicOAuth2Store(cache, persister);
 
       this.loadDefaultKey(signingKeyFile, signingKeyName);
-      this.store.setDefaultCallbackUrl(defaultCallbackUrl);
+      this.store.setDefaultRedirectUri(defaultRedirectUri);
       this.store.setHostProvider(hostProvider);
-      this.loadConsumers();
+      try {
+        if (importFromConfig) {
+          final String importOauthConfigStr = ResourceLoader
+              .getContent(OAuth2Module.OAUTH2_IMPORT_CONFIG);
+          this.store.importFromConfigString(importOauthConfigStr, importClean);
+        }
+
+        final String oauthConfigString = ResourceLoader.getContent(OAuth2Module.OAUTH2_CONFIG);
+        this.store.initFromConfigString(oauthConfigString);
+      } catch (final IOException e) {
+        throw new RuntimeException(e);
+      } catch (final GadgetException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     private void loadDefaultKey(final String signingKeyFile, final String signingKeyName) {
-      final OAuth2StoreConsumerKeyAndSecret key = null;
+      final OAuth2Client client = null;
       if (!StringUtils.isBlank(signingKeyFile)) {
         try {
           if (OAuth2Module.LOGGER.isLoggable(Level.INFO)) {
             OAuth2Module.LOGGER.logp(Level.INFO, OAuth2Module.LOG_CLASS, "loadDefaultKey",
                 MessageKeys.LOAD_KEY_FILE_FROM, new Object[] { signingKeyFile });
           }
-          final String privateKey = IOUtils.toString(ResourceLoader.open(signingKeyFile), "UTF-8");
-          // TODO privateKey = OAuth2Store.convertFromOpenSsl(privateKey);
-          // TODO key = new OAuth2StoreConsumerKeyAndSecret(null, privateKey,
-          // OAuth2KeyType.RSA_PRIVATE,
-          // TODO signingKeyName, null);
+          IOUtils.toString(ResourceLoader.open(signingKeyFile), "UTF-8");
         } catch (final Throwable t) {
           if (OAuth2Module.LOGGER.isLoggable(Level.WARNING)) {
             OAuth2Module.LOGGER.logp(Level.WARNING, OAuth2Module.LOG_CLASS, "loadDefaultKey",
@@ -138,26 +157,13 @@ public class OAuth2Module extends AbstractModule {
           }
         }
       }
-      if (key != null) {
-        this.store.setDefaultKey(key);
+      if (client != null) {
+        this.store.setDefaultClient(client);
       } else {
         if (OAuth2Module.LOGGER.isLoggable(Level.WARNING)) {
           OAuth2Module.LOGGER.logp(Level.WARNING, OAuth2Module.LOG_CLASS, "loadDefaultKey",
               MessageKeys.COULD_NOT_LOAD_SIGN_KEY, new Object[] {
-                  OAuth2Module.OAUTH_SIGNING_KEY_FILE, OAuth2Module.OAUTH_SIGNING_KEY_NAME });
-        }
-      }
-    }
-
-    private void loadConsumers() {
-      try {
-        final String oauthConfigString = ResourceLoader.getContent(OAuth2Module.OAUTH_CONFIG);
-        this.store.initFromConfigString(oauthConfigString);
-      } catch (final Throwable t) {
-        if (OAuth2Module.LOGGER.isLoggable(Level.WARNING)) {
-          OAuth2Module.LOGGER.logp(Level.WARNING, OAuth2Module.LOG_CLASS, "loadConsumers",
-              MessageKeys.FAILED_TO_INIT, new Object[] { OAuth2Module.OAUTH_CONFIG });
-          OAuth2Module.LOGGER.log(Level.WARNING, "", t);
+                  OAuth2Module.OAUTH2_SIGNING_KEY_FILE, OAuth2Module.OAUTH2_SIGNING_KEY_NAME });
         }
       }
     }

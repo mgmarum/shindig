@@ -7,95 +7,156 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
-import net.oauth.OAuthConsumer;
-
-import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
-import org.apache.shindig.gadgets.oauth2.core.OAuth2Consumer;
-import org.apache.shindig.gadgets.oauth2.core.OAuth2ServiceProvider;
-import org.apache.shindig.gadgets.oauth2.core.Token;
-import org.apache.shindig.gadgets.oauth2.sample.OAuth2StoreConsumerIndex;
-import org.apache.shindig.gadgets.oauth2.sample.OAuth2StoreConsumerKeyAndSecret;
+import org.apache.shindig.gadgets.oauth.BasicOAuthStore;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public interface OAuth2Store {
+  /**
+   * Triggers the persistence layer to preload the {@link OAuth2Client}
+   * information and store it in the {@link OAuth2Cache}.
+   * 
+   * May not be supported by all persistence implementations, in that case the
+   * return value of this method should be false.
+   * 
+   * @param oauthConfigStr
+   *          optional configuration setting, like a JSON file location
+   * @return true if initialization was successful, false if it was not
+   * @throws GadgetException
+   */
+  public boolean initFromConfigString(String oauthConfigStr) throws GadgetException;
 
-	/**
-	 * Information about an OAuth consumer.
-	 */
-	public static class ConsumerInfo {
-		private final OAuth2Consumer consumer;
-		private final String keyName;
-		private final String callbackUrl;
+  /**
+   * Clears all loaded Providers, Clients, Contexts and Tokens from the cache
+   * and leaves them intact in the persistence layer.
+   * 
+   * @return true if the clear succeeded
+   * 
+   * @throws GadgetException
+   */
+  public boolean clearCache() throws GadgetException;
 
-		/**
-		 * @param consumer
-		 *            the OAuth consumer
-		 * @param keyName
-		 *            the name of the key to use for this consumer (passed on
-		 *            query parameters to help with key rotation.)
-		 * @param callbackUrl
-		 *            callback URL associated with this consumer, likely to
-		 *            point to the shindig server.
-		 */
-		public ConsumerInfo(OAuth2Consumer consumer, String keyName,
-				String callbackUrl) {
-			this.consumer = consumer;
-			this.keyName = keyName;
-			this.callbackUrl = callbackUrl;
-		}
+  /**
+   * Triggers the persistence layer to load values from a source configuration
+   * indicated by oauthConfigStr (like oauth2.json) into the persistence layer.
+   * 
+   * This could be useful for Provider/Client management. Allowing an admin to
+   * update oauth2.json and then have it's contents imported into a database
+   * persistence implementation.
+   * 
+   * May not be supported by all persistence implementations, in that case the
+   * return value of this method should be false.
+   * 
+   * @param oauthConfigStr
+   *          optional configuration setting, like a JSON file location
+   * @return true if the import succeeded
+   */
+  public boolean importFromConfigString(String oauthConfigStr, boolean clean);
 
-		public OAuth2Consumer getConsumer() {
-			return consumer;
-		}
+  /**
+   * Similar to defaultKey for {@link BasicOAuthStore}
+   * 
+   * @param client
+   */
+  public void setDefaultClient(OAuth2Client client);
 
-		public String getKeyName() {
-			return keyName;
-		}
+  /**
+   * Similar to callbackUrl for {@link BasicOAuthStore}
+   * 
+   * @param defaultRedirectUri
+   */
+  public void setDefaultRedirectUri(String defaultRedirectUri);
 
-		public String getCallbackUrl() {
-			return callbackUrl;
-		}
-	}
+  /**
+   * Similar to hostProvider for {@link BasicOAuthStore}
+   * 
+   * @param hostProvider
+   */
+  public void setHostProvider(com.google.inject.Provider<Authority> hostProvider);
 
-	public void initFromConfigString(String oauthConfigStr)
-			throws GadgetException;
+  /**
+   * Finds an OAuth2Provider by name.
+   * 
+   * @param providerName
+   *          name of the Provider
+   * @return {@OAuth2Provider} with the given name or null if
+   *         it cannot be found
+   * @throws GadgetException
+   */
+  public OAuth2Provider getProvider(String providerName) throws GadgetException;
 
-	public void setDefaultKey(final OAuth2StoreConsumerKeyAndSecret defaultKey);
+  /**
+   * Finds the OAuth2Client for an OAuth2Provider and a gadget
+   * 
+   * @param providerName
+   *          name of the Provider
+   * @param gadgetUri
+   *          URI of the Gadget
+   * @return {@OAuth2Client} for the provider and gadget or null
+   *         if it cannot be found
+   * @throws GadgetException
+   */
+  public OAuth2Client getClient(String providerName, String gadgetUri) throws GadgetException;
 
-	public void setDefaultCallbackUrl(final String defaultCallbackUrl);
+  /**
+   * Finds the OAuth2Context for a provider, gadget and user.
+   * 
+   * @param providerName
+   *          name of the Provider
+   * @param gadgetUri
+   *          URI of the Gadget
+   * @param user
+   *          who owns the context
+   * @return {@OAuth2Context} for the provider, gadget and user
+   *         or null if it cannot be found
+   * @throws GadgetException
+   */
+  public OAuth2Context getContext(String providerName, String gadgetUri, String user)
+      throws GadgetException;
 
-	public void setConsumerKeyAndSecret(
-			final OAuth2StoreConsumerIndex providerKey,
-			final OAuth2StoreConsumerKeyAndSecret keyAndSecret);
+  /**
+   * Finds the OAuth2Token for a provider, gadget, and token type.
+   * 
+   * @param providerName
+   *          name of the Provider
+   * @param gadgetUri
+   *          URI of the Gadget
+   * @param user
+   *          who owns the token
+   * @param type
+   *          type of token
+   * @return {@OAuth2Token} for the provider, gadget, user and
+   *         type or null if it cannot be found
+   * @throws GadgetException
+   */
+  public OAuth2Token getToken(String providerName, String gadgetUri, String user,
+      OAuth2Token.Type type) throws GadgetException;
 
-	public void setHostProvider(
-			final com.google.inject.Provider<Authority> hostProvider);
+  /**
+   * Store a OAuth2Token.
+   * 
+   * @param providerName
+   * @param gadgetUri
+   * @param user
+   * @param type
+   * @param token
+   * @throws GadgetException
+   */
+  public void setToken(String providerName, String gadgetUri, String user, OAuth2Token.Type type,
+      OAuth2Token token) throws GadgetException;
 
-	public OAuth2Consumer getConsumerKeyAndSecret(
-			final SecurityToken securityToken, final String serviceName,
-			final OAuth2ServiceProvider provider) throws GadgetException;
-
-	public Token getTokenInfo(final SecurityToken securityToken,
-			final OAuth2Consumer consumer, final String serviceName,
-			final String tokenName) throws GadgetException;
-
-	public void setTokenInfo(final SecurityToken securityToken,
-			final OAuth2Consumer consumer, final String serviceName,
-			final String tokenName, final Token OAuth2TokenInfo)
-			throws GadgetException;
-
-	public void removeToken(final SecurityToken securityToken,
-			final OAuth2Consumer consumer, final String serviceName,
-			final String tokenName) throws GadgetException;
-
-	public int getConsumerKeyLookupCount();
-
-	public int getAccessTokenLookupCount();
-
-	public int getAccessTokenAddCount();
-
-	public int getAccessTokenRemoveCount();
+  /**
+   * Remove an OAuth2Token.
+   * 
+   * @param providerName
+   * @param gadgetUri
+   * @param user
+   * @param type
+   * @throws GadgetException
+   */
+  public void removeToken(String providerName, String gadgetUri, String user, OAuth2Token.Type type)
+      throws GadgetException;
 }

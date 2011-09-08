@@ -5,15 +5,13 @@
  * 
  * NO IBM CONFIDENTIAL CODE OR INFORMATION!
  */
-package org.apache.shindig.gadgets.oauth2.core;
+package org.apache.shindig.gadgets.oauth2;
 
-// NO IBM CONFIDENTIAL CODE OR INFORMATION!
+import java.io.Serializable;
 
-public interface Context {
-  public OAuth2Consumer getConsumer();
+//NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
-  public void setConsumer(OAuth2Consumer consumer);
-
+public interface OAuth2Context extends Serializable {
   public String getState();
 
   public void setState(String state);
@@ -30,11 +28,15 @@ public interface Context {
 
   public void setScope(String scope);
 
-  public Token getAccessToken();
+  public String getGadgetUri();
 
-  public void setAccessToken(Token accessToken);
+  public String getUser();
 
-  public Token getRefreshToken();
+  public void setGadgetUri(String gadgetUri);
 
-  public void setRefreshToken(Token refreshToken);
+  public void setUser(String user);
+
+  public void setProviderName(String providerName);
+
+  public String getProviderName();
 }

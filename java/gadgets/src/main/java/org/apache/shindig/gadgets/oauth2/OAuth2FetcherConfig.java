@@ -25,19 +25,16 @@ public class OAuth2FetcherConfig {
   private final BlobCrypter stateCrypter;
   private final GadgetOAuth2TokenStore tokenStore;
   private final TimeSource clock;
-  private final OAuth2CallbackGenerator oauthCallbackGenerator;
   private final boolean viewerAccessTokensEnabled;
 
   @Inject
   public OAuth2FetcherConfig(
       @Named(OAuth2FetcherConfig.OAUTH_STATE_CRYPTER) final BlobCrypter stateCrypter,
       final GadgetOAuth2TokenStore tokenStore, final TimeSource clock,
-      final OAuth2CallbackGenerator oauth2CallbackGenerator,
       @Named("shindig.signing.viewer-access-tokens-enabled") final boolean viewerAccessTokensEnabled) {
     this.stateCrypter = stateCrypter;
     this.tokenStore = tokenStore;
     this.clock = clock;
-    this.oauthCallbackGenerator = oauth2CallbackGenerator;
     this.viewerAccessTokensEnabled = viewerAccessTokensEnabled;
   }
 
@@ -60,13 +57,6 @@ public class OAuth2FetcherConfig {
    */
   public TimeSource getClock() {
     return this.clock;
-  }
-
-  /**
-   * @return callback Url generator
-   */
-  public OAuth2CallbackGenerator getOAuthCallbackGenerator() {
-    return this.oauthCallbackGenerator;
   }
 
   /**
