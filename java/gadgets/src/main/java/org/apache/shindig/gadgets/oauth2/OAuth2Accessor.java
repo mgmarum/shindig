@@ -15,7 +15,7 @@ package org.apache.shindig.gadgets.oauth2;
 
 public class OAuth2Accessor {
   public static enum Type {
-    AUTHORIZATION_CODE
+    AUTHORIZATION_CODE, TOKEN
   }
 
   public static enum HttpMethod {

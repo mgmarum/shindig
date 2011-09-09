@@ -7,6 +7,7 @@
  */
 package org.apache.shindig.gadgets.oauth2.persistence.sample;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,9 +15,9 @@ import java.util.Set;
 
 import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.servlet.Authority;
+import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
-import org.apache.shindig.gadgets.oauth2.OAuth2Context;
 import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token.Type;
@@ -47,6 +48,8 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
   private static final String CONFIDENTIAL_TYPE = "confidential";
   private static final String ENDPOINTS = "endpoints";
   private static final String CLIENTS = "clients";
+  private static final String OAUTH2_CONFIG = "config/oauth2.json";
+  private static final String OAUTH2_IMPORT_CONFIG = "config/oauth2.json";
 
   private final OAuth2Encrypter encrypter;
   private final Provider<Authority> hostProvider;
@@ -63,12 +66,15 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
     this.contextRoot = contextRoot;
   }
 
-  public Set<OAuth2Client> loadClients(final String oauthConfigStr)
-      throws OAuth2PersistenceException {
+  private static String getJSONString(final String location) throws IOException {
+    return ResourceLoader.getContent(location);
+  }
+
+  public Set<OAuth2Client> loadClients() throws OAuth2PersistenceException {
     final Set<OAuth2Client> ret = new HashSet<OAuth2Client>();
 
     try {
-      final JSONObject providers = new JSONObject(oauthConfigStr);
+      final JSONObject providers = new JSONObject(getJSONString(OAUTH2_CONFIG));
       for (final Iterator<?> i = providers.keys(); i.hasNext();) {
         final String providerName = (String) i.next();
         final JSONObject provider = providers.getJSONObject(providerName);
@@ -121,22 +127,18 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
       }
     } catch (final JSONException e) {
       throw new OAuth2PersistenceException(e);
+    } catch (final IOException e) {
+      throw new OAuth2PersistenceException(e);
     }
-
+    
     return ret;
   }
 
-  public Set<OAuth2Context> loadContexts(final String oauthConfigStr)
-      throws OAuth2PersistenceException {
-    return Collections.emptySet();
-  }
-
-  public Set<OAuth2Provider> loadProviders(final String oauthConfigStr)
-      throws OAuth2PersistenceException {
+  public Set<OAuth2Provider> loadProviders() throws OAuth2PersistenceException {
     final Set<OAuth2Provider> ret = new HashSet<OAuth2Provider>();
 
     try {
-      final JSONObject providers = new JSONObject(oauthConfigStr);
+      final JSONObject providers = new JSONObject(getJSONString(OAUTH2_CONFIG));
       for (final Iterator<?> i = providers.keys(); i.hasNext();) {
         final String providerName = (String) i.next();
         final JSONObject provider = providers.getJSONObject(providerName);
@@ -168,12 +170,14 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
       }
     } catch (final JSONException e) {
       throw new OAuth2PersistenceException(e);
+    } catch (final IOException e) {
+      throw new OAuth2PersistenceException(e);
     }
 
     return ret;
   }
 
-  public Set<OAuth2Token> loadTokens(final String oauthConfigStr) throws OAuth2PersistenceException {
+  public Set<OAuth2Token> loadTokens() throws OAuth2PersistenceException {
     return Collections.emptySet();
   }
 
@@ -188,20 +192,14 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
     return null;
   }
 
-  public OAuth2Context findContext(final String providerName, final String gadgetUri,
-      final String user) throws OAuth2PersistenceException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
   public OAuth2Token findToken(final String providerName, final String gadgetUri,
-      final String user, final Type type) throws OAuth2PersistenceException {
+      final String user, final String scope, final Type type) throws OAuth2PersistenceException {
     // TODO Auto-generated method stub
     return null;
   }
 
   public boolean removeToken(final String providerName, final String gadgetUri, final String user,
-      final Type type) {
+      final String scope, final Type type) {
     // TODO Auto-generated method stub
     return false;
   }

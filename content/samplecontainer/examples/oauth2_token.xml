@@ -1,7 +1,7 @@
 <Module>
-  <ModulePrefs title="Demo OAuth Gadget">
+  <ModulePrefs title="Demo OAuth2 Implicit Gadget (Simple pull from Google Contacts)">
     <OAuth2>
-      <Service name="googleAPI">
+      <Service name="googleAPI" scope="https://www.google.com/m8/feeds/" >
      </Service>
     </OAuth2>
     <Require feature="oauthpopup" />

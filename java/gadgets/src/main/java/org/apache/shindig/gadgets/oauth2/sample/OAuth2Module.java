@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.crypto.BasicBlobCrypter;
 import org.apache.shindig.common.crypto.BlobCrypter;
 import org.apache.shindig.common.crypto.Crypto;
@@ -28,7 +29,9 @@ import org.apache.shindig.gadgets.oauth2.OAuth2FetcherConfig;
 import org.apache.shindig.gadgets.oauth2.OAuth2Request;
 import org.apache.shindig.gadgets.oauth2.OAuth2Store;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Encrypter;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
+import org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersisterImpl;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -43,8 +46,6 @@ public class OAuth2Module extends AbstractModule {
   private static final Level LOG_LEVEL = Level.FINER;
   private static final Logger LOGGER = Logger.getLogger(OAuth2Module.LOG_CLASS);
 
-  private static final String OAUTH2_CONFIG = "config/oauth2.json";
-  private static final String OAUTH2_IMPORT_CONFIG = "config/oauth2.json";
   private static final String OAUTH2_SIGNING_KEY_FILE = "shindig.signing.oauth2.key-file";
   private static final String OAUTH2_SIGNING_KEY_NAME = "shindig.signing.oauth2.key-name";
   private static final String OAUTH2_REDIRECT_URI = "shindig.signing.oauth2.global-redirect-uri";
@@ -117,24 +118,27 @@ public class OAuth2Module extends AbstractModule {
         @Named(OAuth2Module.OAUTH2_IMPORT) final boolean importFromConfig,
         @Named(OAuth2Module.OAUTH2_IMPORT_CLEAN) final boolean importClean,
         final Provider<Authority> hostProvider, final OAuth2Cache cache,
-        final OAuth2Persister persister) {
+        final OAuth2Persister persister, final OAuth2Encrypter encrypter,
+        final String globalRedirectUri,
+        @Nullable @Named("shindig.contextroot") final String contextRoot) {
       this.store = new BasicOAuth2Store(cache, persister);
 
-      this.loadDefaultKey(signingKeyFile, signingKeyName);
       this.store.setDefaultRedirectUri(defaultRedirectUri);
       this.store.setHostProvider(hostProvider);
-      try {
-        if (importFromConfig) {
-          final String importOauthConfigStr = ResourceLoader
-              .getContent(OAuth2Module.OAUTH2_IMPORT_CONFIG);
-          this.store.importFromConfigString(importOauthConfigStr, importClean);
-        }
-
-        final String oauthConfigString = ResourceLoader.getContent(OAuth2Module.OAUTH2_CONFIG);
-        this.store.initFromConfigString(oauthConfigString);
-      } catch (final IOException e) {
-      } catch (final GadgetException e) {
+      
+      if (importFromConfig) {
+        final OAuth2Persister source = new OAuth2PersisterImpl(encrypter, hostProvider,
+            globalRedirectUri, contextRoot);
+        this.store.runImport(source, persister, importClean);
       }
+
+      try {
+        this.store.init();
+      } catch (final GadgetException e) {
+        e.printStackTrace();
+      }
+      
+      this.loadDefaultKey(signingKeyFile, signingKeyName);
     }
 
     private void loadDefaultKey(final String signingKeyFile, final String signingKeyName) {

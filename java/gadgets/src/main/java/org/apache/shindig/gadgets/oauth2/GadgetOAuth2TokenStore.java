@@ -66,16 +66,19 @@ public class GadgetOAuth2TokenStore {
     ret.setClientId(specInfo.getClientId());
     ret.setRedirectUri(specInfo.getRedirectUri());
     ret.setTokenUrl(specInfo.getTokenUrl());
+    ret.setScope(specInfo.getScope());
 
     try {
       final OAuth2Token accessToken = this.store.getToken(provider.getName(),
-          client.getGadgetUri(), securityToken.getViewerId(), OAuth2Token.Type.ACCESS);
+          client.getGadgetUri(), securityToken.getViewerId(), specInfo.getScope(),
+          OAuth2Token.Type.ACCESS);
       if (accessToken != null) {
         ret.setAccessToken(accessToken);
       }
 
       final OAuth2Token refreshToken = this.store.getToken(provider.getName(),
-          client.getGadgetUri(), securityToken.getViewerId(), OAuth2Token.Type.REFRESH);
+          client.getGadgetUri(), securityToken.getViewerId(), specInfo.getScope(),
+          OAuth2Token.Type.REFRESH);
       if (refreshToken != null) {
         ret.setRefreshToken(refreshToken);
       }
@@ -124,7 +127,7 @@ public class GadgetOAuth2TokenStore {
       tokenUrl = tokenUrlEndpoint.url.toString();
     }
 
-    return new OAuth2SpecInfo(authorizationUrl, clientId, redirectUri, tokenUrl);
+    return new OAuth2SpecInfo(authorizationUrl, clientId, redirectUri, tokenUrl, service.getScope());
   }
 
   private GadgetSpec findSpec(final SecurityToken securityToken, final OAuth2Arguments arguments)
@@ -146,13 +149,15 @@ public class GadgetOAuth2TokenStore {
     private final String clientId;
     private final String redirectUri;
     private final String tokenUrl;
+    private final String scope;
 
     public OAuth2SpecInfo(final String authorizationUrl, final String clientId,
-        final String redirectUri, final String tokenUrl) {
+        final String redirectUri, final String tokenUrl, final String scope) {
       this.authorizationUrl = authorizationUrl;
       this.clientId = clientId;
       this.redirectUri = redirectUri;
       this.tokenUrl = tokenUrl;
+      this.scope = scope;
     }
 
     public String getAuthorizationUrl() {
@@ -169,6 +174,10 @@ public class GadgetOAuth2TokenStore {
 
     public String getTokenUrl() {
       return this.tokenUrl;
+    }
+
+    public String getScope() {
+      return this.scope;
     }
   }
 }

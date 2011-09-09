@@ -11,6 +11,7 @@ import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.oauth.BasicOAuthStore;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
@@ -19,15 +20,10 @@ public interface OAuth2Store {
    * Triggers the persistence layer to preload the {@link OAuth2Client}
    * information and store it in the {@link OAuth2Cache}.
    * 
-   * May not be supported by all persistence implementations, in that case the
-   * return value of this method should be false.
-   * 
-   * @param oauthConfigStr
-   *          optional configuration setting, like a JSON file location
    * @return true if initialization was successful, false if it was not
    * @throws GadgetException
    */
-  public boolean initFromConfigString(String oauthConfigStr) throws GadgetException;
+  public boolean init() throws GadgetException;
 
   /**
    * Clears all loaded Providers, Clients, Contexts and Tokens from the cache
@@ -40,21 +36,17 @@ public interface OAuth2Store {
   public boolean clearCache() throws GadgetException;
 
   /**
-   * Triggers the persistence layer to load values from a source configuration
-   * indicated by oauthConfigStr (like oauth2.json) into the persistence layer.
+   * Triggers the target persistence layer to run an import from another source
+   * persistence layer.
    * 
-   * This could be useful for Provider/Client management. Allowing an admin to
-   * update oauth2.json and then have it's contents imported into a database
-   * persistence implementation.
+   * A common scenario here is to read the contents of the config/oauth2.json
+   * file and store it into a DB persistence layer.
    * 
-   * May not be supported by all persistence implementations, in that case the
-   * return value of this method should be false.
+   * @param clean true will delete all existing information from persistence
    * 
-   * @param oauthConfigStr
-   *          optional configuration setting, like a JSON file location
-   * @return true if the import succeeded
+   * @return true if the import succeeded.
    */
-  public boolean importFromConfigString(String oauthConfigStr, boolean clean);
+  public boolean runImport(OAuth2Persister source, OAuth2Persister target, boolean clean);
 
   /**
    * Similar to defaultKey for {@link BasicOAuthStore}
@@ -102,22 +94,6 @@ public interface OAuth2Store {
   public OAuth2Client getClient(String providerName, String gadgetUri) throws GadgetException;
 
   /**
-   * Finds the OAuth2Context for a provider, gadget and user.
-   * 
-   * @param providerName
-   *          name of the Provider
-   * @param gadgetUri
-   *          URI of the Gadget
-   * @param user
-   *          who owns the context
-   * @return {@OAuth2Context} for the provider, gadget and user
-   *         or null if it cannot be found
-   * @throws GadgetException
-   */
-  public OAuth2Context getContext(String providerName, String gadgetUri, String user)
-      throws GadgetException;
-
-  /**
    * Finds the OAuth2Token for a provider, gadget, and token type.
    * 
    * @param providerName
@@ -126,13 +102,15 @@ public interface OAuth2Store {
    *          URI of the Gadget
    * @param user
    *          who owns the token
+   * @param scope
+   *          scope of the token
    * @param type
    *          type of token
    * @return {@OAuth2Token} for the provider, gadget, user and
    *         type or null if it cannot be found
    * @throws GadgetException
    */
-  public OAuth2Token getToken(String providerName, String gadgetUri, String user,
+  public OAuth2Token getToken(String providerName, String gadgetUri, String user, String scope,
       OAuth2Token.Type type) throws GadgetException;
 
   /**
@@ -141,12 +119,13 @@ public interface OAuth2Store {
    * @param providerName
    * @param gadgetUri
    * @param user
+   * @param scope
    * @param type
    * @param token
    * @throws GadgetException
    */
-  public void setToken(String providerName, String gadgetUri, String user, OAuth2Token.Type type,
-      OAuth2Token token) throws GadgetException;
+  public void setToken(String providerName, String gadgetUri, String user, String scope,
+      OAuth2Token.Type type, OAuth2Token token) throws GadgetException;
 
   /**
    * Remove an OAuth2Token.
@@ -154,9 +133,10 @@ public interface OAuth2Store {
    * @param providerName
    * @param gadgetUri
    * @param user
+   * @param scope
    * @param type
    * @throws GadgetException
    */
-  public void removeToken(String providerName, String gadgetUri, String user, OAuth2Token.Type type)
-      throws GadgetException;
+  public void removeToken(String providerName, String gadgetUri, String user, String scope,
+      OAuth2Token.Type type) throws GadgetException;
 }

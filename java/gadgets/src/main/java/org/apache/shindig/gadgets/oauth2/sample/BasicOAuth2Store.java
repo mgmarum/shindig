@@ -14,7 +14,6 @@ import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.GadgetException.Code;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
-import org.apache.shindig.gadgets.oauth2.OAuth2Context;
 import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
 import org.apache.shindig.gadgets.oauth2.OAuth2Store;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
@@ -39,32 +38,25 @@ public class BasicOAuth2Store implements OAuth2Store {
     this.persister = persister;
   }
 
-  public boolean initFromConfigString(final String oauthConfigStr) throws GadgetException {
+  public boolean init() throws GadgetException {
     this.clearCache();
 
     try {
-      final Set<OAuth2Client> clients = this.persister.loadClients(oauthConfigStr);
+      final Set<OAuth2Client> clients = this.persister.loadClients();
       this.cache.storeClients(clients);
     } catch (final OAuth2PersistenceException e) {
       throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 clients", e);
     }
 
     try {
-      final Set<OAuth2Context> contexts = this.persister.loadContexts(oauthConfigStr);
-      this.cache.storeContexts(contexts);
-    } catch (final OAuth2PersistenceException e) {
-      throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 contexts", e);
-    }
-
-    try {
-      final Set<OAuth2Provider> providers = this.persister.loadProviders(oauthConfigStr);
+      final Set<OAuth2Provider> providers = this.persister.loadProviders();
       this.cache.storeProviders(providers);
     } catch (final OAuth2PersistenceException e) {
       throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 providers", e);
     }
 
     try {
-      final Set<OAuth2Token> tokens = this.persister.loadTokens(oauthConfigStr);
+      final Set<OAuth2Token> tokens = this.persister.loadTokens();
       this.cache.storeTokens(tokens);
     } catch (final OAuth2PersistenceException e) {
       throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 tokens", e);
@@ -121,38 +113,13 @@ public class BasicOAuth2Store implements OAuth2Store {
     return client;
   }
 
-  public OAuth2Context getContext(final SecurityToken securityToken, final String providerName)
-      throws GadgetException {
-    return this.getContext(providerName, BasicOAuth2Store.getGadgetUri(securityToken),
-        BasicOAuth2Store.getUser(securityToken));
-  }
-
-  public OAuth2Context getContext(final String providerName, final String gadgetUri,
-      final String user) throws GadgetException {
-    final Integer index = this.cache.getContextIndex(providerName, gadgetUri, user);
-    OAuth2Context context = this.cache.getContext(index);
-    if (context == null) {
-      try {
-        context = this.persister.findContext(providerName, gadgetUri, user);
-        if (context != null) {
-          this.cache.storeContext(index, context);
-        }
-      } catch (final OAuth2PersistenceException e) {
-        throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 context "
-            + providerName, e);
-      }
-    }
-
-    return context;
-  }
-
   public OAuth2Token getToken(final String providerName, final String gadgetUri, final String user,
-      final OAuth2Token.Type type) throws GadgetException {
-    final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, type);
+      final String scope, final OAuth2Token.Type type) throws GadgetException {
+    final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
     OAuth2Token token = this.cache.getToken(index);
     if (token == null) {
       try {
-        token = this.persister.findToken(providerName, gadgetUri, user, type);
+        token = this.persister.findToken(providerName, gadgetUri, user, scope, type);
         if (token != null) {
           this.cache.storeToken(index, token);
         }
@@ -166,17 +133,17 @@ public class BasicOAuth2Store implements OAuth2Store {
   }
 
   public void setToken(final String providerName, final String gadgetUri, final String user,
-      final Type type, final OAuth2Token token) throws GadgetException {
+      final String scope, final Type type, final OAuth2Token token) throws GadgetException {
     // TODO Auto-generated method stub
   }
 
   public void removeToken(final String providerName, final String gadgetUri, final String user,
-      final Type type) throws GadgetException {
-    final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, type);
+      final String scope, final Type type) throws GadgetException {
+    final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
     try {
       final OAuth2Token token = this.cache.removeToken(index);
       if (token != null) {
-        this.persister.removeToken(providerName, gadgetUri, user, type);
+        this.persister.removeToken(providerName, gadgetUri, user, scope, type);
       }
     } catch (final OAuth2PersistenceException e) {
       throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 token "
@@ -184,28 +151,9 @@ public class BasicOAuth2Store implements OAuth2Store {
     }
   }
 
-  private static String getGadgetUri(final SecurityToken securityToken) {
-    String ret = null;
-    final String appUrl = securityToken.getAppUrl();
-    if ((appUrl != null) && (appUrl.length() > 0)) {
-      ret = appUrl;
-    }
-    return ret;
-  }
-
-  private static String getUser(final SecurityToken securityToken) {
-    String ret = null;
-    final String viewerId = securityToken.getViewerId();
-    if ((viewerId != null) && (viewerId.length() > 0)) {
-      ret = viewerId;
-    }
-    return ret;
-  }
-
   public boolean clearCache() throws GadgetException {
     try {
       this.cache.clearClients();
-      this.cache.clearContexts();
       this.cache.clearProviders();
       this.cache.clearTokens();
     } catch (final OAuth2PersistenceException e) {
@@ -215,8 +163,8 @@ public class BasicOAuth2Store implements OAuth2Store {
     return true;
   }
 
-  public boolean importFromConfigString(final String oauthConfigStr, final boolean clean) {
-    // TODO Auto-generated method stub
+  public boolean runImport(final OAuth2Persister source, final OAuth2Persister target, final boolean clean) {
+    // TODO ARC
     return false;
   }
 }

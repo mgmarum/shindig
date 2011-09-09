@@ -39,6 +39,7 @@ public class OAuth2Service {
   private EndPoint authorizationUrl;
   private EndPoint tokenUrl;
   private String name;
+  private String scope;
 
   /**
    * Constructor for testing only.
@@ -47,6 +48,7 @@ public class OAuth2Service {
 
   public OAuth2Service(Element serviceElement, Uri base) throws SpecParserException {
     name = serviceElement.getAttribute("name");
+    scope = serviceElement.getAttribute("scope");
     NodeList children = serviceElement.getChildNodes();
     for (int i=0; i < children.getLength(); ++i) {
       Node child = children.item(i);
@@ -90,6 +92,13 @@ public class OAuth2Service {
     return name;
   }
 
+  /**
+   * Represents /OAuth2/Service@scope
+   */
+  public String getScope() {
+    return scope;
+  }
+  
   /**
    * Method to use for requests to an OAuth request token or access token URL.
    */

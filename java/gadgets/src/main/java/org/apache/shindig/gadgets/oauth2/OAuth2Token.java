@@ -34,4 +34,8 @@ public interface OAuth2Token extends Serializable {
   public String getUser();
 
   public void setUser(String user);
+
+  public String getScope();
+
+  public void setScope(String scope);
 }

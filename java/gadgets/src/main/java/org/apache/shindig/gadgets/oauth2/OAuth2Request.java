@@ -7,10 +7,6 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
-import java.util.List;
-
-import net.oauth.OAuth.Parameter;
-
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
 
@@ -18,7 +14,4 @@ import org.apache.shindig.gadgets.http.HttpResponse;
 
 public interface OAuth2Request {
   public HttpResponse fetch(HttpRequest request);
-
-  public HttpRequest sanitizeAndSign(HttpRequest arg0, List<Parameter> arg1, boolean arg2)
-      throws OAuth2RequestException;
 }

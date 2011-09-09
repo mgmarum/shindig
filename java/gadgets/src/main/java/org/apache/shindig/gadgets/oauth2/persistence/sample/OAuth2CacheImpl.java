@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
-import org.apache.shindig.gadgets.oauth2.OAuth2Context;
 import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
@@ -27,20 +26,18 @@ public class OAuth2CacheImpl implements OAuth2Cache {
   private final Map<Integer, OAuth2Token> tokens;
   private final Map<Integer, OAuth2Provider> providers;
   private final Map<Integer, OAuth2Client> clients;
-  private final Map<Integer, OAuth2Context> contexts;
 
   @Inject
   OAuth2CacheImpl() {
     this.tokens = Collections.synchronizedMap(new HashMap<Integer, OAuth2Token>());
     this.providers = Collections.synchronizedMap(new HashMap<Integer, OAuth2Provider>());
     this.clients = Collections.synchronizedMap(new HashMap<Integer, OAuth2Client>());
-    this.contexts = Collections.synchronizedMap(new HashMap<Integer, OAuth2Context>());
   }
 
   public Integer getTokenIndex(final String providerName, final String gadgetUri,
-      final String user, final OAuth2Token.Type type) {
+      final String user, final String scope, final OAuth2Token.Type type) {
     return Integer.valueOf((OAuth2CacheImpl.OAUTH2_TOKEN_PREFIX + ":" + gadgetUri + ":"
-        + providerName + ":" + user + ":" + type.name()).hashCode());
+        + providerName + ":" + user + ":" + scope + ":" + type.name()).hashCode());
   }
 
   public OAuth2Token getToken(final Integer index) {
@@ -55,7 +52,7 @@ public class OAuth2CacheImpl implements OAuth2Cache {
     for (final OAuth2Token token : tokens) {
       this.tokens.put(
           this.getTokenIndex(token.getProviderName(), token.getGadgetUri(), token.getUser(),
-              token.getType()), token);
+              token.getScope(), token.getType()), token);
     }
   }
 
@@ -125,38 +122,5 @@ public class OAuth2CacheImpl implements OAuth2Cache {
 
   public void clearClients() throws OAuth2CacheException {
     this.clients.clear();
-  }
-
-  public Integer getContextIndex(final String gadgetUri, final String serviceName, final String user) {
-    return Integer.valueOf((OAuth2CacheImpl.OAUTH2_CONTEXT_PREFIX + ":" + gadgetUri + ":"
-        + serviceName + ":" + user).hashCode());
-  }
-
-  public Integer getContextIndex(final OAuth2Context context) {
-    return this.getContextIndex(context.getGadgetUri(), context.getProviderName(),
-        context.getUser());
-  }
-
-  public OAuth2Context getContext(final Integer index) {
-    return this.contexts.get(index);
-  }
-
-  public void storeContext(final Integer index, final OAuth2Context context)
-      throws OAuth2CacheException {
-    this.contexts.put(index, context);
-  }
-
-  public void storeContexts(final Collection<OAuth2Context> contexts) throws OAuth2CacheException {
-    for (final OAuth2Context context : contexts) {
-      this.contexts.put(this.getContextIndex(context), context);
-    }
-  }
-
-  public OAuth2Context removeContext(final Integer index) throws OAuth2CacheException {
-    return this.contexts.remove(index);
-  }
-
-  public void clearContexts() throws OAuth2CacheException {
-    this.contexts.clear();
   }
 }
