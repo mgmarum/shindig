@@ -17,7 +17,7 @@
            "http://%authority%%contextRoot%/samplecontainer/examples/oauth2_code.xml" : {
                 "redirectURI" : "http://%authority%%contextRoot%/gadgets/oauth2callback",
                 "type" : "confidential",
-                "flow" : "authorization_code",
+                "flow" : "code",
                 "consumer_key" : "756575909974-nq6e6p8au376tjj599o5fjd37kiibjeq.apps.googleusercontent.com",
                 "consumer_secret" : "5MrCHchhauFpkNbutJBunzQ6"
            },

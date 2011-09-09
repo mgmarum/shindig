@@ -44,8 +44,10 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
   private static final String FLOW = "flow";
   private static final String AUTHORIZATION_URL = "authorizationUrl";
   private static final String TOKEN_URL = "tokenUrl";
-  private static final String AUTORIZATION_CODE_FLOW = "authorization_code";
-  private static final String CONFIDENTIAL_TYPE = "confidential";
+  private static final String CODE_FLOW = "code";
+  private static final String TOKEN_FLOW = "token";
+  private static final String CONFIDENTIAL_TYPE2 = "confidential";
+  private static final String PUBLIC_TYPE = "public";
   private static final String ENDPOINTS = "endpoints";
   private static final String CLIENTS = "clients";
   private static final String OAUTH2_CONFIG = "config/oauth2.json";
@@ -110,15 +112,18 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
           client.setRedirectUri(redirectUri);
 
           Flow flow = Flow.UNKNOWN;
-          if (OAuth2PersisterImpl.AUTORIZATION_CODE_FLOW.equals(flowS)) {
-            flow = Flow.AUTHORIZATION_CODE;
+          if (OAuth2PersisterImpl.CODE_FLOW.equals(flowS)) {
+            flow = Flow.CODE;
+          } else if (OAuth2PersisterImpl.TOKEN_FLOW.equals(flowS)) {
+            flow = Flow.TOKEN;
           }
           client.setFlow(flow);
 
           OAuth2Client.Type type = OAuth2Client.Type.UNKNOWN;
-
-          if (OAuth2PersisterImpl.CONFIDENTIAL_TYPE.equals(typeS)) {
+          if (OAuth2PersisterImpl.CONFIDENTIAL_TYPE2.equals(typeS)) {
             type = OAuth2Client.Type.CONFIDENTIAL;
+          } else if (OAuth2PersisterImpl.PUBLIC_TYPE.equals(typeS)) {
+            type = OAuth2Client.Type.PUBLIC;
           }
           client.setType(type);
 

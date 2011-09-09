@@ -14,18 +14,6 @@ package org.apache.shindig.gadgets.oauth2;
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public class OAuth2Accessor {
-  public static enum Type {
-    AUTHORIZATION_CODE, TOKEN
-  }
-
-  public static enum HttpMethod {
-    GET, POST
-  }
-
-  public static enum OAuth2ParamLocation {
-    URI_QUERY
-  }
-
   private final OAuth2Provider provider;
   private final OAuth2Client client;
 
@@ -38,97 +26,107 @@ public class OAuth2Accessor {
   private OAuth2Token refreshToken;
   private String authorizationUrl;
   private String tokenUrl;
+  private OAuth2Client.Type type;
+  private OAuth2Client.Flow flow;
 
   public OAuth2Accessor(final OAuth2Provider provider, final OAuth2Client client) {
     this.provider = provider;
     this.client = client;
   }
 
-  public OAuth2Provider getProvider() {
-    return this.provider;
-  }
-
-  public OAuth2Client getClient() {
-    return this.client;
-  }
-
-  public Type getAuthorizationType() {
-    return Type.AUTHORIZATION_CODE;
-  }
-
   public String getAuthorizationCode() {
-    return this.authorizationCode;
+    return authorizationCode;
   }
 
-  public void setAuthorizationCode(final String authorizationCode) {
+  public void setAuthorizationCode(String authorizationCode) {
     this.authorizationCode = authorizationCode;
   }
 
   public String getClientId() {
-    return this.clientId;
+    return clientId;
   }
 
-  public void setClientId(final String clientId) {
+  public void setClientId(String clientId) {
     this.clientId = clientId;
   }
 
   public String getRedirectUri() {
-    return this.redirectUri;
+    return redirectUri;
   }
 
-  public void setRedirectUri(final String redirectUri) {
+  public void setRedirectUri(String redirectUri) {
     this.redirectUri = redirectUri;
   }
 
   public String getScope() {
-    return this.scope;
+    return scope;
   }
 
-  public void setScope(final String scope) {
+  public void setScope(String scope) {
     this.scope = scope;
   }
 
   public String getState() {
-    return this.state;
+    return state;
   }
 
-  public void setState(final String state) {
+  public void setState(String state) {
     this.state = state;
   }
 
   public OAuth2Token getAccessToken() {
-    return this.accessToken;
+    return accessToken;
   }
 
-  public void setAccessToken(final OAuth2Token accessToken) {
+  public void setAccessToken(OAuth2Token accessToken) {
     this.accessToken = accessToken;
   }
 
   public OAuth2Token getRefreshToken() {
-    return this.refreshToken;
+    return refreshToken;
   }
 
-  public void setRefreshToken(final OAuth2Token refreshToken) {
+  public void setRefreshToken(OAuth2Token refreshToken) {
     this.refreshToken = refreshToken;
   }
 
   public String getAuthorizationUrl() {
-    return this.authorizationUrl;
+    return authorizationUrl;
   }
 
-  public void setAuthorizationUrl(final String authorizationUrl) {
+  public void setAuthorizationUrl(String authorizationUrl) {
     this.authorizationUrl = authorizationUrl;
   }
 
   public String getTokenUrl() {
-    return this.tokenUrl;
+    return tokenUrl;
   }
 
-  public void setTokenUrl(final String tokenUrl) {
+  public void setTokenUrl(String tokenUrl) {
     this.tokenUrl = tokenUrl;
   }
 
-  public HttpMethod getMethod() {
-    return HttpMethod.GET;
+  public OAuth2Client.Type getType() {
+    return type;
+  }
+
+  public void setType(OAuth2Client.Type type) {
+    this.type = type;
+  }
+
+  public OAuth2Client.Flow getFlow() {
+    return flow;
+  }
+
+  public void setFlow(OAuth2Client.Flow flow) {
+    this.flow = flow;
+  }
+
+  public OAuth2Provider getProvider() {
+    return provider;
+  }
+
+  public OAuth2Client getClient() {
+    return client;
   }
 }

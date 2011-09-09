@@ -24,6 +24,7 @@ import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.http.HttpResponseBuilder;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
+import org.apache.shindig.gadgets.oauth2.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2FetcherConfig;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
@@ -226,7 +227,7 @@ public class BasicOAuth2Request implements OAuth2Request {
 
     final OAuth2Message reply = this.sendOAuthMessage(request);
 
-    this.accessor.setAuthorizationCode(reply.getAuthorizationCode());
+    this.accessor.setAuthorizationCode(reply.getAuthorization());
   }
 
   private HttpRequest createAuthorizationRequest(final OAuth2Accessor accessor)
@@ -240,15 +241,16 @@ public class BasicOAuth2Request implements OAuth2Request {
         accessor);
 
     final HttpRequest request = new HttpRequest(Uri.parse(completeAuthorizationUrl));
-    request.setMethod(accessor.getMethod().name());
+    request.setMethod("GET");
     return request;
   }
 
   private String getCompleteAuthorizationUrl(final String authorizationUrl,
       final OAuth2Accessor accessor) throws OAuth2RequestException {
     String type = "code";
-    switch (accessor.getAuthorizationType()) {
-    case AUTHORIZATION_CODE:
+
+    switch (accessor.getFlow()) {
+    case CODE :
       type = "code";
       break;
     case TOKEN:
@@ -314,18 +316,11 @@ public class BasicOAuth2Request implements OAuth2Request {
 
     this.checkForProtocolProblem(response);
 
-    // reply.addParameters(OAuth.decodeForm(response.getResponseAsString()));
-    // reply = parseAuthHeader(reply, response);
-    // if (OAuthUtil.getParameter(reply, OAuth.OAUTH_TOKEN) == null) {
-    // throw new OAuthRequestException(OAuthError.MISSING_OAUTH_PARAMETER,
-    // OAuth.OAUTH_TOKEN);
-    // }
-    // if (OAuthUtil.getParameter(reply, OAuth.OAUTH_TOKEN_SECRET) == null) {
-    // throw new OAuthRequestException(OAuthError.MISSING_OAUTH_PARAMETER,
-    // OAuth.OAUTH_TOKEN_SECRET);
-    // }
+    final OAuth2Message ret = new OAuth2Message();
+    
+    ret.parse(response.getResponseAsString());
 
-    return new OAuth2Message();
+    return ret;
   }
 
   private HttpResponseBuilder fetchData() throws OAuth2RequestException, OAuth2ProtocolException {

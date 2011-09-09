@@ -67,7 +67,9 @@ public class GadgetOAuth2TokenStore {
     ret.setRedirectUri(specInfo.getRedirectUri());
     ret.setTokenUrl(specInfo.getTokenUrl());
     ret.setScope(specInfo.getScope());
-
+    ret.setType(client.getType());
+    ret.setFlow(client.getFlow());
+    
     try {
       final OAuth2Token accessToken = this.store.getToken(provider.getName(),
           client.getGadgetUri(), securityToken.getViewerId(), specInfo.getScope(),

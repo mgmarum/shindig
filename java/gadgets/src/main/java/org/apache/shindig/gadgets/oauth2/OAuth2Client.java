@@ -15,11 +15,11 @@ import org.apache.shindig.gadgets.oauth2.persistence.OAuth2EncryptionException;
 
 public interface OAuth2Client extends Serializable {
   public enum Flow {
-    UNKNOWN, AUTHORIZATION_CODE
+    UNKNOWN, CODE, TOKEN
   }
 
   public enum Type {
-    UNKNOWN, CONFIDENTIAL
+    UNKNOWN, CONFIDENTIAL, PUBLIC
   }
 
   public String getProviderName();
