@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
@@ -26,12 +27,14 @@ public class OAuth2CacheImpl implements OAuth2Cache {
   private final Map<Integer, OAuth2Token> tokens;
   private final Map<Integer, OAuth2Provider> providers;
   private final Map<Integer, OAuth2Client> clients;
+  private final Map<Integer, OAuth2CallbackState> states;
 
   @Inject
   OAuth2CacheImpl() {
     this.tokens = Collections.synchronizedMap(new HashMap<Integer, OAuth2Token>());
     this.providers = Collections.synchronizedMap(new HashMap<Integer, OAuth2Provider>());
     this.clients = Collections.synchronizedMap(new HashMap<Integer, OAuth2Client>());
+    this.states = Collections.synchronizedMap(new HashMap<Integer, OAuth2CallbackState>());
   }
 
   public Integer getTokenIndex(final String providerName, final String gadgetUri,
@@ -122,5 +125,17 @@ public class OAuth2CacheImpl implements OAuth2Cache {
 
   public void clearClients() throws OAuth2CacheException {
     this.clients.clear();
+  }
+
+  public void storeOAuth2CallbackState(Integer stateKey, OAuth2CallbackState state) {
+    this.states.put(stateKey, state);
+  }
+
+  public OAuth2CallbackState getOAuth2CallbackState(Integer stateKey) {
+    return this.states.get(stateKey);
+  }
+
+  public OAuth2CallbackState removeOAuth2CallbackState(Integer stateKey) {
+    return this.states.remove(stateKey);
   }
 }

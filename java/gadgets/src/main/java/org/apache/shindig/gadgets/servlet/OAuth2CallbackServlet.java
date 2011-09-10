@@ -8,12 +8,23 @@
 package org.apache.shindig.gadgets.servlet;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.shindig.common.servlet.HttpUtil;
 import org.apache.shindig.common.servlet.InjectedServlet;
+import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
+import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
+import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
+import org.apache.shindig.gadgets.oauth2.OAuth2ResponseParams;
+import org.apache.shindig.gadgets.oauth2.OAuth2Store;
+import org.apache.shindig.gadgets.oauth2.OAuth2Utils;
+
+import com.google.inject.Inject;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 public class OAuth2CallbackServlet extends InjectedServlet {
@@ -43,17 +54,47 @@ public class OAuth2CallbackServlet extends InjectedServlet {
       + "Close this window.\n"
       + "</body>\n" + "</html>\n";
 
+  private transient OAuth2Store store;
+
+  @Inject
+  public void setOAuth2Store(final OAuth2Store store) {
+    this.store = store;
+  }
+
   @Override
   protected void doGet(final HttpServletRequest request, final HttpServletResponse resp)
       throws IOException {
 
-    OAuth2Message msg = new OAuth2Message();
+    final OAuth2Message msg = new OAuth2Message();
     msg.parse(request);
-    StringBuilder sb = new StringBuilder();
+    final String stateString = msg.getState();
+    System.err.println("@@@ stateString = " + stateString);
+    final Integer stateKey = Integer.decode(stateString);
+    System.err.println("@@@ stateKey = " + stateKey);
+    final OAuth2CallbackState callbackState = this.store.getOAuth2CallbackState(stateKey);
+    System.err.println("@@@ callbackState = " + callbackState);
+    final OAuth2Error error = msg.getError();
+    if (error != null) {
+      callbackState.changeState(State.AUTHORIZATION_FAILED);
+
+      final Map<String, String> queryParams = new HashMap<String, String>();
+      queryParams.put(OAuth2ResponseParams.ERROR_CODE, error.toString());
+      queryParams.put(OAuth2ResponseParams.ERROR_TEXT, msg.getErrorDescription());
+      queryParams.put(OAuth2ResponseParams.ERROR_URI, msg.getErrorUri());
+      final String errorUri = OAuth2Utils.buildUrl(callbackState.getErrorCallback(), queryParams,
+          null);
+      HttpUtil.setCachingHeaders(resp, OAuth2CallbackServlet.ONE_HOUR_IN_SECONDS, true);
+      resp.sendRedirect(errorUri);
+      return;
+    }
+
+    callbackState.changeState(State.AUTHORIZATION_SUCCEEDED);
+
+    final StringBuilder sb = new StringBuilder();
     sb.append("<html><head></head><body>");
     sb.append("Authorization: ").append(msg.getAuthorization()).append("<p>");
     sb.append("Parameters:<p>");
-    for (String key : msg.getParameters().keySet()) {
+    for (final String key : msg.getParameters().keySet()) {
       sb.append(key).append(" = ").append(msg.getParameters().get(key)).append("<p>");
     }
     sb.append("</body></html>");
@@ -80,8 +121,8 @@ public class OAuth2CallbackServlet extends InjectedServlet {
     // resp.sendRedirect(realUri.toString());
     // return;
     // }
-//    HttpUtil.setCachingHeaders(resp, ONE_HOUR_IN_SECONDS, true);
-//    resp.setContentType("text/html; charset=UTF-8");
-//    resp.getWriter().write(OAuth2CallbackServlet.RESP_BODY);
+    // HttpUtil.setCachingHeaders(resp, ONE_HOUR_IN_SECONDS, true);
+    // resp.setContentType("text/html; charset=UTF-8");
+    // resp.getWriter().write(OAuth2CallbackServlet.RESP_BODY);
   }
 }

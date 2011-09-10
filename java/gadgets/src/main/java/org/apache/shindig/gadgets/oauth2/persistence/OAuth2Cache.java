@@ -9,6 +9,7 @@ package org.apache.shindig.gadgets.oauth2.persistence;
 
 import java.util.Collection;
 
+import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
@@ -52,4 +53,10 @@ public interface OAuth2Cache {
   void storeToken(Integer index, OAuth2Token token) throws OAuth2CacheException;
 
   void storeTokens(Collection<OAuth2Token> tokens) throws OAuth2CacheException;
+  
+  void storeOAuth2CallbackState(Integer stateKey, OAuth2CallbackState state);
+  
+  OAuth2CallbackState getOAuth2CallbackState(Integer stateKey);
+
+  OAuth2CallbackState removeOAuth2CallbackState(Integer stateKey);
 }

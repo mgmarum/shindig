@@ -60,7 +60,7 @@ public class GadgetOAuth2TokenStore {
 
     final OAuth2SpecInfo specInfo = this.lookupSpecInfo(securityToken, arguments, provider, client);
 
-    final OAuth2Accessor ret = new OAuth2Accessor(provider, client);
+    final OAuth2Accessor ret = new OAuth2Accessor(provider, client, this.store, securityToken);
 
     ret.setAuthorizationUrl(specInfo.getAuthorizationUrl());
     ret.setClientId(specInfo.getClientId());
@@ -69,7 +69,7 @@ public class GadgetOAuth2TokenStore {
     ret.setScope(specInfo.getScope());
     ret.setType(client.getType());
     ret.setFlow(client.getFlow());
-    
+
     try {
       final OAuth2Token accessToken = this.store.getToken(provider.getName(),
           client.getGadgetUri(), securityToken.getViewerId(), specInfo.getScope(),

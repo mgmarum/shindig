@@ -7,15 +7,17 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
+import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.oauth.BasicOAuthStore;
+import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
-public interface OAuth2Store {
+public interface OAuth2Store extends OAuth2StateChangeListener {
   /**
    * Triggers the persistence layer to preload the {@link OAuth2Client}
    * information and store it in the {@link OAuth2Cache}.
@@ -139,4 +141,10 @@ public interface OAuth2Store {
    */
   public void removeToken(String providerName, String gadgetUri, String user, String scope,
       OAuth2Token.Type type) throws GadgetException;
+  
+  public OAuth2CallbackState createOAuth2CallbackState(final Flow flow, final SecurityToken securityToken, final String realCallbackUrl, final String errorCallbackUrl);
+  
+  public OAuth2CallbackState getOAuth2CallbackState(Integer stateKey);
+  
+  public OAuth2CallbackState removeOAuth2CallbackState(Integer stateKey);
 }

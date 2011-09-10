@@ -7,6 +7,8 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
+import org.apache.shindig.auth.SecurityToken;
+
 /**
  * OAuth2 related data accessor
  */
@@ -16,7 +18,11 @@ package org.apache.shindig.gadgets.oauth2;
 public class OAuth2Accessor {
   private final OAuth2Provider provider;
   private final OAuth2Client client;
+  private final OAuth2Store store;
+  private final SecurityToken securityToken;
 
+  
+  
   private String authorizationCode;
   private String clientId;
   private String redirectUri;
@@ -29,9 +35,11 @@ public class OAuth2Accessor {
   private OAuth2Client.Type type;
   private OAuth2Client.Flow flow;
 
-  public OAuth2Accessor(final OAuth2Provider provider, final OAuth2Client client) {
+  public OAuth2Accessor(final OAuth2Provider provider, final OAuth2Client client, final OAuth2Store store, final SecurityToken securityToken) {
     this.provider = provider;
     this.client = client;
+    this.store = store;
+    this.securityToken = securityToken;
   }
 
   public String getAuthorizationCode() {
@@ -64,14 +72,6 @@ public class OAuth2Accessor {
 
   public void setScope(String scope) {
     this.scope = scope;
-  }
-
-  public String getState() {
-    return state;
-  }
-
-  public void setState(String state) {
-    this.state = state;
   }
 
   public OAuth2Token getAccessToken() {
@@ -128,5 +128,9 @@ public class OAuth2Accessor {
 
   public OAuth2Client getClient() {
     return client;
+  }
+  
+  public OAuth2CallbackState getCallbackState() {
+    return this.store.createOAuth2CallbackState(flow, securityToken, securityToken.getAppUrl(), securityToken.getAppUrl());
   }
 }

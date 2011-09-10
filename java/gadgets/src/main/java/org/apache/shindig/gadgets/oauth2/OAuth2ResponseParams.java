@@ -19,6 +19,7 @@ public class OAuth2ResponseParams {
   public static final String APPROVAL_URL = "oauthApprovalUrl";
   public static final String ERROR_CODE = "oauthError";
   public static final String ERROR_TEXT = "oauthErrorText";
+  public static final String ERROR_URI = "oauthErrorUri";
 
   private final SecurityToken securityToken;
   private final HttpRequest originalRequest;

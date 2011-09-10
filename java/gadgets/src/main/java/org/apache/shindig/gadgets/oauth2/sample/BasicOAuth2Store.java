@@ -13,6 +13,9 @@ import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.GadgetException.Code;
+import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
+import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
+import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
 import org.apache.shindig.gadgets.oauth2.OAuth2Store;
@@ -163,8 +166,40 @@ public class BasicOAuth2Store implements OAuth2Store {
     return true;
   }
 
-  public boolean runImport(final OAuth2Persister source, final OAuth2Persister target, final boolean clean) {
+  public boolean runImport(final OAuth2Persister source, final OAuth2Persister target,
+      final boolean clean) {
     // TODO ARC
     return false;
+  }
+
+  public OAuth2CallbackState createOAuth2CallbackState(final Flow flow, final SecurityToken securityToken, final String realCallbackUrl, final String errorCallbackUrl) {
+    final OAuth2CallbackStateImpl ret = new OAuth2CallbackStateImpl(flow, securityToken, realCallbackUrl, errorCallbackUrl);
+    final Integer stateKey = ret.getStateKey();
+    this.cache.storeOAuth2CallbackState(stateKey, ret);
+    return ret;
+  }
+
+  public OAuth2CallbackState getOAuth2CallbackState(final Integer stateKey) {
+    return this.cache.getOAuth2CallbackState(stateKey);
+  }
+
+  public OAuth2CallbackState removeOAuth2CallbackState(final Integer stateKey) {
+    final OAuth2CallbackState ret = this.cache.removeOAuth2CallbackState(stateKey);
+    if (ret != null) {
+      ((OAuth2CallbackStateImpl) ret).invalidate();
+    }
+
+    return ret;
+  }
+
+  public void stateChange(final OAuth2CallbackState state, final State fromState,
+      final State toState) {
+    if (state != null) {
+      if ((toState == OAuth2CallbackState.State.ACCESS_FAILED)
+          || (toState == OAuth2CallbackState.State.AUTHORIZATION_FAILED)
+          || (toState == OAuth2CallbackState.State.REFERESH_FAILED)) {
+        this.removeOAuth2CallbackState(state.getStateKey());
+      }
+    }
   }
 }
