@@ -76,7 +76,8 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
     final Set<OAuth2Client> ret = new HashSet<OAuth2Client>();
 
     try {
-      final JSONObject providers = new JSONObject(getJSONString(OAUTH2_CONFIG));
+      final JSONObject providers = new JSONObject(
+          OAuth2PersisterImpl.getJSONString(OAuth2PersisterImpl.OAUTH2_CONFIG));
       for (final Iterator<?> i = providers.keys(); i.hasNext();) {
         final String providerName = (String) i.next();
         final JSONObject provider = providers.getJSONObject(providerName);
@@ -135,7 +136,7 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
     } catch (final IOException e) {
       throw new OAuth2PersistenceException(e);
     }
-    
+
     return ret;
   }
 
@@ -143,7 +144,8 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
     final Set<OAuth2Provider> ret = new HashSet<OAuth2Provider>();
 
     try {
-      final JSONObject providers = new JSONObject(getJSONString(OAUTH2_CONFIG));
+      final JSONObject providers = new JSONObject(
+          OAuth2PersisterImpl.getJSONString(OAuth2PersisterImpl.OAUTH2_CONFIG));
       for (final Iterator<?> i = providers.keys(); i.hasNext();) {
         final String providerName = (String) i.next();
         final JSONObject provider = providers.getJSONObject(providerName);
@@ -199,7 +201,6 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
 
   public OAuth2Token findToken(final String providerName, final String gadgetUri,
       final String user, final String scope, final Type type) throws OAuth2PersistenceException {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -207,5 +208,24 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
       final String scope, final Type type) {
     // TODO Auto-generated method stub
     return false;
+  }
+
+  public OAuth2Token findToken(final Integer index) throws OAuth2PersistenceException {
+    return null;
+  }
+
+  public boolean removeToken(final Integer index) throws OAuth2PersistenceException {
+    return false;
+  }
+
+  public void insertToken(final OAuth2Token token) throws OAuth2PersistenceException {
+    System.err.println("@@@ Inserting new token " + token);
+  }
+
+  public void updateToken(final OAuth2Token token) throws OAuth2PersistenceException {
+  }
+
+  public OAuth2Token createToken() {
+    return new OAuth2TokenImpl(this.encrypter);
   }
 }

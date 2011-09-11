@@ -10,6 +10,7 @@ package org.apache.shindig.gadgets.oauth2;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
+import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.oauth.BasicOAuthStore;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
@@ -44,7 +45,8 @@ public interface OAuth2Store extends OAuth2StateChangeListener {
    * A common scenario here is to read the contents of the config/oauth2.json
    * file and store it into a DB persistence layer.
    * 
-   * @param clean true will delete all existing information from persistence
+   * @param clean
+   *          true will delete all existing information from persistence
    * 
    * @return true if the import succeeded.
    */
@@ -95,56 +97,24 @@ public interface OAuth2Store extends OAuth2StateChangeListener {
    */
   public OAuth2Client getClient(String providerName, String gadgetUri) throws GadgetException;
 
-  /**
-   * Finds the OAuth2Token for a provider, gadget, and token type.
-   * 
-   * @param providerName
-   *          name of the Provider
-   * @param gadgetUri
-   *          URI of the Gadget
-   * @param user
-   *          who owns the token
-   * @param scope
-   *          scope of the token
-   * @param type
-   *          type of token
-   * @return {@OAuth2Token} for the provider, gadget, user and
-   *         type or null if it cannot be found
-   * @throws GadgetException
-   */
+  public OAuth2Token getToken(Integer index) throws GadgetException;
+
   public OAuth2Token getToken(String providerName, String gadgetUri, String user, String scope,
       OAuth2Token.Type type) throws GadgetException;
 
-  /**
-   * Store a OAuth2Token.
-   * 
-   * @param providerName
-   * @param gadgetUri
-   * @param user
-   * @param scope
-   * @param type
-   * @param token
-   * @throws GadgetException
-   */
-  public void setToken(String providerName, String gadgetUri, String user, String scope,
-      OAuth2Token.Type type, OAuth2Token token) throws GadgetException;
+  public void setToken(OAuth2Token token) throws GadgetException;
 
-  /**
-   * Remove an OAuth2Token.
-   * 
-   * @param providerName
-   * @param gadgetUri
-   * @param user
-   * @param scope
-   * @param type
-   * @throws GadgetException
-   */
-  public void removeToken(String providerName, String gadgetUri, String user, String scope,
+  public OAuth2Token removeToken(String providerName, String gadgetUri, String user, String scope,
       OAuth2Token.Type type) throws GadgetException;
-  
-  public OAuth2CallbackState createOAuth2CallbackState(final Flow flow, final SecurityToken securityToken, final String realCallbackUrl, final String errorCallbackUrl);
-  
+
+  public OAuth2Token removeToken(OAuth2Token token) throws GadgetException;
+
+  public OAuth2CallbackState createOAuth2CallbackState(OAuth2Accessor accessor,
+      OAuth2Client client, final Flow flow, final SecurityToken securityToken, HttpFetcher fetcher);
+
   public OAuth2CallbackState getOAuth2CallbackState(Integer stateKey);
-  
+
   public OAuth2CallbackState removeOAuth2CallbackState(Integer stateKey);
+
+  public OAuth2Token createToken();
 }

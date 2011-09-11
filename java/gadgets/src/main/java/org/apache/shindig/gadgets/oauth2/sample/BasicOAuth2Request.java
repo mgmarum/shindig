@@ -19,6 +19,7 @@ import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.http.HttpResponseBuilder;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
+import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
 import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2FetcherConfig;
 import org.apache.shindig.gadgets.oauth2.OAuth2ProtocolException;
@@ -27,7 +28,6 @@ import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
 import org.apache.shindig.gadgets.oauth2.OAuth2ResponseParams;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 import org.apache.shindig.gadgets.oauth2.OAuth2Utils;
-import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
@@ -44,7 +44,7 @@ public class BasicOAuth2Request implements OAuth2Request {
   private OAuth2ResponseParams responseParams;
 
   private OAuth2Accessor accessor;
-  
+
   private OAuth2CallbackState callbackState;
 
   /**
@@ -60,8 +60,7 @@ public class BasicOAuth2Request implements OAuth2Request {
 
   public HttpResponse fetch(final HttpRequest request) {
     this.realRequest = request;
-    this.responseParams = new OAuth2ResponseParams(request.getSecurityToken(), request,
-        this.fetcherConfig.getStateCrypter());
+    this.responseParams = new OAuth2ResponseParams(request.getSecurityToken(), request);
     try {
       return this.fetchNoThrow();
     } catch (final RuntimeException e) {
@@ -78,7 +77,7 @@ public class BasicOAuth2Request implements OAuth2Request {
     try {
       this.accessor = this.fetcherConfig.getTokenStore().getOAuth2Accessor(
           this.realRequest.getSecurityToken(), this.realRequest.getOAuth2Arguments(),
-          this.fetcherConfig);
+          this.fetcherConfig, this.fetcher);
       this.callbackState = this.accessor.getCallbackState();
       response = this.fetchWithRetry();
     } catch (final OAuth2RequestException e) {
@@ -107,7 +106,8 @@ public class BasicOAuth2Request implements OAuth2Request {
           MessageKeys.OAUTH_FETCH_FATAL_ERROR);
 
       this.responseParams.setSendTraceToClient(true);
-    } else if ((this.responseParams.getAuthorizationUrl() != null) && this.responseParams.sawErrorResponse()) {
+    } else if ((this.responseParams.getAuthorizationUrl() != null)
+        && this.responseParams.sawErrorResponse()) {
       this.responseParams.logDetailedWarning(BasicOAuth2Request.classname, "fetchNoThrow",
           MessageKeys.OAUTH_FETCH_ERROR_REPROMPT);
       this.responseParams.setSendTraceToClient(true);
@@ -144,56 +144,53 @@ public class BasicOAuth2Request implements OAuth2Request {
 
   private HttpResponseBuilder attemptFetch() throws OAuth2RequestException, OAuth2ProtocolException {
     // Do we have an access token to use?
-    if (!haveAccessToken(this.accessor)) {
+    if (!BasicOAuth2Request.haveAccessToken(this.accessor)) {
       // We don't have an access token, we need to try and get one
       // First step see if we have a refresh token
-      if (haveRefreshToken(this.accessor)) {
+      if (BasicOAuth2Request.haveRefreshToken(this.accessor)) {
         // TODO ARC
       } else {
-        checkCanAuthorize();
-        //buildClientApprovalState();
-        buildAuthorizationUrl();
-        
-         this.callbackState.changeState(State.AUTHORIZATION_REQUESTED);
-        
-        return new HttpResponseBuilder()
-           .setHttpStatusCode(HttpResponse.SC_OK)
-           .setStrictNoCache();
+        this.checkCanAuthorize();
+        // buildClientApprovalState();
+        this.buildAuthorizationUrl();
+        this.callbackState.changeState(State.AUTHORIZATION_REQUESTED);
+
+        return new HttpResponseBuilder().setHttpStatusCode(HttpResponse.SC_OK).setStrictNoCache();
       }
     }
 
-    return fetchData();
+    return this.fetchData();
   }
 
   private void checkCanAuthorize() throws OAuth2RequestException {
     // TODO ARC
-//    String pageOwner = realRequest.getSecurityToken().getOwnerId();
-//    String pageViewer = realRequest.getSecurityToken().getViewerId();
-//    if (pageOwner == null || pageViewer == null) {
-//      throw new OAuth2RequestException(OAuth2Error.UNAUTHENTICATED);
-//    }
-//    if (!fetcherConfig.isViewerAccessTokensEnabled() && !pageOwner.equals(pageViewer)) {
-//      throw new OAuth2RequestException(OAuth2Error.NOT_OWNER);
-//    }
+    // String pageOwner = realRequest.getSecurityToken().getOwnerId();
+    // String pageViewer = realRequest.getSecurityToken().getViewerId();
+    // if (pageOwner == null || pageViewer == null) {
+    // throw new OAuth2RequestException(OAuth2Error.UNAUTHENTICATED);
+    // }
+    // if (!fetcherConfig.isViewerAccessTokensEnabled() &&
+    // !pageOwner.equals(pageViewer)) {
+    // throw new OAuth2RequestException(OAuth2Error.NOT_OWNER);
+    // }
   }
 
   private void buildAuthorizationUrl() throws OAuth2RequestException {
-    final String authUrl = accessor.getProvider().getAuthorizationUrl();
+    final String authUrl = this.accessor.getProvider().getAuthorizationUrl();
     if (authUrl == null) {
-      throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_TOKEN_URL,
-          "authorization");
+      throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_TOKEN_URL, "authorization");
     }
 
-    final String completeAuthUrl = getCompleteAuthorizationUrl(authUrl, accessor);
-    
-    responseParams.setAuthorizationUrl(completeAuthUrl);
+    final String completeAuthUrl = this.getCompleteAuthorizationUrl(authUrl, this.accessor);
+
+    this.responseParams.setAuthorizationUrl(completeAuthUrl);
   }
-  
+
   private static boolean haveAccessToken(final OAuth2Accessor accessor) {
     boolean ret = false;
     final OAuth2Token accessToken = accessor.getAccessToken();
     if ((accessToken != null)) {
-      if (validateAccessToken(accessToken)) {
+      if (BasicOAuth2Request.validateAccessToken(accessToken)) {
         ret = true;
       }
     }
@@ -201,7 +198,7 @@ public class BasicOAuth2Request implements OAuth2Request {
   }
 
   private static boolean validateAccessToken(final OAuth2Token accessToken) {
-    boolean ret = true;
+    final boolean ret = true;
     // Nothing really to validate
     return ret;
   }
@@ -210,7 +207,7 @@ public class BasicOAuth2Request implements OAuth2Request {
     boolean ret = false;
     final OAuth2Token refreshToken = accessor.getRefreshToken();
     if ((refreshToken != null)) {
-      if (validateRefreshToken(refreshToken)) {
+      if (BasicOAuth2Request.validateRefreshToken(refreshToken)) {
         ret = true;
       }
     }
@@ -218,7 +215,7 @@ public class BasicOAuth2Request implements OAuth2Request {
   }
 
   private static boolean validateRefreshToken(final OAuth2Token refreshToken) {
-    boolean ret = true;
+    final boolean ret = true;
     // Nothing really to validate
     return ret;
   }
@@ -243,7 +240,7 @@ public class BasicOAuth2Request implements OAuth2Request {
     String type = "code";
 
     switch (accessor.getFlow()) {
-    case CODE :
+    case CODE:
       type = "code";
       break;
     case TOKEN:

@@ -13,15 +13,18 @@ import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.GadgetException.Code;
+import org.apache.shindig.gadgets.http.HttpFetcher;
+import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
 import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
-import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
+import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
 import org.apache.shindig.gadgets.oauth2.OAuth2Store;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token.Type;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2CacheException;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2PersistenceException;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
 
@@ -116,38 +119,65 @@ public class BasicOAuth2Store implements OAuth2Store {
     return client;
   }
 
-  public OAuth2Token getToken(final String providerName, final String gadgetUri, final String user,
-      final String scope, final OAuth2Token.Type type) throws GadgetException {
-    final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
+  public OAuth2Token getToken(final Integer index) throws GadgetException {
     OAuth2Token token = this.cache.getToken(index);
     if (token == null) {
       try {
-        token = this.persister.findToken(providerName, gadgetUri, user, scope, type);
+        token = this.persister.findToken(index);
         if (token != null) {
           this.cache.storeToken(index, token);
         }
       } catch (final OAuth2PersistenceException e) {
-        throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 token "
-            + providerName, e);
+        throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 token " + index,
+            e);
       }
     }
 
     return token;
   }
 
-  public void setToken(final String providerName, final String gadgetUri, final String user,
-      final String scope, final Type type, final OAuth2Token token) throws GadgetException {
-    // TODO Auto-generated method stub
+  public OAuth2Token getToken(final String providerName, final String gadgetUri, final String user,
+      final String scope, final OAuth2Token.Type type) throws GadgetException {
+    final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
+    return this.getToken(index);
   }
 
-  public void removeToken(final String providerName, final String gadgetUri, final String user,
-      final String scope, final Type type) throws GadgetException {
+  public void setToken(final OAuth2Token token) throws GadgetException {
+    final Integer index = this.cache.getTokenIndex(token);
+    final OAuth2Token existingToken = this.getToken(index);
+    try {
+      if (existingToken == null) {
+        this.persister.insertToken(token);
+      } else {
+        this.cache.removeToken(index);
+        this.persister.updateToken(token);
+      }
+      this.cache.storeToken(index, token);
+    } catch (final OAuth2CacheException e) {
+      throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error storing OAuth2 token " + index, e);
+    } catch (final OAuth2PersistenceException e) {
+      throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error storing OAuth2 token " + index, e);
+    }
+  }
+
+  public OAuth2Token removeToken(final OAuth2Token token) throws GadgetException {
+    if (token != null) {
+      return this.removeToken(token.getProviderName(), token.getGadgetUri(), token.getUser(),
+          token.getScope(), token.getType());
+    }
+    return null;
+  }
+
+  public OAuth2Token removeToken(final String providerName, final String gadgetUri,
+      final String user, final String scope, final Type type) throws GadgetException {
     final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
     try {
       final OAuth2Token token = this.cache.removeToken(index);
       if (token != null) {
         this.persister.removeToken(providerName, gadgetUri, user, scope, type);
       }
+
+      return token;
     } catch (final OAuth2PersistenceException e) {
       throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 token "
           + providerName, e);
@@ -172,8 +202,11 @@ public class BasicOAuth2Store implements OAuth2Store {
     return false;
   }
 
-  public OAuth2CallbackState createOAuth2CallbackState(final Flow flow, final SecurityToken securityToken, final String realCallbackUrl, final String errorCallbackUrl) {
-    final OAuth2CallbackStateImpl ret = new OAuth2CallbackStateImpl(flow, securityToken, realCallbackUrl, errorCallbackUrl);
+  public OAuth2CallbackState createOAuth2CallbackState(final OAuth2Accessor accessor,
+      final OAuth2Client client, final Flow flow, final SecurityToken securityToken,
+      final HttpFetcher fetcher) {
+    final OAuth2CallbackStateImpl ret = new OAuth2CallbackStateImpl(accessor, client, flow,
+        securityToken, fetcher);
     final Integer stateKey = ret.getStateKey();
     this.cache.storeOAuth2CallbackState(stateKey, ret);
     return ret;
@@ -195,11 +228,15 @@ public class BasicOAuth2Store implements OAuth2Store {
   public void stateChange(final OAuth2CallbackState state, final State fromState,
       final State toState) {
     if (state != null) {
-      if ((toState == OAuth2CallbackState.State.ACCESS_FAILED)
+      if ((toState == OAuth2CallbackState.State.UNKNOWN)
           || (toState == OAuth2CallbackState.State.AUTHORIZATION_FAILED)
-          || (toState == OAuth2CallbackState.State.REFERESH_FAILED)) {
+          || (toState == OAuth2CallbackState.State.ACCESS_SUCCEEDED)) {
         this.removeOAuth2CallbackState(state.getStateKey());
       }
     }
+  }
+
+  public OAuth2Token createToken() {
+    return this.persister.createToken();
   }
 }

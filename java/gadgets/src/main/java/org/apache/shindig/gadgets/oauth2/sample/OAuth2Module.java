@@ -125,7 +125,7 @@ public class OAuth2Module extends AbstractModule {
 
       this.store.setDefaultRedirectUri(defaultRedirectUri);
       this.store.setHostProvider(hostProvider);
-      
+
       if (importFromConfig) {
         final OAuth2Persister source = new OAuth2PersisterImpl(encrypter, hostProvider,
             globalRedirectUri, contextRoot);
@@ -137,7 +137,7 @@ public class OAuth2Module extends AbstractModule {
       } catch (final GadgetException e) {
         e.printStackTrace();
       }
-      
+
       this.loadDefaultKey(signingKeyFile, signingKeyName);
     }
 

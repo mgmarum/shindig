@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.Pair;
-import org.apache.shindig.common.crypto.BlobCrypter;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.http.HttpResponseBuilder;
@@ -27,8 +26,7 @@ public class OAuth2ResponseParams {
   private String authorizationUrl;
   private boolean sendTraceToClient;
 
-  public OAuth2ResponseParams(SecurityToken securityToken, HttpRequest originalRequest,
-      BlobCrypter stateCrypter) {
+  public OAuth2ResponseParams(final SecurityToken securityToken, final HttpRequest originalRequest) {
     this.securityToken = securityToken;
     this.originalRequest = originalRequest;
   }
@@ -36,106 +34,114 @@ public class OAuth2ResponseParams {
   /**
    * Log a warning message that includes the details of the request.
    */
-  public void logDetailedWarning(String classname, String method, String msgKey) {
-    if (LOG.isLoggable(Level.FINE)) {
-      LOG.log(Level.FINE,getDetails(null));
-    } else if (LOG.isLoggable(Level.WARNING)) {
-    	LOG.logp(Level.WARNING, classname, method, msgKey, new Object[] {getDetails(null)});
+  public void logDetailedWarning(final String classname, final String method, final String msgKey) {
+    if (OAuth2ResponseParams.LOG.isLoggable(Level.FINE)) {
+      OAuth2ResponseParams.LOG.log(Level.FINE, this.getDetails(null));
+    } else if (OAuth2ResponseParams.LOG.isLoggable(Level.WARNING)) {
+      OAuth2ResponseParams.LOG.logp(Level.WARNING, classname, method, msgKey,
+          new Object[] { this.getDetails(null) });
     }
   }
 
   /**
-   * Log a warning message that includes the details of the request and the thrown exception.
+   * Log a warning message that includes the details of the request and the
+   * thrown exception.
    */
-  public void logDetailedWarning(String classname, String method, String msgKey, Throwable e) {
-    if (LOG.isLoggable(Level.FINE)) {
-      LOG.log(Level.FINE, getDetails(e), e);
-    } else if (LOG.isLoggable(Level.WARNING)) {
-       LOG.logp(Level.WARNING, classname, method, msgKey, new Object[] {e.getMessage()});
+  public void logDetailedWarning(final String classname, final String method, final String msgKey,
+      final Throwable e) {
+    if (OAuth2ResponseParams.LOG.isLoggable(Level.FINE)) {
+      OAuth2ResponseParams.LOG.log(Level.FINE, this.getDetails(e), e);
+    } else if (OAuth2ResponseParams.LOG.isLoggable(Level.WARNING)) {
+      OAuth2ResponseParams.LOG.logp(Level.WARNING, classname, method, msgKey,
+          new Object[] { e.getMessage() });
     }
   }
 
-  public void logDetailedInfo(String classname, String method, String msgKey, Throwable e) {
-    if (LOG.isLoggable(Level.FINE)) {
-      LOG.log(Level.FINE, getDetails(e), e);
-    } else if (LOG.isLoggable(Level.INFO)) {
-    	LOG.logp(Level.INFO, classname, method, msgKey, new Object[] {e.getMessage()});
+  public void logDetailedInfo(final String classname, final String method, final String msgKey,
+      final Throwable e) {
+    if (OAuth2ResponseParams.LOG.isLoggable(Level.FINE)) {
+      OAuth2ResponseParams.LOG.log(Level.FINE, this.getDetails(e), e);
+    } else if (OAuth2ResponseParams.LOG.isLoggable(Level.INFO)) {
+      OAuth2ResponseParams.LOG.logp(Level.INFO, classname, method, msgKey,
+          new Object[] { e.getMessage() });
     }
   }
 
   /**
    * Log a warning message that includes the details of the request.
    */
-  public void logDetailedWarning(String note) {
-    if (LOG.isLoggable(Level.FINE)) {
-      LOG.log(Level.FINE, note + '\n' + getDetails(null));
-    } else if (LOG.isLoggable(Level.WARNING)) {
-      LOG.log(Level.WARNING, note);
+  public void logDetailedWarning(final String note) {
+    if (OAuth2ResponseParams.LOG.isLoggable(Level.FINE)) {
+      OAuth2ResponseParams.LOG.log(Level.FINE, note + '\n' + this.getDetails(null));
+    } else if (OAuth2ResponseParams.LOG.isLoggable(Level.WARNING)) {
+      OAuth2ResponseParams.LOG.log(Level.WARNING, note);
     }
   }
 
   /**
-   * Log a warning message that includes the details of the request and the thrown exception.
+   * Log a warning message that includes the details of the request and the
+   * thrown exception.
    */
-  public void logDetailedWarning(String note, Throwable e) {
-    if (LOG.isLoggable(Level.FINE)) {
-      LOG.log(Level.FINE, note + '\n' + getDetails(e), e);
-    } else if (LOG.isLoggable(Level.WARNING)) {
-      LOG.log(Level.WARNING, note + ": " + e.getMessage());
+  public void logDetailedWarning(final String note, final Throwable e) {
+    if (OAuth2ResponseParams.LOG.isLoggable(Level.FINE)) {
+      OAuth2ResponseParams.LOG.log(Level.FINE, note + '\n' + this.getDetails(e), e);
+    } else if (OAuth2ResponseParams.LOG.isLoggable(Level.WARNING)) {
+      OAuth2ResponseParams.LOG.log(Level.WARNING, note + ": " + e.getMessage());
     }
   }
 
-  public void logDetailedInfo(String note, Throwable e) {
-    if (LOG.isLoggable(Level.FINE)) {
-      LOG.log(Level.FINE, note + '\n' + getDetails(e), e);
-    } else if (LOG.isLoggable(Level.INFO)) {
-      LOG.log(Level.INFO, note + ": " + e.getMessage());
+  public void logDetailedInfo(final String note, final Throwable e) {
+    if (OAuth2ResponseParams.LOG.isLoggable(Level.FINE)) {
+      OAuth2ResponseParams.LOG.log(Level.FINE, note + '\n' + this.getDetails(e), e);
+    } else if (OAuth2ResponseParams.LOG.isLoggable(Level.INFO)) {
+      OAuth2ResponseParams.LOG.log(Level.INFO, note + ": " + e.getMessage());
     }
   }
 
   /**
-   * Add a request/response pair to our trace of actions associated with this request.
+   * Add a request/response pair to our trace of actions associated with this
+   * request.
    */
-  public void addRequestTrace(HttpRequest request, HttpResponse response) {
+  public void addRequestTrace(final HttpRequest request, final HttpResponse response) {
     this.requestTrace.add(Pair.of(request, response));
   }
 
   /**
-   * @return true if the target server returned an error at some point during the request
+   * @return true if the target server returned an error at some point during
+   *         the request
    */
   public boolean sawErrorResponse() {
-    for (Pair<HttpRequest, HttpResponse> event : requestTrace) {
-      if (event.two == null || event.two.isError()) {
+    for (final Pair<HttpRequest, HttpResponse> event : this.requestTrace) {
+      if ((event.two == null) || event.two.isError()) {
         return true;
       }
     }
     return false;
   }
 
-  private String getDetails(Throwable e) {
+  private String getDetails(final Throwable e) {
     String error = null;
 
     if (null != e) {
-      if(e instanceof OAuth2RequestException) {
-        OAuth2RequestException reqException = ((OAuth2RequestException) e);
+      if (e instanceof OAuth2RequestException) {
+        final OAuth2RequestException reqException = ((OAuth2RequestException) e);
         error = reqException.getError() + ", " + reqException.getErrorText();
-      }
-      else {
+      } else {
         error = e.getMessage();
       }
     }
 
-    return "OAuth error [" + error + "] for application "
-        + securityToken.getAppUrl() + ".  Request trace:" + getRequestTrace();
+    return "OAuth error [" + error + "] for application " + this.securityToken.getAppUrl()
+        + ".  Request trace:" + this.getRequestTrace();
   }
 
   private String getRequestTrace() {
-    StringBuilder trace = new StringBuilder();
+    final StringBuilder trace = new StringBuilder();
     trace.append("\n==== Original request:\n");
-    trace.append(originalRequest);
+    trace.append(this.originalRequest);
     trace.append("\n====");
     int i = 1;
-    for (Pair<HttpRequest, HttpResponse> event : requestTrace) {
+    for (final Pair<HttpRequest, HttpResponse> event : this.requestTrace) {
       trace.append("\n==== Sent request ").append(i).append(":\n");
       if (event.one != null) {
         trace.append(event.one.toString());
@@ -150,24 +156,24 @@ public class OAuth2ResponseParams {
     return trace.toString();
   }
 
-  public void addToResponse(HttpResponseBuilder response, OAuth2RequestException e) {
+  public void addToResponse(final HttpResponseBuilder response, final OAuth2RequestException e) {
     if (this.authorizationUrl != null) {
-      response.setMetadata(APPROVAL_URL, this.authorizationUrl);
+      response.setMetadata(OAuth2ResponseParams.APPROVAL_URL, this.authorizationUrl);
     }
 
-    if (e != null || sendTraceToClient) {
-      StringBuilder verboseError = new StringBuilder();
+    if ((e != null) || this.sendTraceToClient) {
+      final StringBuilder verboseError = new StringBuilder();
 
       if (e != null) {
-        response.setMetadata(ERROR_CODE, e.getError());
+        response.setMetadata(OAuth2ResponseParams.ERROR_CODE, e.getError());
         verboseError.append(e.getErrorText());
       }
-      if (sendTraceToClient) {
+      if (this.sendTraceToClient) {
         verboseError.append('\n');
-        verboseError.append(getRequestTrace());
+        verboseError.append(this.getRequestTrace());
       }
 
-      response.setMetadata(ERROR_TEXT, verboseError.toString());
+      response.setMetadata(OAuth2ResponseParams.ERROR_TEXT, verboseError.toString());
     }
   }
 
@@ -175,15 +181,15 @@ public class OAuth2ResponseParams {
     return this.authorizationUrl;
   }
 
-  public void setAuthorizationUrl(String authorizationUrl) {
+  public void setAuthorizationUrl(final String authorizationUrl) {
     this.authorizationUrl = authorizationUrl;
   }
 
   public boolean sendTraceToClient() {
-    return sendTraceToClient;
+    return this.sendTraceToClient;
   }
 
-  public void setSendTraceToClient(boolean sendTraceToClient) {
+  public void setSendTraceToClient(final boolean sendTraceToClient) {
     this.sendTraceToClient = sendTraceToClient;
   }
 }

@@ -11,6 +11,7 @@ import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.gadgets.GadgetContext;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.GadgetSpecFactory;
+import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.spec.GadgetSpec;
 import org.apache.shindig.gadgets.spec.OAuth2Service;
 import org.apache.shindig.gadgets.spec.OAuth2Service.EndPoint;
@@ -39,8 +40,8 @@ public class GadgetOAuth2TokenStore {
   }
 
   public OAuth2Accessor getOAuth2Accessor(final SecurityToken securityToken,
-      final OAuth2Arguments arguments, final OAuth2FetcherConfig fetcherConfig)
-      throws OAuth2RequestException {
+      final OAuth2Arguments arguments, final OAuth2FetcherConfig fetcherConfig,
+      final HttpFetcher fetcher) throws OAuth2RequestException {
 
     OAuth2Provider provider;
     try {
@@ -60,7 +61,8 @@ public class GadgetOAuth2TokenStore {
 
     final OAuth2SpecInfo specInfo = this.lookupSpecInfo(securityToken, arguments, provider, client);
 
-    final OAuth2Accessor ret = new OAuth2Accessor(provider, client, this.store, securityToken);
+    final OAuth2Accessor ret = new OAuth2Accessor(provider, client, this.store, securityToken,
+        fetcher);
 
     ret.setAuthorizationUrl(specInfo.getAuthorizationUrl());
     ret.setClientId(specInfo.getClientId());

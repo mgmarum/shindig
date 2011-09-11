@@ -33,6 +33,8 @@ public interface OAuth2Cache {
 
   OAuth2Token getToken(Integer index);
 
+  Integer getTokenIndex(OAuth2Token token);
+
   Integer getTokenIndex(String providerName, String gadgetUri, String user, String scope,
       OAuth2Token.Type type);
 
@@ -53,9 +55,9 @@ public interface OAuth2Cache {
   void storeToken(Integer index, OAuth2Token token) throws OAuth2CacheException;
 
   void storeTokens(Collection<OAuth2Token> tokens) throws OAuth2CacheException;
-  
+
   void storeOAuth2CallbackState(Integer stateKey, OAuth2CallbackState state);
-  
+
   OAuth2CallbackState getOAuth2CallbackState(Integer stateKey);
 
   OAuth2CallbackState removeOAuth2CallbackState(Integer stateKey);

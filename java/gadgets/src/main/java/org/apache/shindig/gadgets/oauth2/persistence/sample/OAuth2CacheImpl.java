@@ -22,7 +22,6 @@ public class OAuth2CacheImpl implements OAuth2Cache {
   private final static String OAUTH2_TOKEN_PREFIX = OAuth2CacheImpl.OAUTH2_PREFIX + "TOKEN_";
   private final static String OAUTH2_PROVIDER_PREFIX = OAuth2CacheImpl.OAUTH2_PREFIX + "PROVIDER_";
   private final static String OAUTH2_CLIENT_PREFIX = OAuth2CacheImpl.OAUTH2_PREFIX + "CLIENT_";
-  private final static String OAUTH2_CONTEXT_PREFIX = OAuth2CacheImpl.OAUTH2_PREFIX + "CONTEXT_";
 
   private final Map<Integer, OAuth2Token> tokens;
   private final Map<Integer, OAuth2Provider> providers;
@@ -35,6 +34,15 @@ public class OAuth2CacheImpl implements OAuth2Cache {
     this.providers = Collections.synchronizedMap(new HashMap<Integer, OAuth2Provider>());
     this.clients = Collections.synchronizedMap(new HashMap<Integer, OAuth2Client>());
     this.states = Collections.synchronizedMap(new HashMap<Integer, OAuth2CallbackState>());
+  }
+
+  public Integer getTokenIndex(final OAuth2Token token) {
+    if (token != null) {
+      return this.getTokenIndex(token.getProviderName(), token.getGadgetUri(), token.getUser(),
+          token.getScope(), token.getType());
+    }
+
+    return null;
   }
 
   public Integer getTokenIndex(final String providerName, final String gadgetUri,
@@ -127,15 +135,15 @@ public class OAuth2CacheImpl implements OAuth2Cache {
     this.clients.clear();
   }
 
-  public void storeOAuth2CallbackState(Integer stateKey, OAuth2CallbackState state) {
+  public void storeOAuth2CallbackState(final Integer stateKey, final OAuth2CallbackState state) {
     this.states.put(stateKey, state);
   }
 
-  public OAuth2CallbackState getOAuth2CallbackState(Integer stateKey) {
+  public OAuth2CallbackState getOAuth2CallbackState(final Integer stateKey) {
     return this.states.get(stateKey);
   }
 
-  public OAuth2CallbackState removeOAuth2CallbackState(Integer stateKey) {
+  public OAuth2CallbackState removeOAuth2CallbackState(final Integer stateKey) {
     return this.states.remove(stateKey);
   }
 }

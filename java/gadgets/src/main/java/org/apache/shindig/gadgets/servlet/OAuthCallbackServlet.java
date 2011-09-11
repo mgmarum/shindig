@@ -54,12 +54,12 @@ public class OAuthCallbackServlet extends InjectedServlet {
   
   public static final String CALLBACK_STATE_PARAM = "cs";
   public static final String REAL_DOMAIN_PARAM = "d";
-  private static final int ONE_HOUR_IN_SECONDS = 3600;
+  static final int ONE_HOUR_IN_SECONDS = 3600;
   
   // This bit of magic passes the entire callback URL into the opening gadget for later use.
   // gadgets.io.makeRequest (or osapi.oauth) will then pick up the callback URL to complete the
   // oauth dance.
-  private static final String RESP_BODY =
+  static final String RESP_BODY =
     "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" " +
     "\"http://www.w3.org/TR/html4/loose.dtd\">\n" +
     "<html>\n" +

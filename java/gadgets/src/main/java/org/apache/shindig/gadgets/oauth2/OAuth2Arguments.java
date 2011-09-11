@@ -19,7 +19,6 @@ import org.apache.shindig.gadgets.spec.RequestAuthenticationInfo;
 
 import com.google.common.base.Objects;
 
-
 /**
  * Arguments to an OAuth2 fetch sent by the client.
  */
@@ -29,11 +28,12 @@ import com.google.common.base.Objects;
 public class OAuth2Arguments {
   private static final String SERVICE_PARAM = "OAUTH_SERVICE_NAME";
   private static final String BYPASS_SPEC_CACHE_PARAM = "bypassSpecCache";
-  
+
   private final String serviceName;
   private final boolean bypassSpecCache;
-  private final Map<String, String> requestOptions = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
-      
+  private final Map<String, String> requestOptions = new TreeMap<String, String>(
+      String.CASE_INSENSITIVE_ORDER);
+
   public OAuth2Arguments(final AuthType auth, final HttpServletRequest request)
       throws GadgetException {
     this.serviceName = OAuth2Arguments.getRequestParam(request, OAuth2Arguments.SERVICE_PARAM, "");
@@ -43,14 +43,14 @@ public class OAuth2Arguments {
     while (params.hasMoreElements()) {
       final String name = params.nextElement();
       this.requestOptions.put(name, request.getParameter(name));
-    }    
+    }
   }
-  
+
   @SuppressWarnings("unchecked")
   private Enumeration<String> getParameterNames(final HttpServletRequest request) {
     return request.getParameterNames();
   }
-  
+
   public OAuth2Arguments(final RequestAuthenticationInfo info) throws GadgetException {
     this(info.getAuthType(), info.getAttributes());
   }
@@ -80,26 +80,27 @@ public class OAuth2Arguments {
     }
     return val;
   }
-  
+
   public OAuth2Arguments(final OAuth2Arguments orig) {
     this.serviceName = orig.serviceName;
     this.bypassSpecCache = orig.bypassSpecCache;
     this.requestOptions.putAll(orig.requestOptions);
   }
-  
+
   public String getServiceName() {
-    return serviceName;
+    return this.serviceName;
   }
 
   public boolean getBypassSpecCache() {
     return this.bypassSpecCache;
   }
-  
-  
+
+  @Override
   public int hashCode() {
     return Objects.hashCode(this.bypassSpecCache, this.serviceName);
   }
 
+  @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
@@ -110,6 +111,7 @@ public class OAuth2Arguments {
     }
 
     final OAuth2Arguments other = (OAuth2Arguments) obj;
-    return ((this.bypassSpecCache == other.getBypassSpecCache()) && (this.serviceName == other.getServiceName()));
+    return ((this.bypassSpecCache == other.getBypassSpecCache()) && (this.serviceName == other
+        .getServiceName()));
   }
 }

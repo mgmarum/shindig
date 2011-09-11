@@ -2,6 +2,8 @@ package org.apache.shindig.gadgets.oauth2;
 
 import java.io.Serializable;
 
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2EncryptionException;
+
 public interface OAuth2Token extends Serializable {
   public enum Type {
     ACCESS, REFRESH
@@ -11,17 +13,13 @@ public interface OAuth2Token extends Serializable {
 
   public void setType(Type type);
 
-  public String getToken();
-
-  public void setToken(String token);
-
   public String getSecret();
 
-  public void setSecret(String secret);
+  public void setSecret(String secret) throws OAuth2EncryptionException;
 
   public String getEncryptedSecret();
 
-  public void setEncryptedSecret(String encryptedSecret);
+  public void setEncryptedSecret(String encryptedSecret) throws OAuth2EncryptionException;
 
   public String getProviderName();
 
@@ -38,4 +36,12 @@ public interface OAuth2Token extends Serializable {
   public String getScope();
 
   public void setScope(String scope);
+
+  public int getExpiresIn();
+
+  public void setExpiresIn(int expiresIn);
+
+  public String getTokenType();
+
+  public void setTokenType(String tokenType);
 }
