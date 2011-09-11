@@ -25,6 +25,7 @@ import org.apache.shindig.gadgets.AuthType;
 import org.apache.shindig.gadgets.Gadget;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.oauth.OAuthArguments;
+import org.apache.shindig.gadgets.oauth2.OAuth2Arguments;
 import org.apache.shindig.gadgets.spec.View;
 
 import java.util.Map;
@@ -47,6 +48,8 @@ public class XhrwrapperConfigContributor implements ConfigContributor {
       addOAuthConfig(xhrWrapperConfig, view);
     } else if (AuthType.SIGNED.equals(view.getAuthType())) {
       xhrWrapperConfig.put("authorization", "signed");
+    } else if (AuthType.OAUTH2.equals(view.getAuthType())) {
+      addOAuth2Config(xhrWrapperConfig, view);
     }
     config.put("shindig.xhrwrapper", xhrWrapperConfig);
   }
@@ -64,6 +67,18 @@ public class XhrwrapperConfigContributor implements ConfigContributor {
       xhrWrapperConfig.putAll(oAuthConfig);
     } catch (GadgetException e) {
       // Do not add any OAuth configuration if an exception was thrown
+    }
+  }
+  
+  private void addOAuth2Config(Map<String, String> xhrWrapperConfig, View view) {
+    Map<String, String> oAuth2Config = Maps.newHashMapWithExpectedSize(3);
+    try {
+      OAuth2Arguments oAuth2Arguments = new OAuth2Arguments(view);
+      oAuth2Config.put("authorization", "oauth2");
+      oAuth2Config.put("oauthService", oAuth2Arguments.getServiceName());
+      xhrWrapperConfig.putAll(oAuth2Config);
+    } catch (GadgetException e) {
+      // Do not add any OAuth2 configuration if an exception was thrown
     }
   }
   

@@ -125,11 +125,9 @@ public class OAuth2CallbackServlet extends InjectedServlet {
   private void sendError(final OAuth2Error error, final OAuth2Message msg,
       final OAuth2CallbackState callbackState, final HttpServletRequest request,
       final HttpServletResponse resp) throws IOException {
-    if (callbackState != null) {
+    if ((callbackState != null) && (callbackState.getRealErrorCallbackUrl() != null)) {
       callbackState.changeState(State.AUTHORIZATION_FAILED);
-    }
 
-    if (callbackState.getRealErrorCallbackUrl() != null) {
       // Copy the query parameters from this URL over to the real URL.
       final UriBuilder realUri = UriBuilder.parse(callbackState.getRealErrorCallbackUrl());
       final Map<String, List<String>> params = UriBuilder.splitParameters(request.getQueryString());

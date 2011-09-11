@@ -43,24 +43,45 @@ public class GadgetOAuth2TokenStore {
       final OAuth2Arguments arguments, final OAuth2FetcherConfig fetcherConfig,
       final HttpFetcher fetcher) throws OAuth2RequestException {
 
+    if ((store == null) || (arguments == null) || (fetcherConfig == null) || (fetcher == null)) {
+      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "OAuth2Accessor missing a param --- store = "
+          + store + " , arguments = " + arguments + " , fetcherConfig = " + fetcherConfig + " , fetcher = " + fetcher);
+    }
     OAuth2Provider provider;
+    GadgetException gadgetException = null;
     try {
       provider = this.store.getProvider(arguments.getServiceName());
     } catch (final GadgetException e) {
-      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "Unable to provider "
-          + arguments.getServiceName(), e);
+      gadgetException = e;
+      provider = null;
+    }
+
+    if (provider == null) {
+      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "OAuth2Accessor unable to retrieve provider "
+          + arguments.getServiceName(), gadgetException);
+
     }
 
     OAuth2Client client;
     try {
       client = this.store.getClient(provider.getName(), securityToken.getAppUrl());
     } catch (final GadgetException e) {
-      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "Unable to retrieve client "
-          + provider.getName() + " , " + securityToken.getAppUrl(), e);
+      gadgetException = e;
+      client = null;
+    }
+
+    if (client == null) {
+      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "OAuth2Accessor unable to retrieve client "
+          + provider.getName() + " , " + securityToken.getAppUrl(), gadgetException);
     }
 
     final OAuth2SpecInfo specInfo = this.lookupSpecInfo(securityToken, arguments, provider, client);
 
+    if (specInfo == null) {
+      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "OAuth2Accessor unable to retrieve specinfo "
+          + provider.getName() + " , " + securityToken.getAppUrl(), gadgetException);
+    }
+    
     final OAuth2Accessor ret = new OAuth2Accessor(provider, client, this.store, securityToken,
         fetcher);
 

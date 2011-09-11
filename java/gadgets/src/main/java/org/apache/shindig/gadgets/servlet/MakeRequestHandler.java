@@ -40,6 +40,7 @@ import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.http.RequestPipeline;
 import org.apache.shindig.gadgets.oauth.OAuthArguments;
+import org.apache.shindig.gadgets.oauth2.OAuth2Arguments;
 import org.apache.shindig.gadgets.rewrite.ResponseRewriterList.RewriteFlow;
 import org.apache.shindig.gadgets.rewrite.ResponseRewriterRegistry;
 import org.apache.shindig.gadgets.rewrite.RewriterRegistry;
@@ -200,8 +201,13 @@ public class MakeRequestHandler {
     AuthType auth = AuthType.parse(getParameter(request, AUTHZ_PARAM, null));
     req.setAuthType(auth);
     if (auth != AuthType.NONE) {
-      req.setSecurityToken(extractAndValidateToken(request));
-      req.setOAuthArguments(new OAuthArguments(auth, request));
+      if (auth == AuthType.OAUTH2) {
+        req.setSecurityToken(extractAndValidateToken(request));
+        req.setOAuth2Arguments(new OAuth2Arguments(auth, request));
+      } else {
+        req.setSecurityToken(extractAndValidateToken(request));
+        req.setOAuthArguments(new OAuthArguments(auth, request));
+      }
     }
 
     ServletUtil.setXForwardedForHeader(request, req);
