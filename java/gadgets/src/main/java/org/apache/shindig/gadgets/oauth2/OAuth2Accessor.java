@@ -8,6 +8,7 @@
 package org.apache.shindig.gadgets.oauth2;
 
 import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.http.HttpFetcher;
 
 /**
@@ -79,6 +80,15 @@ public class OAuth2Accessor {
   }
 
   public OAuth2Token getAccessToken() {
+    if ((this.accessToken == null) && (this.client != null)) {
+      try {
+        this.accessToken = this.store.getToken(this.client.getProviderName(),
+            this.client.getGadgetUri(), this.securityToken.getViewerId(), this.scope,
+            OAuth2Token.Type.ACCESS);
+      } catch (final GadgetException e) {
+        ;
+      }
+    }
     return this.accessToken;
   }
 
@@ -87,6 +97,15 @@ public class OAuth2Accessor {
   }
 
   public OAuth2Token getRefreshToken() {
+    if ((this.refreshToken == null) && (this.client != null)) {
+      try {
+        this.refreshToken = this.store.getToken(this.client.getProviderName(),
+            this.client.getGadgetUri(), this.securityToken.getViewerId(), this.scope,
+            OAuth2Token.Type.REFRESH);
+      } catch (final GadgetException e) {
+        ;
+      }
+    }
     return this.refreshToken;
   }
 

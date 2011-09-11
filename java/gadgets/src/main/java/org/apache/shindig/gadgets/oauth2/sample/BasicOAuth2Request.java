@@ -22,6 +22,7 @@ import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
 import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
 import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2FetcherConfig;
+import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 import org.apache.shindig.gadgets.oauth2.OAuth2ProtocolException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Request;
 import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
@@ -144,14 +145,15 @@ public class BasicOAuth2Request implements OAuth2Request {
 
   private HttpResponseBuilder attemptFetch() throws OAuth2RequestException, OAuth2ProtocolException {
     // Do we have an access token to use?
-    if (!BasicOAuth2Request.haveAccessToken(this.accessor)) {
+    if (BasicOAuth2Request.haveAccessToken(this.accessor) == null) {
       // We don't have an access token, we need to try and get one
       // First step see if we have a refresh token
-      if (BasicOAuth2Request.haveRefreshToken(this.accessor)) {
+      if (BasicOAuth2Request.haveRefreshToken(this.accessor) != null) {
         // TODO ARC
+        this.checkCanAuthorize();
+        this.callbackState.refreshToken();
       } else {
         this.checkCanAuthorize();
-        // buildClientApprovalState();
         this.buildAuthorizationUrl();
         this.callbackState.changeState(State.AUTHORIZATION_REQUESTED);
 
@@ -186,12 +188,11 @@ public class BasicOAuth2Request implements OAuth2Request {
     this.responseParams.setAuthorizationUrl(completeAuthUrl);
   }
 
-  private static boolean haveAccessToken(final OAuth2Accessor accessor) {
-    boolean ret = false;
-    final OAuth2Token accessToken = accessor.getAccessToken();
-    if ((accessToken != null)) {
-      if (BasicOAuth2Request.validateAccessToken(accessToken)) {
-        ret = true;
+  private static OAuth2Token haveAccessToken(final OAuth2Accessor accessor) {
+    OAuth2Token ret = accessor.getAccessToken();
+    if ((ret != null)) {
+      if (!BasicOAuth2Request.validateAccessToken(ret)) {
+        ret = null;
       }
     }
     return ret;
@@ -203,18 +204,17 @@ public class BasicOAuth2Request implements OAuth2Request {
     return ret;
   }
 
-  private static boolean haveRefreshToken(final OAuth2Accessor accessor) {
-    boolean ret = false;
-    final OAuth2Token refreshToken = accessor.getRefreshToken();
-    if ((refreshToken != null)) {
-      if (BasicOAuth2Request.validateRefreshToken(refreshToken)) {
-        ret = true;
+  private static OAuth2Token haveRefreshToken(final OAuth2Accessor accessor) {
+    OAuth2Token ret = accessor.getRefreshToken();
+    if ((ret != null)) {
+      if (!BasicOAuth2Request.validateRefreshToken(ret)) {
+        ret = null;
       }
     }
     return ret;
   }
 
-  private static boolean validateRefreshToken(final OAuth2Token refreshToken) {
+  private static boolean validateRefreshToken(final OAuth2Token refereshToken) {
     final boolean ret = true;
     // Nothing really to validate
     return ret;
@@ -276,11 +276,17 @@ public class BasicOAuth2Request implements OAuth2Request {
 
   private HttpResponse fetchFromServer(final HttpRequest request) throws OAuth2RequestException {
     HttpResponse response = null;
+
+    this.addOAuth2Params(request);
+
     try {
       response = this.fetcher.fetch(request);
       if (response == null) {
         throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE);
       }
+
+      System.err.println("@@@ response = " + response);
+
       return response;
     } catch (final GadgetException e) {
       throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE, "", e);
@@ -295,5 +301,36 @@ public class BasicOAuth2Request implements OAuth2Request {
   private boolean handleProtocolException(final OAuth2ProtocolException pe, final int attempts)
       throws OAuth2RequestException {
     return false;
+  }
+
+  private void addOAuth2Params(final HttpRequest request) throws OAuth2RequestException {
+    final Uri unAuthorizedRequestUri = request.getUri();
+    if (unAuthorizedRequestUri == null) {
+      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "Uri is null??");
+    }
+
+    final OAuth2Token accessToken = this.accessor.getAccessToken();
+
+    final Map<String, String> queryParams = new HashMap<String, String>(1);
+    queryParams.put(OAuth2Message.ACCESS_TOKEN, accessToken.getSecret());
+    final String authorizedUriString = OAuth2Utils.buildUrl(unAuthorizedRequestUri.toString(),
+        queryParams, null);
+
+    request.setUri(Uri.parse(authorizedUriString));
+
+    String tokenType = "Bearer";
+
+    if ((tokenType != null) && (tokenType.length() > 0)) {
+      tokenType = accessToken.getTokenType();
+    }
+
+    if (tokenType.equalsIgnoreCase("Bearer")) {
+      request.setHeader("Authorization", "Bearer " + accessToken.getSecret());
+    } else if (tokenType.equalsIgnoreCase("mac")) {
+      throw new RuntimeException("@@@ TODO ARC implement mac token type");
+    } else {
+      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "Unknow tokey type "
+          + tokenType);
+    }
   }
 }

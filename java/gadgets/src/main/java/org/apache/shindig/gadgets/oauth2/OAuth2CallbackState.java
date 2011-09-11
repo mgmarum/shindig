@@ -29,4 +29,6 @@ public interface OAuth2CallbackState extends Serializable {
   public String getRealCallbackUrl();
 
   public String getRealErrorCallbackUrl();
+
+  public OAuth2Error refreshToken() throws OAuth2RequestException;
 }

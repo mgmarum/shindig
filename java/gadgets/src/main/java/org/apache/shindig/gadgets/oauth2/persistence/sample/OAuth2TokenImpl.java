@@ -135,6 +135,7 @@ public class OAuth2TokenImpl implements OAuth2Token {
   public String toString() {
     return "org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2TokenImpl: providerName = "
         + this.providerName + " , user = " + this.user + " , gadgetUri = " + this.gadgetUri
-        + " , scope = " + this.scope + " , tokenType = " + this.getTokenType() + " , expiresIn = " + expiresIn + " , type = " + this.type.name();
+        + " , scope = " + this.scope + " , tokenType = " + this.getTokenType() + " , expiresIn = "
+        + this.expiresIn + " , type = " + this.type.name();
   }
 }
