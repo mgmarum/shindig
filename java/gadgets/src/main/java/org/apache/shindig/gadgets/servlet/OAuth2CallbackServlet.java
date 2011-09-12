@@ -58,8 +58,8 @@ public class OAuth2CallbackServlet extends InjectedServlet {
       throws IOException {
 
     final OAuth2Message msg = new OAuth2Message();
-    final String requestURI = request.getPathInfo();
-    final String requestURI2 = request.getPathTranslated();
+    final String requestURI = request.getRequestURI();
+    
     if (requestURI.indexOf("#") >= 0) {
       // Note : we won't see fragment params here.  We need an
       // Implicit Helper JSP or something to forward them as
@@ -92,6 +92,7 @@ public class OAuth2CallbackServlet extends InjectedServlet {
           try {
             error = callbackState.setAuthorizationCode(msg.getAuthorization());
           } catch (final OAuth2RequestException e) {
+            e.printStackTrace(); // TODO ARC Remove Me
             error = OAuth2Error.UNKNOWN_PROBLEM;
             this.sendError(error, msg, callbackState, request, resp);
             return;

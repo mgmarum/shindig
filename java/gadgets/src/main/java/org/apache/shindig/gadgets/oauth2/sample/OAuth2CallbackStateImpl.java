@@ -129,9 +129,27 @@ public class OAuth2CallbackStateImpl implements OAuth2CallbackState {
       if (response == null) {
         throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE);
       }
+
+      final int responseCode = response.getHttpStatusCode();
+      if (responseCode != 200) {
+        return OAuth2CallbackStateImpl.parseError(response);
+      }
+
+      final String contentType = response.getHeader("Content-Type");
+      final String responseString = response.getResponseAsString();
       final OAuth2Message msg = new OAuth2Message();
-      final JSONObject responseJson = new JSONObject(response.getResponseAsString());
-      msg.parseJSON(responseJson);
+
+      if (contentType.startsWith("text/plain")) {
+        // Facebook does this
+        msg.parseQuery("?" + responseString);
+      } else if (contentType.startsWith("application/json")) {
+        // Google does this
+        final JSONObject responseJson = new JSONObject(responseString);
+        msg.parseJSON(responseJson);
+      } else {
+        return OAuth2Error.UNKNOWN_PROBLEM;
+      }
+
       final OAuth2Error error = msg.getError();
       if (error == null) {
         final String accessToken = msg.getAccessToken();
@@ -429,5 +447,9 @@ public class OAuth2CallbackStateImpl implements OAuth2CallbackState {
     }
 
     return ret;
+  }
+
+  private static OAuth2Error parseError(final HttpResponse response) {
+    return OAuth2Error.UNKNOWN_PROBLEM; // TODO ARC, improve error response
   }
 }

@@ -1,5 +1,5 @@
 <Module>
-  <ModulePrefs title="Demo OAuth2 Autorization Code Gadget (Simple pull from Google Contacts)">
+  <ModulePrefs title="Demo OAuth2 Authorization Code Gadget (Simple pull from Google Contacts)">
     <OAuth2>
       <Service name="googleAPI" scope="https://www.google.com/m8/feeds/" >
      </Service>

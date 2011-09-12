@@ -138,6 +138,18 @@ public class OAuth2Message {
       this.params.put(OAuth2Message.REFRESH_TOKEN, refreshToken);
     }
   }
+
+  public void parseQuery(final String query) {
+    final Uri uri = Uri.parse(query);
+    Map<String, List<String>> params = uri.getQueryParameters();
+    for (final String key : params.keySet()) {
+      this.params.put(key, params.get(key).get(0));
+    }   
+    if ((!this.params.containsKey(EXPIRES_IN)) && (this.params.containsKey("expires"))) {
+      // Facebook does this
+      this.params.put(EXPIRES_IN, this.params.get("expires"));
+    }
+  }
   
   public void parseFragment(final String fragment) {
     final Uri uri = Uri.parse(fragment);

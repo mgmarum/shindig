@@ -314,7 +314,7 @@ public class BasicOAuth2Request implements OAuth2Request {
 
     String tokenType = "Bearer";
 
-    if ((tokenType != null) && (tokenType.length() > 0)) {
+    if ((accessToken.getTokenType() != null) && (accessToken.getTokenType().length() > 0)) {
       tokenType = accessToken.getTokenType();
     }
 
