@@ -131,7 +131,7 @@ public class OAuth2CallbackStateImpl implements OAuth2CallbackState {
       }
       final OAuth2Message msg = new OAuth2Message();
       final JSONObject responseJson = new JSONObject(response.getResponseAsString());
-      msg.parse(responseJson);
+      msg.parseJSON(responseJson);
       final OAuth2Error error = msg.getError();
       if (error == null) {
         final String accessToken = msg.getAccessToken();
@@ -323,13 +323,12 @@ public class OAuth2CallbackStateImpl implements OAuth2CallbackState {
       this.changeState(State.REFRESH_REQUESTED);
 
       response = this.fetcher.fetch(request);
-      System.err.println("@@@ response = " + response);
       if (response == null) {
         throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE);
       }
       final OAuth2Message msg = new OAuth2Message();
       final JSONObject responseJson = new JSONObject(response.getResponseAsString());
-      msg.parse(responseJson);
+      msg.parseJSON(responseJson);
       final OAuth2Error error = msg.getError();
       if (error == null) {
         final String accessToken = msg.getAccessToken();

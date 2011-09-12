@@ -89,7 +89,7 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
           if (redirectUri == null) {
             redirectUri = this.globalRedirectUri;
           }
-          final String secret = settings.getString(OAuth2PersisterImpl.CONSUMER_SECRET_KEY);
+          final String secret = settings.optString(OAuth2PersisterImpl.CONSUMER_SECRET_KEY);
           final String key = settings.getString(OAuth2PersisterImpl.CONSUMER_KEY_KEY);
           final String typeS = settings.optString(OAuth2PersisterImpl.TYPE, null);
           final String flowS = settings.optString(OAuth2PersisterImpl.FLOW, null);
@@ -171,8 +171,8 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
         oauth2Provider.setName(providerName);
         oauth2Provider.setAuthorizationUrl(authorizationUrl);
         oauth2Provider.setTokenUrl(tokenUrl);
-        oauth2Provider.setSupportedProfiles(supportedProfiles);
-
+        oauth2Provider.setSupportedProfiles(supportedProfiles);  // TODO ARC
+        
         ret.add(oauth2Provider);
       }
     } catch (final JSONException e) {

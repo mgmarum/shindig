@@ -48,10 +48,13 @@ public class GadgetOAuth2TokenStore {
           "OAuth2Accessor missing a param --- store = " + this.store + " , arguments = "
               + arguments + " , fetcherConfig = " + fetcherConfig + " , fetcher = " + fetcher);
     }
+    
+    final String serviceName = arguments.getServiceName();
+    
     OAuth2Provider provider;
     GadgetException gadgetException = null;
     try {
-      provider = this.store.getProvider(arguments.getServiceName());
+      provider = this.store.getProvider(serviceName);
     } catch (final GadgetException e) {
       gadgetException = e;
       provider = null;
@@ -59,7 +62,7 @@ public class GadgetOAuth2TokenStore {
 
     if (provider == null) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
-          "OAuth2Accessor unable to retrieve provider " + arguments.getServiceName(),
+          "OAuth2Accessor unable to retrieve provider " + serviceName,
           gadgetException);
 
     }

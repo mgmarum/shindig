@@ -58,7 +58,16 @@ public class OAuth2CallbackServlet extends InjectedServlet {
       throws IOException {
 
     final OAuth2Message msg = new OAuth2Message();
-    msg.parse(request);
+    final String requestURI = request.getPathInfo();
+    final String requestURI2 = request.getPathTranslated();
+    if (requestURI.indexOf("#") >= 0) {
+      // Note : we won't see fragment params here.  We need an
+      // Implicit Helper JSP or something to forward them as
+      // query params.
+      msg.parseFragment(requestURI.toString());
+    } else {
+      msg.parseRequest(request);
+    }
 
     OAuth2Error error = null;
     OAuth2CallbackState callbackState = null;

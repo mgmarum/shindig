@@ -220,21 +220,6 @@ public class BasicOAuth2Request implements OAuth2Request {
     return ret;
   }
 
-  private HttpRequest createAuthorizationRequest(final OAuth2Accessor accessor)
-      throws OAuth2RequestException {
-    final String authorizationUrl = accessor.getAuthorizationUrl();
-    if (authorizationUrl == null) {
-      throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_TOKEN_URL, "authorizationUrl is null");
-    }
-
-    final String completeAuthorizationUrl = this.getCompleteAuthorizationUrl(authorizationUrl,
-        accessor);
-
-    final HttpRequest request = new HttpRequest(Uri.parse(completeAuthorizationUrl));
-    request.setMethod("GET");
-    return request;
-  }
-
   private String getCompleteAuthorizationUrl(final String authorizationUrl,
       final OAuth2Accessor accessor) throws OAuth2RequestException {
     String type = "code";
@@ -254,12 +239,23 @@ public class BasicOAuth2Request implements OAuth2Request {
     final Map<String, String> queryParams = new HashMap<String, String>(5);
     queryParams.put("response_type", type);
     queryParams.put("client_id", accessor.getClientId());
-    queryParams.put("redirect_uri", accessor.getRedirectUri());
-    queryParams.put("state", Integer.toString(accessor.getCallbackState().getStateKey()));
-    queryParams.put("scope", accessor.getScope());
+    final String redirectUri = accessor.getRedirectUri();
+    if ((redirectUri != null) && (redirectUri.length() > 0)) {
+      queryParams.put("redirect_uri", redirectUri);
+    }
+    if (accessor.getCallbackState().getStateKey() != null) {
+      final String state = Integer.toString(accessor.getCallbackState().getStateKey());
+      if ((state != null) && (state.length() > 0)) {
+        queryParams.put("state", state);
+      }
+    }
+    final String scope = accessor.getScope();
+    if ((scope != null) && (scope.length() > 0)) {
+      queryParams.put("scope", scope);
+    }
 
     final String ret = OAuth2Utils.buildUrl(authorizationUrl, queryParams, null);
-
+    
     return ret;
   }
 
@@ -284,8 +280,6 @@ public class BasicOAuth2Request implements OAuth2Request {
       if (response == null) {
         throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE);
       }
-
-      System.err.println("@@@ response = " + response);
 
       return response;
     } catch (final GadgetException e) {

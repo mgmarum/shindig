@@ -2,10 +2,13 @@ package org.apache.shindig.gadgets.oauth2;
 
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.shindig.common.uri.Uri;
+import org.apache.shindig.common.uri.UriParser;
 import org.json.JSONObject;
 
 public class OAuth2Message {
@@ -104,7 +107,7 @@ public class OAuth2Message {
     return this.params.get(OAuth2Message.TOKEN_TYPE);
   }
 
-  public void parse(final HttpServletRequest request) {
+  public void parseRequest(final HttpServletRequest request) {
     @SuppressWarnings("unchecked")
     final Enumeration<String> paramNames = request.getParameterNames();
     while (paramNames.hasMoreElements()) {
@@ -114,7 +117,7 @@ public class OAuth2Message {
     }
   }
 
-  public void parse(final JSONObject response) {
+  public void parseJSON(final JSONObject response) {
     final String accessToken = response.optString(OAuth2Message.ACCESS_TOKEN, null);
     if (accessToken != null) {
       this.params.put(OAuth2Message.ACCESS_TOKEN, accessToken);
@@ -134,5 +137,13 @@ public class OAuth2Message {
     if (refreshToken != null) {
       this.params.put(OAuth2Message.REFRESH_TOKEN, refreshToken);
     }
+  }
+  
+  public void parseFragment(final String fragment) {
+    final Uri uri = Uri.parse(fragment);
+    Map<String, List<String>> params = uri.getFragmentParameters();
+    for (final String key : params.keySet()) {
+      this.params.put(key, params.get(key).get(0));
+    }   
   }
 }
