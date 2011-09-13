@@ -24,9 +24,11 @@ import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
 import org.apache.shindig.gadgets.oauth2.OAuth2ResponseParams;
-import org.apache.shindig.gadgets.oauth2.OAuth2Store;
+import org.apache.shindig.gadgets.oauth2.BasicOAuth2Store;
+import org.apache.shindig.gadgets.oauth2.sample.OAuth2MessageModule.OAuth2MessageProvider;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 public class OAuth2CallbackServlet extends InjectedServlet {
@@ -46,18 +48,26 @@ public class OAuth2CallbackServlet extends InjectedServlet {
       + "</body>\n"
       + "</html>\n";
 
-  private transient OAuth2Store store;
+  private transient Provider<OAuth2Message> oauth2MessageProvider;
+  private transient BasicOAuth2Store store;
 
   @Inject
-  public void setOAuth2Store(final OAuth2Store store) {
+  public void setOAuth2Store(final BasicOAuth2Store store, final Provider<OAuth2Message> oauth2MessageProvider) {
     this.store = store;
+    this.oauth2MessageProvider = oauth2MessageProvider;
   }
 
+  @Inject
+  public void setOAuth2Message(final Provider<OAuth2Message> oauth2MessageProvider) {
+    this.oauth2MessageProvider = oauth2MessageProvider;
+  }
+
+  
   @Override
   protected void doGet(final HttpServletRequest request, final HttpServletResponse resp)
       throws IOException {
 
-    final OAuth2Message msg = new OAuth2Message();
+    final OAuth2Message msg = this.oauth2MessageProvider.get();
     final String requestURI = request.getRequestURI();
     
     if (requestURI.indexOf("#") >= 0) {

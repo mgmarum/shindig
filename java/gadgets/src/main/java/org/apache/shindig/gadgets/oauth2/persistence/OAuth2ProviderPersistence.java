@@ -1,8 +1,10 @@
-package org.apache.shindig.gadgets.oauth2.persistence.sample;
+package org.apache.shindig.gadgets.oauth2.persistence;
+
+import java.io.Serializable;
 
 import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
 
-public class OAuth2ProviderImpl implements OAuth2Provider {
+public class OAuth2ProviderPersistence implements OAuth2Provider, Serializable {
   /**
    * 
    */

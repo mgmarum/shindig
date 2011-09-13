@@ -1,7 +1,7 @@
 package org.apache.shindig.gadgets.oauth2.persistence.sample;
 
+import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Encrypter;
-import org.apache.shindig.gadgets.oauth2.persistence.OAuth2EncryptionException;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

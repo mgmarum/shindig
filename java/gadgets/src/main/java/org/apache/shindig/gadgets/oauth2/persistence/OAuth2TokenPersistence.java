@@ -1,14 +1,15 @@
-package org.apache.shindig.gadgets.oauth2.persistence.sample;
+package org.apache.shindig.gadgets.oauth2.persistence;
 
+import java.io.Serializable;
+
+import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
-import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Encrypter;
-import org.apache.shindig.gadgets.oauth2.persistence.OAuth2EncryptionException;
 
 import com.google.inject.Inject;
 
-public class OAuth2TokenImpl implements OAuth2Token {
+public class OAuth2TokenPersistence implements OAuth2Token, Serializable {
   private static final long serialVersionUID = 1L;
-
+  
   private final OAuth2Encrypter encrypter;
 
   private Type type;
@@ -22,7 +23,7 @@ public class OAuth2TokenImpl implements OAuth2Token {
   private String tokenType;
 
   @Inject
-  public OAuth2TokenImpl(final OAuth2Encrypter encrypter) {
+  public OAuth2TokenPersistence(final OAuth2Encrypter encrypter) {
     this.encrypter = encrypter;
   }
 
@@ -103,8 +104,8 @@ public class OAuth2TokenImpl implements OAuth2Token {
   @Override
   public boolean equals(final Object obj) {
     boolean ret = false;
-    if (OAuth2Token.class.isInstance(obj)) {
-      final OAuth2Token otherClient = (OAuth2Token) obj;
+    if (OAuth2TokenPersistence.class.isInstance(obj)) {
+      final OAuth2TokenPersistence otherClient = (OAuth2TokenPersistence) obj;
       if (this.providerName.equals(otherClient.getProviderName())) {
         if (this.user.equals(otherClient.getUser())) {
           if (this.scope.equals(otherClient.getScope())) {

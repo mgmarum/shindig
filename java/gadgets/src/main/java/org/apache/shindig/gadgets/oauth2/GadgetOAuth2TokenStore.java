@@ -20,13 +20,6 @@ import org.apache.shindig.gadgets.spec.OAuth2Spec;
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 
-/**
- * Higher-level interface that allows callers to store and retrieve
- * OAuth-related data directly from {@code GadgetSpec}s, {@code GadgetContext}s,
- * etc. See {@link OAuth2Store} for a more detailed explanation of the O2Auth
- * Data Store.
- */
-
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public class GadgetOAuth2TokenStore {

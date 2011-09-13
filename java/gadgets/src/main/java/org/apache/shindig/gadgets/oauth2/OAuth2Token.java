@@ -2,7 +2,6 @@ package org.apache.shindig.gadgets.oauth2;
 
 import java.io.Serializable;
 
-import org.apache.shindig.gadgets.oauth2.persistence.OAuth2EncryptionException;
 
 public interface OAuth2Token extends Serializable {
   public enum Type {

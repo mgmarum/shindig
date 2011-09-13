@@ -31,6 +31,10 @@ public interface OAuth2Persister {
 
   OAuth2Token findToken(Integer index) throws OAuth2PersistenceException;
 
+  OAuth2Provider findProvider(Integer index) throws OAuth2PersistenceException;
+
+  OAuth2Client findClient(Integer index) throws OAuth2PersistenceException;
+
   boolean removeToken(String providerName, String gadgetUri, String user, String scope,
       OAuth2Token.Type type) throws OAuth2PersistenceException;
 

@@ -23,8 +23,10 @@ import org.apache.shindig.expressions.RootELResolver;
 import org.apache.shindig.gadgets.Gadget;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.oauth.OAuthModule;
+import org.apache.shindig.gadgets.oauth2.OAuth2Module;
 import org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersistenceModule;
-import org.apache.shindig.gadgets.oauth2.sample.OAuth2Module;
+import org.apache.shindig.gadgets.oauth2.sample.OAuth2MessageModule;
+import org.apache.shindig.gadgets.oauth2.sample.OAuth2TokenTypeHandlerModule;
 import org.apache.shindig.gadgets.parse.DefaultHtmlSerializer;
 import org.apache.shindig.gadgets.parse.GadgetHtmlParser;
 import org.apache.shindig.gadgets.parse.SocialDataTags;
@@ -63,7 +65,7 @@ public class TemplateBasedTagHandlerTest {
   
   @Before
   public void setUp() throws Exception {
-    Injector injector = Guice.createInjector(new DefaultGuiceModule(), new OAuthModule(), new OAuth2Module(), new PropertiesModule(), new OAuth2PersistenceModule());
+    Injector injector = Guice.createInjector(new DefaultGuiceModule(), new OAuthModule(), new OAuth2Module(), new PropertiesModule(), new OAuth2PersistenceModule(), new OAuth2MessageModule(), new OAuth2TokenTypeHandlerModule());
     parser = injector.getInstance(GadgetHtmlParser.class);
     processor = injector.getInstance(TemplateProcessor.class);
     context = new TemplateContext(new Gadget(), null);

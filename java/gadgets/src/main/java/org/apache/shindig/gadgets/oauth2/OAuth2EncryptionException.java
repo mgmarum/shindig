@@ -5,17 +5,20 @@
  * 
  * NO IBM CONFIDENTIAL CODE OR INFORMATION!
  */
-package org.apache.shindig.gadgets.oauth2.persistence;
+package org.apache.shindig.gadgets.oauth2;
+
+import org.apache.shindig.gadgets.GadgetException;
+
 
 //NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
-public class OAuth2EncryptionException extends OAuth2PersistenceException {
+public class OAuth2EncryptionException extends GadgetException {
   /**
    * 
    */
   private static final long serialVersionUID = 1L;
 
   public OAuth2EncryptionException(final Exception cause) {
-    super(cause);
+    super(Code.OAUTH_STORAGE_ERROR, cause);
   }
 }

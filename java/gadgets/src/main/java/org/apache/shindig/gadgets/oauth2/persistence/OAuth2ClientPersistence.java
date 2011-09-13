@@ -1,17 +1,18 @@
-package org.apache.shindig.gadgets.oauth2.persistence.sample;
+package org.apache.shindig.gadgets.oauth2.persistence;
+
+import java.io.Serializable;
 
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
-import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Encrypter;
-import org.apache.shindig.gadgets.oauth2.persistence.OAuth2EncryptionException;
+import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
 
 import com.google.inject.Inject;
 
-public class OAuth2ClientImpl implements OAuth2Client {
+public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
   /**
    * 
    */
   private static final long serialVersionUID = 1L;
-
+  
   private final OAuth2Encrypter encrypter;
 
   private String providerName;
@@ -20,11 +21,12 @@ public class OAuth2ClientImpl implements OAuth2Client {
   private String key;
   private String secret;
   private String encryptedSecret;
-  private OAuth2Client.Flow flow = OAuth2Client.Flow.UNKNOWN;
-  private OAuth2Client.Type type = OAuth2Client.Type.UNKNOWN;
+  private Flow flow = Flow.UNKNOWN;
+  private Type type = Type.UNKNOWN;
 
+  
   @Inject
-  public OAuth2ClientImpl(final OAuth2Encrypter encrypter) {
+  public OAuth2ClientPersistence(final OAuth2Encrypter encrypter) {
     this.encrypter = encrypter;
   }
 

@@ -5,29 +5,23 @@
  * 
  * NO IBM CONFIDENTIAL CODE OR INFORMATION!
  */
-package org.apache.shindig.gadgets.oauth2.sample;
+package org.apache.shindig.gadgets.oauth2;
 
 import java.util.Set;
 
 import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.GadgetException.Code;
 import org.apache.shindig.gadgets.http.HttpFetcher;
-import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
-import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
 import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
-import org.apache.shindig.gadgets.oauth2.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
-import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
-import org.apache.shindig.gadgets.oauth2.OAuth2Store;
-import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token.Type;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2CacheException;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2PersistenceException;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
 
+import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 //NO IBM CONFIDENTIAL CODE OR INFORMATION!
@@ -35,13 +29,13 @@ import com.google.inject.Provider;
 public class BasicOAuth2Store implements OAuth2Store {
   private final OAuth2Cache cache;
   private final OAuth2Persister persister;
-  private OAuth2Client defaultClient;
-  private String defaultRedirectUri;
-  private Provider<Authority> hostProvider;
+  private final Provider<OAuth2Message> oauth2MessageProvider;
 
-  public BasicOAuth2Store(final OAuth2Cache cache, final OAuth2Persister persister) {
+  @Inject
+  public BasicOAuth2Store(final OAuth2Cache cache, final OAuth2Persister persister, final Provider<OAuth2Message> oauth2MessageProvider) {
     this.cache = cache;
     this.persister = persister;
+    this.oauth2MessageProvider = oauth2MessageProvider;
   }
 
   public boolean init() throws GadgetException {
@@ -68,18 +62,6 @@ public class BasicOAuth2Store implements OAuth2Store {
       throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 tokens", e);
     }
     return true;
-  }
-
-  public void setDefaultClient(final OAuth2Client client) {
-    this.defaultClient = client;
-  }
-
-  public void setDefaultRedirectUri(final String defaultRedirectUri) {
-    this.defaultRedirectUri = defaultRedirectUri;
-  }
-
-  public void setHostProvider(final Provider<Authority> hostProvider) {
-    this.hostProvider = hostProvider;
   }
 
   public OAuth2Provider getProvider(final String providerName) throws GadgetException {
@@ -205,8 +187,8 @@ public class BasicOAuth2Store implements OAuth2Store {
   public OAuth2CallbackState createOAuth2CallbackState(final OAuth2Accessor accessor,
       final OAuth2Client client, final Flow flow, final SecurityToken securityToken,
       final HttpFetcher fetcher) {
-    final OAuth2CallbackStateImpl ret = new OAuth2CallbackStateImpl(accessor, client, flow,
-        securityToken, fetcher);
+    final OAuth2CallbackState ret = new OAuth2CallbackState(accessor, client, flow,
+        securityToken, fetcher, this.oauth2MessageProvider);
     final Integer stateKey = ret.getStateKey();
     this.cache.storeOAuth2CallbackState(stateKey, ret);
     return ret;
@@ -219,7 +201,7 @@ public class BasicOAuth2Store implements OAuth2Store {
   public OAuth2CallbackState removeOAuth2CallbackState(final Integer stateKey) {
     final OAuth2CallbackState ret = this.cache.removeOAuth2CallbackState(stateKey);
     if (ret != null) {
-      ((OAuth2CallbackStateImpl) ret).invalidate();
+      ((OAuth2CallbackState) ret).invalidate();
     }
 
     return ret;

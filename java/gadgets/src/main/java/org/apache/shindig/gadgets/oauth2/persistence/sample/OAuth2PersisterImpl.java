@@ -18,12 +18,16 @@ import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
+import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token.Type;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2ClientPersistence;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Encrypter;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2PersistenceException;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2ProviderPersistence;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2TokenPersistence;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -93,9 +97,13 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
           final String key = settings.getString(OAuth2PersisterImpl.CONSUMER_KEY_KEY);
           final String typeS = settings.optString(OAuth2PersisterImpl.TYPE, null);
           final String flowS = settings.optString(OAuth2PersisterImpl.FLOW, null);
-          final OAuth2Client client = new OAuth2ClientImpl(this.encrypter);
+          final OAuth2Client client = new OAuth2ClientPersistence(this.encrypter);
 
-          client.setEncryptedSecret(secret);
+          try {
+            client.setEncryptedSecret(secret);
+          } catch (final OAuth2EncryptionException e) {
+            throw new OAuth2PersistenceException(e);
+          }
 
           if (this.hostProvider != null) {
             gadgetUri = gadgetUri.replace("%authority%", this.hostProvider.get().getAuthority());
@@ -166,7 +174,7 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
           tokenUrl = tokenUrl.replace("%contextRoot%", this.contextRoot);
         }
 
-        final OAuth2Provider oauth2Provider = new OAuth2ProviderImpl();
+        final OAuth2Provider oauth2Provider = new OAuth2ProviderPersistence();
 
         oauth2Provider.setName(providerName);
         oauth2Provider.setAuthorizationUrl(authorizationUrl);
@@ -189,13 +197,11 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
   }
 
   public OAuth2Provider findProvider(final String providerName) throws OAuth2PersistenceException {
-    // TODO Auto-generated method stub
     return null;
   }
 
   public OAuth2Client findClient(final String providerName, final String gadgetUri)
       throws OAuth2PersistenceException {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -206,7 +212,6 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
 
   public boolean removeToken(final String providerName, final String gadgetUri, final String user,
       final String scope, final Type type) {
-    // TODO Auto-generated method stub
     return false;
   }
 
@@ -227,6 +232,14 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
   }
 
   public OAuth2Token createToken() {
-    return new OAuth2TokenImpl(this.encrypter);
+    return new OAuth2TokenPersistence(this.encrypter);
+  }
+
+  public OAuth2Provider findProvider(Integer index) throws OAuth2PersistenceException {
+    return null;
+  }
+
+  public OAuth2Client findClient(Integer index) throws OAuth2PersistenceException {
+    return null;
   }
 }
