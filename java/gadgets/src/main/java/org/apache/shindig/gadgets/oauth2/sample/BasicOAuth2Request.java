@@ -48,6 +48,8 @@ public class BasicOAuth2Request implements OAuth2Request {
 
   private OAuth2CallbackState callbackState;
 
+  private boolean refreshTry = false;
+
   /**
    * @param fetcherConfig
    *          configuration options for the fetcher
@@ -60,8 +62,13 @@ public class BasicOAuth2Request implements OAuth2Request {
   }
 
   public HttpResponse fetch(final HttpRequest request) {
+    return this.fetch(request, false);
+  }
+
+  public HttpResponse fetch(final HttpRequest request, final boolean refreshTry) {
     this.realRequest = request;
     this.responseParams = new OAuth2ResponseParams(request.getSecurityToken(), request);
+    this.refreshTry = refreshTry;
     try {
       return this.fetchNoThrow();
     } catch (final RuntimeException e) {
@@ -98,6 +105,16 @@ public class BasicOAuth2Request implements OAuth2Request {
       response = new HttpResponseBuilder().setHttpStatusCode(HttpResponse.SC_FORBIDDEN)
           .setStrictNoCache();
       this.responseParams.addToResponse(response, e);
+      return response.create();
+    } catch (final Exception e1) {
+      e1.printStackTrace(); // TODO ARC
+      this.responseParams.logDetailedWarning(BasicOAuth2Request.classname, "fetchNoThrow",
+          MessageKeys.OAUTH_FETCH_FATAL_ERROR, e1);
+      this.responseParams.setSendTraceToClient(true);
+      response = new HttpResponseBuilder().setHttpStatusCode(HttpResponse.SC_FORBIDDEN)
+          .setStrictNoCache();
+      this.responseParams.addToResponse(response, new OAuth2RequestException("Generic fetch error",
+          e1));
       return response.create();
     }
 
@@ -255,7 +272,7 @@ public class BasicOAuth2Request implements OAuth2Request {
     }
 
     final String ret = OAuth2Utils.buildUrl(authorizationUrl, queryParams, null);
-    
+
     return ret;
   }
 
@@ -279,6 +296,19 @@ public class BasicOAuth2Request implements OAuth2Request {
       response = this.fetcher.fetch(request);
       if (response == null) {
         throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE);
+      }
+
+      final int responseCode = response.getHttpStatusCode();
+      if (!this.refreshTry && (responseCode >= 400) && (responseCode < 500)) {
+        final OAuth2Token accessToken = this.accessor.getAccessToken();
+        final OAuth2Token refreshToken = this.accessor.getRefreshToken();
+        if ((accessToken != null) && (refreshToken != null)) {
+          // We need a refresh, remove the access token and try again
+          this.accessor.setAccessToken(null);
+          this.accessor.getStore().removeToken(accessToken);
+          // make sure if we get a 2nd 401 we don't loop infinitely
+          return this.fetch(this.realRequest, true);
+        }
       }
 
       return response;

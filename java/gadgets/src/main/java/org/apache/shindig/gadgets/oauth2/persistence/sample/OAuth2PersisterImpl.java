@@ -220,6 +220,7 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
 
   public void insertToken(final OAuth2Token token) throws OAuth2PersistenceException {
     System.err.println("@@@ Inserting new token " + token);
+    System.err.println("@@@      secret =" + token.getSecret());
   }
 
   public void updateToken(final OAuth2Token token) throws OAuth2PersistenceException {
