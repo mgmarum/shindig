@@ -100,6 +100,7 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
           if (this.hostProvider != null) {
             gadgetUri = gadgetUri.replace("%authority%", this.hostProvider.get().getAuthority());
             gadgetUri = gadgetUri.replace("%contextRoot%", this.contextRoot);
+            gadgetUri = gadgetUri.replace("%origin%", this.hostProvider.get().getOrigin());
           }
           client.setGadgetUri(gadgetUri);
           client.setKey(key);
@@ -109,6 +110,8 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
             redirectUri = redirectUri
                 .replace("%authority%", this.hostProvider.get().getAuthority());
             redirectUri = redirectUri.replace("%contextRoot%", this.contextRoot);
+            redirectUri = redirectUri.replace("%origin%", this.hostProvider.get().getOrigin());
+            
           }
           client.setRedirectUri(redirectUri);
 
@@ -161,12 +164,15 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
           authorizationUrl = authorizationUrl.replace("%authority%", this.hostProvider.get()
               .getAuthority());
           authorizationUrl = authorizationUrl.replace("%contextRoot%", this.contextRoot);
+          authorizationUrl = authorizationUrl.replace("%origin%", this.hostProvider.get().getOrigin());
+          
         }
 
         String tokenUrl = endpoints.optString(OAuth2PersisterImpl.TOKEN_URL, null);
         if ((this.hostProvider != null) && (tokenUrl != null)) {
           tokenUrl = tokenUrl.replace("%authority%", this.hostProvider.get().getAuthority());
           tokenUrl = tokenUrl.replace("%contextRoot%", this.contextRoot);
+          tokenUrl = tokenUrl.replace("%origin%", this.hostProvider.get().getOrigin());
         }
 
         final OAuth2Provider oauth2Provider = new OAuth2ProviderPersistence();

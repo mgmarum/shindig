@@ -43,7 +43,24 @@
                 "client_secret" : "e94b4aa758947760b09f2f872d70740b"
            }
        }
-    }
+    },
+    
+    "shindigOAuth2Provider" : {
+       	"client_authentication"   : "NONE",
+		"endpoints" : {
+        	"authorizationUrl" : "%origin%%contextRoot%/oauth2/authorize",
+        	"tokenUrl"         : "%origin%%contextRoot%/oauth2/token"
+        },
+		"clients" : {
+        	"%origin%%contextRoot%/samplecontainer/examples/oauth2/shindig_authorization.xml" : {
+           		"redirectURI" : "%origin%%contextRoot%/gadgets/oauth2callback",
+                "type" : "confidential",
+                "flow" : "code",
+                "client_id" : "shindigClient",
+                "client_secret" : "U78KJM98372AMGL87612993M"
+           }        
+       }
+   }      
 }
   
 

@@ -30,8 +30,10 @@ public class OAuth2DataServiceImpl implements OAuth2DataService {
   @Inject
   public OAuth2DataServiceImpl(@Named("shindig.canonical.json.db")
   String jsonLocation, @Named("shindig.bean.converter.json")
-  BeanConverter converter) throws Exception {
+  BeanConverter converter,
+  @Named("shindig.contextroot") String contextroot) throws Exception {
     String content = IOUtils.toString(ResourceLoader.openResource(jsonLocation), "UTF-8");
+    content = content.replace("%contextRoot%", contextroot);
     this.oauthDB = new JSONObject(content).getJSONObject("oauth2");
     this.converter = converter;
     this.clients = new ArrayList<OAuth2Client>();

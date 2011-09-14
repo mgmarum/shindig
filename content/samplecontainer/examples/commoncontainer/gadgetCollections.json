@@ -44,6 +44,21 @@
                       {"name": "Twitter", "url": "http://hosting.gmodules.com/ig/gadgets/file/109228598702359180066/twitterfinal.xml"},
                       {"name": "MySpace", "url": "http://hosting.gmodules.com/ig/gadgets/file/109228598702359180066/myspacefinal.xml"}
                       ]
+             },
+             {
+             "name": "OAuth2 Demo with Shindig Provider",
+             "Description": "OAuth2 Demo with Shindig Provider",
+             "apps" : [
+                      {"name": "oauth2_authorization_s", "url": "/samplecontainer/examples/oauth2/shindig_authorization.xml"}
+                      ]
+             },
+             {
+             "name": "OAuth2 Demo with Google Provider",
+             "Description": "OAuth2 Demo with Google Provider",
+             "apps" : [
+                      {"name": "oauth2_authorization_g", "url": "/samplecontainer/examples/oauth2_code.xml"}
+                      ]
              }
+             
          ]
 }
