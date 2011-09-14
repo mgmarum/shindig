@@ -71,11 +71,11 @@ public class OAuth2CallbackServlet extends InjectedServlet {
         break;
       }
     }
-
+    
     OAuth2Error error = null;
-
     if (msg == null) {
-      error = OAuth2Error.UNKNOWN_PROBLEM;
+      this.sendError(OAuth2Error.UNKNOWN_PROBLEM, null, null, request, resp);
+      return;
     }
 
     OAuth2CallbackState callbackState = null;
@@ -135,13 +135,16 @@ public class OAuth2CallbackServlet extends InjectedServlet {
     } else {
       final Map<String, String> queryParams = new HashMap<String, String>();
       queryParams.put(OAuth2ResponseParams.ERROR_CODE, error.toString());
-      queryParams.put(OAuth2ResponseParams.ERROR_TEXT, msg.getErrorDescription());
-      queryParams.put(OAuth2ResponseParams.ERROR_URI, msg.getErrorUri());
+      if (msg != null) {
+        queryParams.put(OAuth2ResponseParams.ERROR_TEXT, msg.getErrorDescription());
+        queryParams.put(OAuth2ResponseParams.ERROR_URI, msg.getErrorUri());
+      } else {
+        queryParams.put(OAuth2ResponseParams.ERROR_TEXT, "No valid OAuth2Error reported.");
+      }
       HttpUtil.setCachingHeaders(resp, OAuthCallbackServlet.ONE_HOUR_IN_SECONDS, true);
       resp.setContentType("text/html; charset=UTF-8");
       resp.getWriter().write(OAuth2CallbackServlet.RESP_ERROR_BODY);
       return;
     }
-
   }
 }

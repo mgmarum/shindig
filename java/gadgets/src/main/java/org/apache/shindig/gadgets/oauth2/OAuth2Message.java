@@ -8,6 +8,7 @@ public interface OAuth2Message {
   public final static String ACCESS_DENIED = "access_denied";
   public final static String ACCESS_TOKEN = "access_token";
   public final static String AUTHORIZATION = "code";
+  public final static String AUTHORIZATION_CODE = "authorization_code";
   public final static String BASIC_AUTH_TYPE = "Basic";
   public final static String BEARER_TOKEN_TYPE = "Bearer";
   public final static String CLIENT_CREDENTIALS = "client_credentials";

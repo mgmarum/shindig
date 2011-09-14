@@ -20,16 +20,17 @@ public class CodeGrantTypeHandler implements OAuth2GrantTypeHandler {
   public String getGrantType() {
     return OAuth2Message.AUTHORIZATION;
   }
-  
+
   public String getResponseType() {
-    return OAuth2Message.AUTHORIZATION;
+    return OAuth2Message.AUTHORIZATION_CODE;
   }
-  
-  public String getAuthorizationBody(final OAuth2Accessor accessor, final String authorizationCode) throws OAuth2RequestException {
+
+  public String getAuthorizationBody(final OAuth2Accessor accessor, final String authorizationCode)
+      throws OAuth2RequestException {
     String ret = "";
 
     final Map<String, String> queryParams = new HashMap<String, String>(5);
-    queryParams.put(OAuth2Message.GRANT_TYPE, this.getGrantType());
+    queryParams.put(OAuth2Message.GRANT_TYPE, this.getResponseType());
     queryParams.put(OAuth2Message.AUTHORIZATION, authorizationCode);
     queryParams.put(OAuth2Message.REDIRECT_URI, accessor.getClient().getRedirectUri());
 
@@ -46,11 +47,11 @@ public class CodeGrantTypeHandler implements OAuth2GrantTypeHandler {
 
     return ret;
   }
-  
+
   public String getCompleteAuthorizationUrl(final String authorizationUrl,
       final OAuth2Accessor accessor) throws OAuth2RequestException {
     final Map<String, String> queryParams = new HashMap<String, String>(5);
-    queryParams.put(OAuth2Message.RESPONSE_TYPE, this.getResponseType());
+    queryParams.put(OAuth2Message.RESPONSE_TYPE, this.getGrantType());
     queryParams.put(OAuth2Message.CLIENT_ID, accessor.getClientId());
     final String redirectUri = accessor.getRedirectUri();
     if ((redirectUri != null) && (redirectUri.length() > 0)) {

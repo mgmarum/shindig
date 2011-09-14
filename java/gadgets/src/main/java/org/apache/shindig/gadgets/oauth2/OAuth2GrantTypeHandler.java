@@ -11,10 +11,12 @@ package org.apache.shindig.gadgets.oauth2;
 
 public interface OAuth2GrantTypeHandler {
   public String getGrantType();
-  
+
   public String getResponseType();
-    
-  public String getAuthorizationBody(OAuth2Accessor accessor,  String authorizationCode) throws OAuth2RequestException;
-  
-  public String getCompleteAuthorizationUrl(String authorizationUrl, OAuth2Accessor accessor) throws OAuth2RequestException;
+
+  public String getAuthorizationBody(OAuth2Accessor accessor, String authorizationCode)
+      throws OAuth2RequestException;
+
+  public String getCompleteAuthorizationUrl(String authorizationUrl, OAuth2Accessor accessor)
+      throws OAuth2RequestException;
 }

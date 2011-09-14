@@ -32,10 +32,12 @@ public class BasicOAuth2Store implements OAuth2Store {
   private final Provider<OAuth2Message> oauth2MessageProvider;
   private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
   private final List<OAuth2GrantTypeHandler> grantTypeHandlers;
-  
+
   @Inject
   public BasicOAuth2Store(final OAuth2Cache cache, final OAuth2Persister persister,
-      final Provider<OAuth2Message> oauth2MessageProvider,  final List<OAuth2ClientAuthenticationHandler> authenticationHandlers, final List<OAuth2GrantTypeHandler> grantTypeHandlers) {
+      final Provider<OAuth2Message> oauth2MessageProvider,
+      final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
+      final List<OAuth2GrantTypeHandler> grantTypeHandlers) {
     this.cache = cache;
     this.persister = persister;
     this.oauth2MessageProvider = oauth2MessageProvider;
@@ -193,8 +195,9 @@ public class BasicOAuth2Store implements OAuth2Store {
   public OAuth2CallbackState createOAuth2CallbackState(final OAuth2Accessor accessor,
       final OAuth2Client client, final String grantType, final SecurityToken securityToken,
       final HttpFetcher fetcher) {
-    final OAuth2CallbackState ret = new OAuth2CallbackState(accessor, client, grantType, securityToken,
-        fetcher, this.oauth2MessageProvider, this.authenticationHandlers, this.grantTypeHandlers);
+    final OAuth2CallbackState ret = new OAuth2CallbackState(accessor, client, grantType,
+        securityToken, fetcher, this.oauth2MessageProvider, this.authenticationHandlers,
+        this.grantTypeHandlers);
     final Integer stateKey = ret.getStateKey();
     this.cache.storeOAuth2CallbackState(stateKey, ret);
     return ret;

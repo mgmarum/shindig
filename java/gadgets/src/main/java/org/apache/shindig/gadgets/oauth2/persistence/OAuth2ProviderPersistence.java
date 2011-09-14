@@ -13,12 +13,12 @@ public class OAuth2ProviderPersistence implements OAuth2Provider, Serializable {
   private String authorizationUrl;
   private String tokenUrl;
   private String clientAuthenticationType;
-  
+
   public String getClientAuthenticationType() {
-    return clientAuthenticationType;
+    return this.clientAuthenticationType;
   }
 
-  public void setClientAuthenticationType(String clientAuthenticationType) {
+  public void setClientAuthenticationType(final String clientAuthenticationType) {
     this.clientAuthenticationType = clientAuthenticationType;
   }
 

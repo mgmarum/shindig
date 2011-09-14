@@ -33,22 +33,26 @@ public class OAuth2HandlerModule extends AbstractModule {
   List<OAuth2TokenTypeHandler> provideTokenHandlers(final BearerTokenHandler bearerTokenHandler) {
     return ImmutableList.of((OAuth2TokenTypeHandler) bearerTokenHandler);
   }
-  
+
   @Provides
   @Singleton
-  List<OAuth2GrantTypeHandler> provideGrantTypeHandlers(final ClientCredentialsGrantTypeHandler clientCredentialsGrantTypeHandler, final CodeGrantTypeHandler codeGrantTypeHandler) {
-    return ImmutableList.of((OAuth2GrantTypeHandler) clientCredentialsGrantTypeHandler, (OAuth2GrantTypeHandler) codeGrantTypeHandler);
+  List<OAuth2GrantTypeHandler> provideGrantTypeHandlers(
+      final ClientCredentialsGrantTypeHandler clientCredentialsGrantTypeHandler,
+      final CodeGrantTypeHandler codeGrantTypeHandler) {
+    return ImmutableList.of(clientCredentialsGrantTypeHandler, codeGrantTypeHandler);
   }
-  
+
   @Provides
   @Singleton
-  List<OAuth2ClientAuthenticationHandler> provideClientAuthenticationHandlers(final BasicAuthenticationHandler basicAuthenticationHandler) {
+  List<OAuth2ClientAuthenticationHandler> provideClientAuthenticationHandlers(
+      final BasicAuthenticationHandler basicAuthenticationHandler) {
     return ImmutableList.of((OAuth2ClientAuthenticationHandler) basicAuthenticationHandler);
   }
-  
+
   @Provides
   @Singleton
-  List<OAuth2AuthorizationResponseHandler> provideAuthorizationResponseHandlers(final CodeAuthorizationResponseHandler codeAuthorizationResponseHandler) {
+  List<OAuth2AuthorizationResponseHandler> provideAuthorizationResponseHandlers(
+      final CodeAuthorizationResponseHandler codeAuthorizationResponseHandler) {
     return ImmutableList.of((OAuth2AuthorizationResponseHandler) codeAuthorizationResponseHandler);
   }
 }

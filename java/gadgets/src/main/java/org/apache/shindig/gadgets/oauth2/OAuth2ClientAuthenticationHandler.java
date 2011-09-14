@@ -13,6 +13,6 @@ import org.apache.shindig.gadgets.http.HttpRequest;
 
 public interface OAuth2ClientAuthenticationHandler {
   public String geClientAuthenticationType();
-  
+
   public void addOAuth2Authentication(HttpRequest request, OAuth2Accessor accessor);
 }

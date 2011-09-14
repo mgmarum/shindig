@@ -93,13 +93,13 @@ public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
   }
 
   public String getGrantType() {
-    return grantType;
+    return this.grantType;
   }
 
-  public void setGrantType(String grantType) {
+  public void setGrantType(final String grantType) {
     this.grantType = grantType;
   }
-  
+
   @Override
   public boolean equals(final Object obj) {
     boolean ret = false;
@@ -128,7 +128,7 @@ public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
   public String toString() {
     return "org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2ClientImpl: providerName = "
         + this.providerName + " , redirectUri = " + this.redirectUri + " , gadgetUri = "
-        + this.gadgetUri + " , key = " + this.key + " , grantType = " + this.grantType + " , type = "
-        + this.type.name();
+        + this.gadgetUri + " , key = " + this.key + " , grantType = " + this.grantType
+        + " , type = " + this.type.name();
   }
 }

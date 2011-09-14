@@ -7,9 +7,7 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.shindig.common.logging.i18n.MessageKeys;
 import org.apache.shindig.gadgets.GadgetException;
@@ -43,9 +41,9 @@ public class BasicOAuth2Request implements OAuth2Request {
   private final List<OAuth2TokenTypeHandler> tokenTypeHandlers;
 
   private final List<OAuth2GrantTypeHandler> grantTypeHandlers;
-  
+
   private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
-  
+
   /**
    * @param fetcherConfig
    *          configuration options for the fetcher
@@ -53,12 +51,14 @@ public class BasicOAuth2Request implements OAuth2Request {
    *          fetcher to use for actually making requests
    */
   public BasicOAuth2Request(final OAuth2FetcherConfig fetcherConfig, final HttpFetcher fetcher,
-      final List<OAuth2TokenTypeHandler> tokenTypeHandlers, final List<OAuth2GrantTypeHandler> grantTypeHandlers, List<OAuth2ClientAuthenticationHandler> authenticationHandlers) {
+      final List<OAuth2TokenTypeHandler> tokenTypeHandlers,
+      final List<OAuth2GrantTypeHandler> grantTypeHandlers,
+      final List<OAuth2ClientAuthenticationHandler> authenticationHandlers) {
     this.fetcherConfig = fetcherConfig;
     this.fetcher = fetcher;
     this.tokenTypeHandlers = tokenTypeHandlers;
     this.grantTypeHandlers = grantTypeHandlers;
-    this.authenticationHandlers = authenticationHandlers;    
+    this.authenticationHandlers = authenticationHandlers;
   }
 
   public HttpResponse fetch(final HttpRequest request) {

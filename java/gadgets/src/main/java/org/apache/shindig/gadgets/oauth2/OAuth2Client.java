@@ -39,8 +39,8 @@ public interface OAuth2Client extends Serializable {
   public void setSecret(final String secret) throws OAuth2EncryptionException;
 
   public void setType(Type type);
-  
+
   public void setGrantType(String grantType);
-  
+
   public String getGrantType();
 }

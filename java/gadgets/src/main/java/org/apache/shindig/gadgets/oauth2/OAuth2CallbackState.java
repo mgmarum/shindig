@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.GadgetException;
@@ -22,6 +21,30 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 public class OAuth2CallbackState implements Serializable {
+
+  public OAuth2Accessor getAccessor() {
+    return this.accessor;
+  }
+
+  public HttpFetcher getFetcher() {
+    return this.fetcher;
+  }
+
+  public OAuth2Client getClient() {
+    return this.client;
+  }
+
+  public Provider<OAuth2Message> getOauth2MessageProvider() {
+    return this.oauth2MessageProvider;
+  }
+
+  public List<OAuth2ClientAuthenticationHandler> getAuthenticationHandlers() {
+    return this.authenticationHandlers;
+  }
+
+  public List<OAuth2GrantTypeHandler> getGrantTypeHandlers() {
+    return this.grantTypeHandlers;
+  }
 
   /**
    * 
@@ -146,24 +169,6 @@ public class OAuth2CallbackState implements Serializable {
     }
 
     return false;
-  }
-
-  private String buildAccessTokenUrl() throws OAuth2RequestException {
-    final String accessTokenUrl = this.accessor.getProvider().getTokenUrl();
-    if (accessTokenUrl == null) {
-      throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_TOKEN_URL, "token");
-    }
-
-    final String completeAccessTokenUrl = this.getCompleteAuthorizationUrl(accessTokenUrl);
-
-    return completeAccessTokenUrl;
-  }
-
-  private String getCompleteAuthorizationUrl(final String accessTokenUrl)
-      throws OAuth2RequestException {
-    final String ret = OAuth2Utils.buildUrl(accessTokenUrl, null, null);
-
-    return ret;
   }
 
   public OAuth2Error refreshToken() throws OAuth2RequestException {
@@ -301,9 +306,5 @@ public class OAuth2CallbackState implements Serializable {
     }
 
     return ret;
-  }
-
-  private static OAuth2Error parseError(final HttpResponse response) {
-    return OAuth2Error.UNKNOWN_PROBLEM; // TODO ARC, improve error response
   }
 }

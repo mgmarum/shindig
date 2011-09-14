@@ -13,6 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface OAuth2AuthorizationResponseHandler {
   public String[] getResponseTypes();
-  
+
   public OAuth2Message handleRequest(HttpServletRequest request);
 }

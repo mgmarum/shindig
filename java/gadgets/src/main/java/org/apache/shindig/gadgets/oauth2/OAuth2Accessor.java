@@ -43,7 +43,7 @@ public class OAuth2Accessor {
     this.store = store;
     this.securityToken = securityToken;
     this.grantType = this.client.getGrantType();
-    
+
     this.callbackState = this.store.createOAuth2CallbackState(this, client, this.grantType,
         securityToken, fetcher);
     this.fetcher = fetcher;
