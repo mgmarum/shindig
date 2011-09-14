@@ -1,5 +1,5 @@
 /*
- * This class is intended to be contributed back to the
+ * This file is intended to be contributed back to the
  * Open Source Shindig project.  (Or at least submitted
  * for review.)  
  * 
@@ -8,28 +8,42 @@
 
 {
    "googleAPI" : {
+        "client_authentication"   : "NONE",   
+            
         "endpoints" : {
-            "authorizationUrl" : "https://accounts.google.com/o/oauth2/auth",
-            "tokenUrl"         : "https://accounts.google.com/o/oauth2/token"
+            "authorizationUrl"        : "https://accounts.google.com/o/oauth2/auth",
+            "tokenUrl"                : "https://accounts.google.com/o/oauth2/token"
         },
         
        "clients" : {
            "http://%authority%%contextRoot%/samplecontainer/examples/oauth2_code.xml" : {
-                "redirectURI" : "http://%authority%%contextRoot%/gadgets/oauth2callback",
+                "redirect_uri" : "http://%authority%%contextRoot%/gadgets/oauth2callback",
                 "type" : "confidential",
-                "flow" : "code",
-                "consumer_key" : "756575909974-nq6e6p8au376tjj599o5fjd37kiibjeq.apps.googleusercontent.com",
-                "consumer_secret" : "5MrCHchhauFpkNbutJBunzQ6"
-           },
-           "http://%authority%%contextRoot%/samplecontainer/examples/oauth2_token.xml" : {
-                "redirectURI" : "",
-                "type" : "public",
-                "flow" : "token",
-                "consumer_key" : "756575909974-nq6e6p8au376tjj599o5fjd37kiibjeq.apps.googleusercontent.com",
-                "consumer_secret" : "5MrCHchhauFpkNbutJBunzQ6"
-           }           
+                "grant_type" : "code",
+                "client_id" : "756575909974-nq6e6p8au376tjj599o5fjd37kiibjeq.apps.googleusercontent.com",
+                "client_secret" : "5MrCHchhauFpkNbutJBunzQ6"
+           }       
        }
-   }   
-}  
+   },
+   
+   "facebook" : {
+        "client_authentication"   : "NONE",
+               
+        "endpoints" : {
+            "authorizationUrl" : "https://www.facebook.com/dialog/oauth",
+            "tokenUrl"         : "https://graph.facebook.com/oauth/access_token"
+        },
+        
+       "clients" : {
+           "http://%authority%%contextRoot%/samplecontainer/examples/oauth2_facebook.xml" : {
+                "redirect_uri" : "http://%authority%%contextRoot%/gadgets/oauth2callback",
+                "type" : "confidential",
+                "grant_type" : "code",
+                "client_id" : "140338476061882",
+                "client_secret" : "e94b4aa758947760b09f2f872d70740b"
+           }
+       }
+    }
+}
   
 

@@ -14,12 +14,16 @@ import java.io.Serializable;
 public interface OAuth2Provider extends Serializable {
   public String getAuthorizationUrl();
 
+  public String getClientAuthenticationType();
+  
   public String getName();
 
   public String getTokenUrl();
 
   public void setAuthorizationUrl(String authorizationUrl);
 
+  public void setClientAuthenticationType(String ClientAuthenticationType);
+  
   public void setName(String name);
 
   public void setTokenUrl(String tokenUrl);

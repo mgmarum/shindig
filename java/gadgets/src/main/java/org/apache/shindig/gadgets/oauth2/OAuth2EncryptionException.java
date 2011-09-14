@@ -9,7 +9,6 @@ package org.apache.shindig.gadgets.oauth2;
 
 import org.apache.shindig.gadgets.GadgetException;
 
-
 //NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public class OAuth2EncryptionException extends GadgetException {

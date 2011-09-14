@@ -393,7 +393,7 @@ public class DefaultRequestPipelineTest {
 	    }
 
 
-	    private final org.apache.shindig.gadgets.oauth2.OAuth2Request oauth2Request = new BasicOAuth2Request(null, null, null) {
+	    private final org.apache.shindig.gadgets.oauth2.OAuth2Request oauth2Request = new BasicOAuth2Request(null, null, null, null, null) {
 	      @Override
 	      public HttpResponse fetch(HttpRequest request) {
 	        fetchCount++;

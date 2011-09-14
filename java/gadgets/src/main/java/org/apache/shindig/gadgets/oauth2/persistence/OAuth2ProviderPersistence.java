@@ -12,7 +12,15 @@ public class OAuth2ProviderPersistence implements OAuth2Provider, Serializable {
   private String name;
   private String authorizationUrl;
   private String tokenUrl;
-  private int supportedProfiles;
+  private String clientAuthenticationType;
+  
+  public String getClientAuthenticationType() {
+    return clientAuthenticationType;
+  }
+
+  public void setClientAuthenticationType(String clientAuthenticationType) {
+    this.clientAuthenticationType = clientAuthenticationType;
+  }
 
   public String getName() {
     return this.name;
@@ -36,14 +44,6 @@ public class OAuth2ProviderPersistence implements OAuth2Provider, Serializable {
 
   public void setTokenUrl(final String tokenUrl) {
     this.tokenUrl = tokenUrl;
-  }
-
-  public int getSupportedProfiles() {
-    return this.supportedProfiles;
-  }
-
-  public void setSupportedProfiles(final int supportedProfiles) {
-    this.supportedProfiles = supportedProfiles;
   }
 
   @Override
@@ -70,6 +70,6 @@ public class OAuth2ProviderPersistence implements OAuth2Provider, Serializable {
   public String toString() {
     return "org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2ProviderImpl: name = "
         + this.name + " , authorizationUrl = " + this.authorizationUrl + " , tokenUrl = "
-        + this.tokenUrl + " , supportedProfiles = " + this.supportedProfiles;
+        + this.tokenUrl + " , clientAuthenticationType = " + this.clientAuthenticationType;
   }
 }

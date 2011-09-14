@@ -26,7 +26,7 @@ import org.apache.shindig.gadgets.oauth.OAuthModule;
 import org.apache.shindig.gadgets.oauth2.OAuth2Module;
 import org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersistenceModule;
 import org.apache.shindig.gadgets.oauth2.sample.OAuth2MessageModule;
-import org.apache.shindig.gadgets.oauth2.sample.OAuth2TokenTypeHandlerModule;
+import org.apache.shindig.gadgets.oauth2.sample.OAuth2HandlerModule;
 import org.apache.shindig.gadgets.servlet.ConcatProxyServlet;
 import org.apache.shindig.gadgets.servlet.GadgetRenderingServlet;
 import org.apache.shindig.gadgets.servlet.JsServlet;
@@ -133,7 +133,7 @@ public class EndToEndServer {
               OAuth2Module.class.getName(),
               OAuth2PersistenceModule.class.getName(), 
               OAuth2MessageModule.class.getName(), 
-              OAuth2TokenTypeHandlerModule.class.getName()
+              OAuth2HandlerModule.class.getName()
              );
 
     initParams.put(GuiceServletContextListener.MODULES_ATTRIBUTE, modules);

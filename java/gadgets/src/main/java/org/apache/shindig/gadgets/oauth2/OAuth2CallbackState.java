@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,9 +15,6 @@ import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
-import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
-import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
-import org.apache.shindig.gadgets.oauth2.OAuth2Store;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,40 +31,45 @@ public class OAuth2CallbackState implements Serializable {
   public enum State {
     UNKNOWN, NOT_STARTED, AUTHORIZATION_REQUESTED, AUTHORIZATION_SUCCEEDED, AUTHORIZATION_FAILED, ACCESS_REQUESTED, ACCESS_FAILED, ACCESS_SUCCEEDED, REFRESH_REQUESTED, REFERESH_FAILED, REFRESH_SUCCEEDED
   }
-  
+
   private final Integer stateKey;
-  private final Flow flow;
+  private final String grantType;
   private final SecurityToken securityToken;
   private final Set<OAuth2StateChangeListener> listeners;
   private State state;
-  private String authorizationCode;
   private String realCallbackUrl;
   private String realErrorCallbackUrl;
   private final OAuth2Accessor accessor;
   private final HttpFetcher fetcher;
   private final OAuth2Client client;
   private final Provider<OAuth2Message> oauth2MessageProvider;
+  private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
+  private final List<OAuth2GrantTypeHandler> grantTypeHandlers;
 
   private static int STATE_KEY_COUNT = 0;
 
   @Inject
   public OAuth2CallbackState(final OAuth2Accessor accessor, final OAuth2Client client,
-      final Flow flow, final SecurityToken securityToken, final HttpFetcher fetcher, final Provider<OAuth2Message> oauth2MessageProvider) {
+      final String grantType, final SecurityToken securityToken, final HttpFetcher fetcher,
+      final Provider<OAuth2Message> oauth2MessageProvider,
+      final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
+      final List<OAuth2GrantTypeHandler> grantTypeHandlers) {
     this.state = State.NOT_STARTED;
     OAuth2CallbackState.STATE_KEY_COUNT++;
     this.stateKey = new Integer(OAuth2CallbackState.STATE_KEY_COUNT);
-    this.flow = flow;
+    this.grantType = grantType;
     this.securityToken = securityToken;
     this.listeners = new HashSet<OAuth2StateChangeListener>(1);
     this.accessor = accessor;
     this.fetcher = fetcher;
     this.client = client;
     this.oauth2MessageProvider = oauth2MessageProvider;
+    this.authenticationHandlers = authenticationHandlers;
+    this.grantTypeHandlers = grantTypeHandlers;
   }
 
   public void invalidate() {
     this.changeState(State.UNKNOWN);
-    this.authorizationCode = null;
     this.realCallbackUrl = null;
     this.realErrorCallbackUrl = null;
     this.listeners.clear();
@@ -76,8 +79,8 @@ public class OAuth2CallbackState implements Serializable {
     return this.stateKey;
   }
 
-  public Flow getFlow() {
-    return this.flow;
+  public String getGrantType() {
+    return this.grantType;
   }
 
   public SecurityToken getSecurityToken() {
@@ -94,121 +97,6 @@ public class OAuth2CallbackState implements Serializable {
 
   public void addOAuth2StateChangeListener(final OAuth2StateChangeListener listener) {
     this.listeners.add(listener);
-  }
-
-  public String getAuthorizationCode() {
-    return this.authorizationCode;
-  }
-
-  public OAuth2Error setAuthorizationCode(final String authorizationCode)
-      throws OAuth2RequestException {
-    this.authorizationCode = authorizationCode;
-    final String accessTokenUrl = this.buildAccessTokenUrl();
-    HttpResponse response = null;
-    final HttpRequest request = new HttpRequest(Uri.parse(accessTokenUrl));
-    request.setMethod("POST");
-    request.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
-
-    final String clientId = this.client.getKey();
-    final String secret = this.client.getSecret();
-
-    request.setHeader("client_id", clientId);
-    request.setHeader("client_secret", secret);
-    request.setParam("client_id", clientId);
-    request.setParam("client_secret", secret);
-
-    final String authString = clientId + ":" + secret;
-    final byte[] authBytes = Base64.encodeBase64(authString.getBytes());
-    request.setHeader("Auhtorization", "Basic: " + new String(authBytes));
-
-    try {
-      final byte[] body = this.getAuthorizationBody(this.accessor).getBytes("UTF-8");
-      request.setPostBody(body);
-
-      this.changeState(State.ACCESS_REQUESTED);
-
-      response = this.fetcher.fetch(request);
-      if (response == null) {
-        throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE);
-      }
-
-      final int responseCode = response.getHttpStatusCode();
-      if (responseCode != 200) {
-        return OAuth2CallbackState.parseError(response);
-      }
-
-      final String contentType = response.getHeader("Content-Type");
-      final String responseString = response.getResponseAsString();
-      final OAuth2Message msg = this.oauth2MessageProvider.get();
-
-      if (contentType.startsWith("text/plain")) {
-        // Facebook does this
-        msg.parseQuery("?" + responseString);
-      } else if (contentType.startsWith("application/json")) {
-        // Google does this
-        final JSONObject responseJson = new JSONObject(responseString);
-        msg.parseJSON(responseJson.toString());
-      } else {
-        return OAuth2Error.UNKNOWN_PROBLEM;
-      }
-
-      final OAuth2Error error = msg.getError();
-      if (error == null) {
-        final String accessToken = msg.getAccessToken();
-        final String refreshToken = msg.getRefreshToken();
-        final String expiresIn = msg.getExpiresIn();
-        final String tokenType = msg.getTokenType();
-        final String providerName = this.client.getProviderName();
-        final String gadgetUri = this.client.getGadgetUri();
-        final String scope = this.accessor.getScope();
-        final String user = this.securityToken.getViewerId();
-
-        final OAuth2Store store = this.accessor.getStore();
-
-        if (accessToken != null) {
-          final OAuth2Token storedAccessToken = store.createToken();
-          if (expiresIn != null) {
-            storedAccessToken.setExpiresIn(Integer.decode(expiresIn));
-          } else {
-            storedAccessToken.setExpiresIn(0);
-          }
-          storedAccessToken.setGadgetUri(gadgetUri);
-          storedAccessToken.setProviderName(providerName);
-          storedAccessToken.setScope(scope);
-          storedAccessToken.setSecret(accessToken);
-          storedAccessToken.setTokenType(tokenType);
-          storedAccessToken.setType(OAuth2Token.Type.ACCESS);
-          storedAccessToken.setUser(user);
-          store.setToken(storedAccessToken);
-        }
-
-        if (refreshToken != null) {
-          final OAuth2Token storedRefreshToken = store.createToken();
-          storedRefreshToken.setExpiresIn(0);
-          storedRefreshToken.setGadgetUri(gadgetUri);
-          storedRefreshToken.setProviderName(providerName);
-          storedRefreshToken.setScope(scope);
-          storedRefreshToken.setSecret(refreshToken);
-          storedRefreshToken.setTokenType(tokenType);
-          storedRefreshToken.setType(OAuth2Token.Type.REFRESH);
-          storedRefreshToken.setUser(user);
-          store.setToken(storedRefreshToken);
-        }
-
-        this.changeState(State.ACCESS_SUCCEEDED);
-      } else {
-        throw new RuntimeException("@@@ TODO ARC, implement access token error handling");
-      }
-      // TODO ARC make this exceptions better
-    } catch (final GadgetException e) {
-      throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE, "", e);
-    } catch (final UnsupportedEncodingException e) {
-      throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE, "", e);
-    } catch (final JSONException e) {
-      throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE, "", e);
-    } 
-
-    return null;
   }
 
   public void setState(final State state) {
@@ -278,42 +166,6 @@ public class OAuth2CallbackState implements Serializable {
     return ret;
   }
 
-  private String getAuthorizationBody(final OAuth2Accessor accessor) throws OAuth2RequestException {
-    String ret = "";
-
-    String type = "code";
-
-    switch (accessor.getFlow()) {
-    case CODE:
-      type = "authorization_code";
-      break;
-    case TOKEN:
-      type = "token";
-      break;
-    default:
-      throw new OAuth2RequestException(OAuth2Error.MISSING_OAUTH_PARAMETER,
-          "There is no type parameter");
-    }
-
-    final Map<String, String> queryParams = new HashMap<String, String>(5);
-    queryParams.put("grant_type", type);
-    queryParams.put("code", this.getAuthorizationCode());
-    queryParams.put("redirect_uri", accessor.getClient().getRedirectUri());
-
-    final String clientId = this.client.getKey();
-    final String secret = this.client.getSecret();
-    queryParams.put("client_id", clientId);
-    queryParams.put("client_secret", secret);
-
-    ret = OAuth2Utils.buildUrl(ret, queryParams, null);
-
-    if ((ret.startsWith("?")) || (ret.startsWith("&"))) {
-      ret = ret.substring(1);
-    }
-
-    return ret;
-  }
-
   public OAuth2Error refreshToken() throws OAuth2RequestException {
     final String refershTokenUrl = this.buildRefreshTokenUrl();
 
@@ -325,14 +177,17 @@ public class OAuth2CallbackState implements Serializable {
     final String clientId = this.client.getKey();
     final String secret = this.client.getSecret();
 
-    request.setHeader("client_id", clientId);
-    request.setHeader("client_secret", secret);
-    request.setParam("client_id", clientId);
-    request.setParam("client_secret", secret);
+    request.setHeader(OAuth2Message.CLIENT_ID, clientId);
+    request.setHeader(OAuth2Message.CLIENT_SECRET, secret);
+    request.setParam(OAuth2Message.CLIENT_ID, clientId);
+    request.setParam(OAuth2Message.CLIENT_SECRET, secret);
 
-    final String authString = clientId + ":" + secret;
-    final byte[] authBytes = Base64.encodeBase64(authString.getBytes());
-    request.setHeader("Auhtorization", "Basic: " + new String(authBytes));
+    for (final OAuth2ClientAuthenticationHandler authenticationHandler : this.authenticationHandlers) {
+      if (authenticationHandler.geClientAuthenticationType().equalsIgnoreCase(
+          this.accessor.getProvider().getClientAuthenticationType())) {
+        authenticationHandler.addOAuth2Authentication(request, this.accessor);
+      }
+    }
 
     try {
       final byte[] body = this.getRefreshBody(this.accessor).getBytes("UTF-8");
@@ -345,7 +200,7 @@ public class OAuth2CallbackState implements Serializable {
         throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE);
       }
       final OAuth2Message msg = this.oauth2MessageProvider.get();
-      
+
       final JSONObject responseJson = new JSONObject(response.getResponseAsString());
       msg.parseJSON(responseJson.toString());
       final OAuth2Error error = msg.getError();
@@ -402,7 +257,7 @@ public class OAuth2CallbackState implements Serializable {
       throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE, "", e);
     } catch (final JSONException e) {
       throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE, "", e);
-    } 
+    }
 
     return null;
   }

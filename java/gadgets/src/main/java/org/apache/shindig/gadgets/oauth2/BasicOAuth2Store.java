@@ -7,6 +7,7 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
+import java.util.List;
 import java.util.Set;
 
 import org.apache.shindig.auth.SecurityToken;
@@ -14,7 +15,6 @@ import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.GadgetException.Code;
 import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
-import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token.Type;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2CacheException;
@@ -30,13 +30,17 @@ public class BasicOAuth2Store implements OAuth2Store {
   private final OAuth2Cache cache;
   private final OAuth2Persister persister;
   private final Provider<OAuth2Message> oauth2MessageProvider;
-
+  private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
+  private final List<OAuth2GrantTypeHandler> grantTypeHandlers;
+  
   @Inject
   public BasicOAuth2Store(final OAuth2Cache cache, final OAuth2Persister persister,
-      final Provider<OAuth2Message> oauth2MessageProvider) {
+      final Provider<OAuth2Message> oauth2MessageProvider,  final List<OAuth2ClientAuthenticationHandler> authenticationHandlers, final List<OAuth2GrantTypeHandler> grantTypeHandlers) {
     this.cache = cache;
     this.persister = persister;
     this.oauth2MessageProvider = oauth2MessageProvider;
+    this.authenticationHandlers = authenticationHandlers;
+    this.grantTypeHandlers = grantTypeHandlers;
   }
 
   public boolean init() throws GadgetException {
@@ -104,7 +108,7 @@ public class BasicOAuth2Store implements OAuth2Store {
 
   public OAuth2Token getToken(final String providerName, final String gadgetUri, final String user,
       final String scope, final OAuth2Token.Type type) throws GadgetException {
-    Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
+    final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
     OAuth2Token token = this.cache.getToken(index);
     if (token == null) {
       try {
@@ -124,7 +128,8 @@ public class BasicOAuth2Store implements OAuth2Store {
   public void setToken(final OAuth2Token token) throws GadgetException {
     if (token != null) {
       final Integer index = this.cache.getTokenIndex(token);
-      final OAuth2Token existingToken = this.getToken(token.getProviderName(), token.getGadgetUri(), token.getUser(), token.getScope(), token.getType());
+      final OAuth2Token existingToken = this.getToken(token.getProviderName(),
+          token.getGadgetUri(), token.getUser(), token.getScope(), token.getType());
       try {
         if (existingToken == null) {
           this.persister.insertToken(token);
@@ -186,10 +191,10 @@ public class BasicOAuth2Store implements OAuth2Store {
   }
 
   public OAuth2CallbackState createOAuth2CallbackState(final OAuth2Accessor accessor,
-      final OAuth2Client client, final Flow flow, final SecurityToken securityToken,
+      final OAuth2Client client, final String grantType, final SecurityToken securityToken,
       final HttpFetcher fetcher) {
-    final OAuth2CallbackState ret = new OAuth2CallbackState(accessor, client, flow, securityToken,
-        fetcher, this.oauth2MessageProvider);
+    final OAuth2CallbackState ret = new OAuth2CallbackState(accessor, client, grantType, securityToken,
+        fetcher, this.oauth2MessageProvider, this.authenticationHandlers, this.grantTypeHandlers);
     final Integer stateKey = ret.getStateKey();
     this.cache.storeOAuth2CallbackState(stateKey, ret);
     return ret;
@@ -202,7 +207,7 @@ public class BasicOAuth2Store implements OAuth2Store {
   public OAuth2CallbackState removeOAuth2CallbackState(final Integer stateKey) {
     final OAuth2CallbackState ret = this.cache.removeOAuth2CallbackState(stateKey);
     if (ret != null) {
-      ((OAuth2CallbackState) ret).invalidate();
+      ret.invalidate();
     }
 
     return ret;

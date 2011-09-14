@@ -2,7 +2,6 @@ package org.apache.shindig.gadgets.oauth2;
 
 import java.io.Serializable;
 
-
 public interface OAuth2Token extends Serializable {
   public enum Type {
     ACCESS, REFRESH

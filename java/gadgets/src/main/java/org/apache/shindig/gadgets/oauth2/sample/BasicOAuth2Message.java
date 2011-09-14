@@ -21,37 +21,37 @@ public class BasicOAuth2Message implements OAuth2Message {
   }
 
   public String getAccessToken() {
-    return this.params.get(BasicOAuth2Message.ACCESS_TOKEN);
+    return this.params.get(OAuth2Message.ACCESS_TOKEN);
   }
 
   public String getAuthorization() {
-    return this.params.get(BasicOAuth2Message.AUTHORIZATION);
+    return this.params.get(OAuth2Message.AUTHORIZATION);
   }
 
   public OAuth2Error getError() {
     OAuth2Error error = null;
 
-    final String errorParam = this.params.get(BasicOAuth2Message.ERROR);
+    final String errorParam = this.params.get(OAuth2Message.ERROR);
     if (errorParam != null) {
-      if (BasicOAuth2Message.INVALID_REQUEST.equalsIgnoreCase(errorParam)) {
+      if (OAuth2Message.INVALID_REQUEST.equalsIgnoreCase(errorParam)) {
         error = OAuth2Error.INVALID_REQUEST;
-      } else if (BasicOAuth2Message.UNAUTHORIZED_CLIENT.equalsIgnoreCase(errorParam)) {
+      } else if (OAuth2Message.UNAUTHORIZED_CLIENT.equalsIgnoreCase(errorParam)) {
         error = OAuth2Error.UNAUTHORIZED_CLIENT;
-      } else if (BasicOAuth2Message.ACCESS_DENIED.equalsIgnoreCase(errorParam)) {
+      } else if (OAuth2Message.ACCESS_DENIED.equalsIgnoreCase(errorParam)) {
         error = OAuth2Error.ACCESS_DENIED;
-      } else if (BasicOAuth2Message.UNSUPPORTED_RESPONSE_TYPE.equalsIgnoreCase(errorParam)) {
+      } else if (OAuth2Message.UNSUPPORTED_RESPONSE_TYPE.equalsIgnoreCase(errorParam)) {
         error = OAuth2Error.UNSUPPORTED_RESPONSE_TYPE;
-      } else if (BasicOAuth2Message.INVALID_SCOPE.equalsIgnoreCase(errorParam)) {
+      } else if (OAuth2Message.INVALID_SCOPE.equalsIgnoreCase(errorParam)) {
         error = OAuth2Error.INVALID_SCOPE;
-      } else if (BasicOAuth2Message.SERVER_ERROR.equalsIgnoreCase(errorParam)) {
+      } else if (OAuth2Message.SERVER_ERROR.equalsIgnoreCase(errorParam)) {
         error = OAuth2Error.SERVER_ERROR;
-      } else if (BasicOAuth2Message.TEMPORARILY_UNAVAILABLE.equalsIgnoreCase(errorParam)) {
+      } else if (OAuth2Message.TEMPORARILY_UNAVAILABLE.equalsIgnoreCase(errorParam)) {
         error = OAuth2Error.TEMPORARILY_UNAVAILABLE;
-      } else if (BasicOAuth2Message.INVALID_CLIENT.equalsIgnoreCase(errorParam)) {
+      } else if (OAuth2Message.INVALID_CLIENT.equalsIgnoreCase(errorParam)) {
         error = OAuth2Error.INVALID_CLIENT;
-      } else if (BasicOAuth2Message.INVALID_GRANT.equalsIgnoreCase(errorParam)) {
+      } else if (OAuth2Message.INVALID_GRANT.equalsIgnoreCase(errorParam)) {
         error = OAuth2Error.INVALID_GRANT;
-      } else if (BasicOAuth2Message.UNSUPPORTED_GRANT_TYPE.equalsIgnoreCase(errorParam)) {
+      } else if (OAuth2Message.UNSUPPORTED_GRANT_TYPE.equalsIgnoreCase(errorParam)) {
         error = OAuth2Error.UNSUPPORTED_GRANT_TYPE;
       } else {
         error = OAuth2Error.UNKNOWN_PROBLEM;
@@ -62,15 +62,15 @@ public class BasicOAuth2Message implements OAuth2Message {
   }
 
   public String getErrorDescription() {
-    return this.params.get(BasicOAuth2Message.ERROR_DESCRIPTION);
+    return this.params.get(OAuth2Message.ERROR_DESCRIPTION);
   }
 
   public String getErrorUri() {
-    return this.params.get(BasicOAuth2Message.ERROR_URI);
+    return this.params.get(OAuth2Message.ERROR_URI);
   }
 
   public String getExpiresIn() {
-    return this.params.get(BasicOAuth2Message.EXPIRES_IN);
+    return this.params.get(OAuth2Message.EXPIRES_IN);
   }
 
   public Map<String, String> getParameters() {
@@ -78,15 +78,15 @@ public class BasicOAuth2Message implements OAuth2Message {
   }
 
   public String getRefreshToken() {
-    return this.params.get(BasicOAuth2Message.REFRESH_TOKEN);
+    return this.params.get(OAuth2Message.REFRESH_TOKEN);
   }
 
   public String getState() {
-    return this.params.get(BasicOAuth2Message.STATE);
+    return this.params.get(OAuth2Message.STATE);
   }
 
   public String getTokenType() {
-    return this.params.get(BasicOAuth2Message.TOKEN_TYPE);
+    return this.params.get(OAuth2Message.TOKEN_TYPE);
   }
 
   public void parseRequest(final HttpServletRequest request) {
@@ -102,27 +102,27 @@ public class BasicOAuth2Message implements OAuth2Message {
   public void parseJSON(final String response) {
     try {
       final JSONObject jsonObject = new JSONObject(response);
-      final String accessToken = jsonObject.optString(BasicOAuth2Message.ACCESS_TOKEN, null);
+      final String accessToken = jsonObject.optString(OAuth2Message.ACCESS_TOKEN, null);
       if (accessToken != null) {
-        this.params.put(BasicOAuth2Message.ACCESS_TOKEN, accessToken);
+        this.params.put(OAuth2Message.ACCESS_TOKEN, accessToken);
       }
 
-      final String tokenType = jsonObject.optString(BasicOAuth2Message.TOKEN_TYPE, null);
+      final String tokenType = jsonObject.optString(OAuth2Message.TOKEN_TYPE, null);
       if (tokenType != null) {
-        this.params.put(BasicOAuth2Message.TOKEN_TYPE, tokenType);
+        this.params.put(OAuth2Message.TOKEN_TYPE, tokenType);
       }
 
-      final String expiresIn = jsonObject.optString(BasicOAuth2Message.EXPIRES_IN, null);
+      final String expiresIn = jsonObject.optString(OAuth2Message.EXPIRES_IN, null);
       if (expiresIn != null) {
-        this.params.put(BasicOAuth2Message.EXPIRES_IN, expiresIn);
+        this.params.put(OAuth2Message.EXPIRES_IN, expiresIn);
       }
 
-      final String refreshToken = jsonObject.optString(BasicOAuth2Message.REFRESH_TOKEN, null);
+      final String refreshToken = jsonObject.optString(OAuth2Message.REFRESH_TOKEN, null);
       if (refreshToken != null) {
-        this.params.put(BasicOAuth2Message.REFRESH_TOKEN, refreshToken);
+        this.params.put(OAuth2Message.REFRESH_TOKEN, refreshToken);
       }
     } catch (final JSONException e) {
-      this.params.put(BasicOAuth2Message.ERROR, "JSONException parsing response");
+      this.params.put(OAuth2Message.ERROR, "JSONException parsing response");
     }
   }
 
@@ -132,10 +132,10 @@ public class BasicOAuth2Message implements OAuth2Message {
     for (final String key : params.keySet()) {
       this.params.put(key, params.get(key).get(0));
     }
-    if ((!this.params.containsKey(BasicOAuth2Message.EXPIRES_IN))
+    if ((!this.params.containsKey(OAuth2Message.EXPIRES_IN))
         && (this.params.containsKey("expires"))) {
       // Facebook does this
-      this.params.put(BasicOAuth2Message.EXPIRES_IN, this.params.get("expires"));
+      this.params.put(OAuth2Message.EXPIRES_IN, this.params.get("expires"));
     }
   }
 

@@ -22,7 +22,7 @@ import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public class BasicOAuth2Request implements OAuth2Request {
-  
+
   // class name for logging purpose
   private static final String classname = BasicOAuth2Request.class.getName();
 
@@ -41,6 +41,10 @@ public class BasicOAuth2Request implements OAuth2Request {
   private boolean refreshTry = false;
 
   private final List<OAuth2TokenTypeHandler> tokenTypeHandlers;
+
+  private final List<OAuth2GrantTypeHandler> grantTypeHandlers;
+  
+  private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
   
   /**
    * @param fetcherConfig
@@ -48,10 +52,13 @@ public class BasicOAuth2Request implements OAuth2Request {
    * @param fetcher
    *          fetcher to use for actually making requests
    */
-  public BasicOAuth2Request(final OAuth2FetcherConfig fetcherConfig, final HttpFetcher fetcher, final List<OAuth2TokenTypeHandler> tokenTypeHandlers) {
+  public BasicOAuth2Request(final OAuth2FetcherConfig fetcherConfig, final HttpFetcher fetcher,
+      final List<OAuth2TokenTypeHandler> tokenTypeHandlers, final List<OAuth2GrantTypeHandler> grantTypeHandlers, List<OAuth2ClientAuthenticationHandler> authenticationHandlers) {
     this.fetcherConfig = fetcherConfig;
     this.fetcher = fetcher;
     this.tokenTypeHandlers = tokenTypeHandlers;
+    this.grantTypeHandlers = grantTypeHandlers;
+    this.authenticationHandlers = authenticationHandlers;    
   }
 
   public HttpResponse fetch(final HttpRequest request) {
@@ -129,12 +136,10 @@ public class BasicOAuth2Request implements OAuth2Request {
   }
 
   private HttpResponseBuilder fetchWithRetry() throws OAuth2RequestException {
-    int attempts = 0;
     boolean retry;
     HttpResponseBuilder response = null;
     do {
       retry = false;
-      ++attempts;
       response = this.attemptFetch();
     } while (retry);
     return response;
@@ -180,7 +185,12 @@ public class BasicOAuth2Request implements OAuth2Request {
       throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_TOKEN_URL, "authorization");
     }
 
-    final String completeAuthUrl = this.getCompleteAuthorizationUrl(authUrl, this.accessor);
+    String completeAuthUrl = authUrl;
+    for (final OAuth2GrantTypeHandler grantTypeHandler : this.grantTypeHandlers) {
+      if (grantTypeHandler.getGrantType().equalsIgnoreCase(this.accessor.getGrantType())) {
+        completeAuthUrl = grantTypeHandler.getCompleteAuthorizationUrl(authUrl, this.accessor);
+      }
+    }
 
     this.responseParams.setAuthorizationUrl(completeAuthUrl);
   }
@@ -217,45 +227,6 @@ public class BasicOAuth2Request implements OAuth2Request {
     return ret;
   }
 
-  private String getCompleteAuthorizationUrl(final String authorizationUrl,
-      final OAuth2Accessor accessor) throws OAuth2RequestException {
-    String type = "code";
-
-    switch (accessor.getFlow()) {
-    case CODE:
-      type = "code";
-      break;
-    case TOKEN:
-      type = "token";
-      break;
-    default:
-      throw new OAuth2RequestException(OAuth2Error.MISSING_OAUTH_PARAMETER,
-          "There is no type parameter");
-    }
-
-    final Map<String, String> queryParams = new HashMap<String, String>(5);
-    queryParams.put("response_type", type);
-    queryParams.put("client_id", accessor.getClientId());
-    final String redirectUri = accessor.getRedirectUri();
-    if ((redirectUri != null) && (redirectUri.length() > 0)) {
-      queryParams.put("redirect_uri", redirectUri);
-    }
-    if (accessor.getCallbackState().getStateKey() != null) {
-      final String state = Integer.toString(accessor.getCallbackState().getStateKey());
-      if ((state != null) && (state.length() > 0)) {
-        queryParams.put("state", state);
-      }
-    }
-    final String scope = accessor.getScope();
-    if ((scope != null) && (scope.length() > 0)) {
-      queryParams.put("scope", scope);
-    }
-
-    final String ret = OAuth2Utils.buildUrl(authorizationUrl, queryParams, null);
-
-    return ret;
-  }
-
   private HttpResponseBuilder fetchData() throws OAuth2RequestException {
     HttpResponseBuilder builder = null;
 
@@ -271,13 +242,13 @@ public class BasicOAuth2Request implements OAuth2Request {
 
     final OAuth2Token accessToken = this.accessor.getAccessToken();
     final OAuth2Token refreshToken = this.accessor.getRefreshToken();
-    
+
     if (accessToken != null) {
       String tokenType = accessToken.getTokenType();
       if (tokenType == null) {
         tokenType = OAuth2Message.BEARER_TOKEN_TYPE;
       }
-      
+
       for (final OAuth2TokenTypeHandler tokenTypeHandler : this.tokenTypeHandlers) {
         if (tokenType.equalsIgnoreCase(tokenTypeHandler.getTokenType())) {
           tokenTypeHandler.addOAuth2Params(this.accessor, request);
@@ -292,7 +263,7 @@ public class BasicOAuth2Request implements OAuth2Request {
       }
 
       final int responseCode = response.getHttpStatusCode();
-      
+
       if (!this.refreshTry && (responseCode >= 400) && (responseCode < 500)) {
         if ((accessToken != null) && (refreshToken != null)) {
           // We need a refresh, remove the access token and try again

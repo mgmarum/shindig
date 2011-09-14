@@ -23,7 +23,6 @@ public class OAuth2MessageModule extends AbstractModule {
     this.bind(OAuth2Message.class).toProvider(OAuth2MessageProvider.class);
   }
 
-
   public static class OAuth2MessageProvider implements Provider<OAuth2Message> {
     @Inject
     public OAuth2MessageProvider() {

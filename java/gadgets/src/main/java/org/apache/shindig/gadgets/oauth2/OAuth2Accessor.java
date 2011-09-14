@@ -32,7 +32,7 @@ public class OAuth2Accessor {
   private String authorizationUrl;
   private String tokenUrl;
   private OAuth2Client.Type type;
-  private OAuth2Client.Flow flow;
+  private String grantType;
   private final OAuth2CallbackState callbackState;
   private final HttpFetcher fetcher;
 
@@ -42,7 +42,9 @@ public class OAuth2Accessor {
     this.client = client;
     this.store = store;
     this.securityToken = securityToken;
-    this.callbackState = this.store.createOAuth2CallbackState(this, client, this.flow,
+    this.grantType = this.client.getGrantType();
+    
+    this.callbackState = this.store.createOAuth2CallbackState(this, client, this.grantType,
         securityToken, fetcher);
     this.fetcher = fetcher;
   }
@@ -137,12 +139,12 @@ public class OAuth2Accessor {
     this.type = type;
   }
 
-  public OAuth2Client.Flow getFlow() {
-    return this.flow;
+  public String getGrantType() {
+    return this.grantType;
   }
 
-  public void setFlow(final OAuth2Client.Flow flow) {
-    this.flow = flow;
+  public void setGrantType(final String grantType) {
+    this.grantType = grantType;
   }
 
   public OAuth2Provider getProvider() {

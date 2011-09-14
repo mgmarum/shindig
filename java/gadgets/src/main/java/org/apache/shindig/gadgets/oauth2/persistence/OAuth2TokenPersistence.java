@@ -9,7 +9,7 @@ import com.google.inject.Inject;
 
 public class OAuth2TokenPersistence implements OAuth2Token, Serializable {
   private static final long serialVersionUID = 1L;
-  
+
   private final OAuth2Encrypter encrypter;
 
   private Type type;

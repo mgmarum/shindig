@@ -9,19 +9,12 @@ package org.apache.shindig.gadgets.oauth2;
 
 import java.io.Serializable;
 
-
 //NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public interface OAuth2Client extends Serializable {
-  public enum Flow {
-    CODE, TOKEN, UNKNOWN
-  }
-
   public enum Type {
     CONFIDENTIAL, PUBLIC, UNKNOWN
   }
-
-  public Flow getFlow();
 
   public String getGadgetUri();
 
@@ -35,8 +28,6 @@ public interface OAuth2Client extends Serializable {
 
   public Type getType();
 
-  public void setFlow(Flow flow);
-
   public void setGadgetUri(String gadgetUri);
 
   public void setKey(String key);
@@ -48,4 +39,8 @@ public interface OAuth2Client extends Serializable {
   public void setSecret(final String secret) throws OAuth2EncryptionException;
 
   public void setType(Type type);
+  
+  public void setGrantType(String grantType);
+  
+  public String getGrantType();
 }

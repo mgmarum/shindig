@@ -18,14 +18,15 @@ import com.google.inject.Inject;
 public class BearerTokenHandler implements OAuth2TokenTypeHandler {
 
   @Inject
-  public BearerTokenHandler() { 
+  public BearerTokenHandler() {
   }
-  
+
   public String getTokenType() {
     return OAuth2Message.BEARER_TOKEN_TYPE;
   }
-  
-  public void addOAuth2Params(final OAuth2Accessor accessor, final HttpRequest request) throws OAuth2RequestException {
+
+  public void addOAuth2Params(final OAuth2Accessor accessor, final HttpRequest request)
+      throws OAuth2RequestException {
     final Uri unAuthorizedRequestUri = request.getUri();
     if (unAuthorizedRequestUri == null) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "Uri is null??");
@@ -49,8 +50,8 @@ public class BearerTokenHandler implements OAuth2TokenTypeHandler {
     if (tokenType.equalsIgnoreCase("Bearer")) {
       request.setHeader("Authorization", "Bearer " + accessToken.getSecret());
     } else {
-      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "BearerTokenHandler can only handle Bearer tokens. "
-          + tokenType);
+      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
+          "BearerTokenHandler can only handle Bearer tokens. " + tokenType);
     }
   }
 }

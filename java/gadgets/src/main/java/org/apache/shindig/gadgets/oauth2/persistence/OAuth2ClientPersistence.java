@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
+import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 
 import com.google.inject.Inject;
 
@@ -12,7 +13,7 @@ public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
    * 
    */
   private static final long serialVersionUID = 1L;
-  
+
   private final OAuth2Encrypter encrypter;
 
   private String providerName;
@@ -21,10 +22,9 @@ public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
   private String key;
   private String secret;
   private String encryptedSecret;
-  private Flow flow = Flow.UNKNOWN;
+  private String grantType = OAuth2Message.NO_GRANT_TYPE;
   private Type type = Type.UNKNOWN;
 
-  
   @Inject
   public OAuth2ClientPersistence(final OAuth2Encrypter encrypter) {
     this.encrypter = encrypter;
@@ -84,14 +84,6 @@ public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
     this.secret = this.encrypter.decrypt(encryptedSecret);
   }
 
-  public OAuth2Client.Flow getFlow() {
-    return this.flow;
-  }
-
-  public void setFlow(final OAuth2Client.Flow flow) {
-    this.flow = flow;
-  }
-
   public OAuth2Client.Type getType() {
     return this.type;
   }
@@ -100,6 +92,14 @@ public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
     this.type = type;
   }
 
+  public String getGrantType() {
+    return grantType;
+  }
+
+  public void setGrantType(String grantType) {
+    this.grantType = grantType;
+  }
+  
   @Override
   public boolean equals(final Object obj) {
     boolean ret = false;
@@ -128,8 +128,7 @@ public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
   public String toString() {
     return "org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2ClientImpl: providerName = "
         + this.providerName + " , redirectUri = " + this.redirectUri + " , gadgetUri = "
-        + this.gadgetUri + " , key = " + this.key + " , flow = " + this.flow.name() + " , type = "
+        + this.gadgetUri + " , key = " + this.key + " , grantType = " + this.grantType + " , type = "
         + this.type.name();
   }
-
 }

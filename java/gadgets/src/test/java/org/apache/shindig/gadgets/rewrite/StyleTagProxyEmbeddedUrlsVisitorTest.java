@@ -33,7 +33,7 @@ import org.apache.shindig.gadgets.oauth.OAuthModule;
 import org.apache.shindig.gadgets.oauth2.OAuth2Module;
 import org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersistenceModule;
 import org.apache.shindig.gadgets.oauth2.sample.OAuth2MessageModule;
-import org.apache.shindig.gadgets.oauth2.sample.OAuth2TokenTypeHandlerModule;
+import org.apache.shindig.gadgets.oauth2.sample.OAuth2HandlerModule;
 import org.apache.shindig.gadgets.parse.ParseModule;
 import org.apache.shindig.gadgets.parse.caja.CajaHtmlParser;
 import org.apache.shindig.gadgets.parse.caja.CajaHtmlSerializer;
@@ -68,7 +68,7 @@ public class StyleTagProxyEmbeddedUrlsVisitorTest extends DomWalkerTestBase {
   public void setUp() throws Exception {
     super.setUp();
     injector = Guice.createInjector(
-        new PropertiesModule(), new DefaultGuiceModule(), new OAuthModule(), new OAuth2Module(), new OAuth2PersistenceModule(), new OAuth2MessageModule(), new OAuth2TokenTypeHandlerModule());
+        new PropertiesModule(), new DefaultGuiceModule(), new OAuthModule(), new OAuth2Module(), new OAuth2PersistenceModule(), new OAuth2MessageModule(), new OAuth2HandlerModule());
     ParseModule.DOMImplementationProvider domImpl =
         new ParseModule.DOMImplementationProvider();
     htmlParser = new CajaHtmlParser(domImpl.get());

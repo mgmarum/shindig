@@ -39,21 +39,28 @@ public class OAuth2Module extends AbstractModule {
     this.bind(OAuth2Request.class).toProvider(OAuth2RequestProvider.class);
   }
 
-
   public static class OAuth2RequestProvider implements Provider<OAuth2Request> {
     private final HttpFetcher fetcher;
     private final OAuth2FetcherConfig config;
     private final List<OAuth2TokenTypeHandler> tokenTypeHandlers;
+    private final List<OAuth2GrantTypeHandler> grantTypeHandlers;
+    private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
 
     @Inject
-    public OAuth2RequestProvider(final HttpFetcher fetcher, final OAuth2FetcherConfig config, final List<OAuth2TokenTypeHandler> tokenTypeHandlers) {
+    public OAuth2RequestProvider(final HttpFetcher fetcher, final OAuth2FetcherConfig config,
+        final List<OAuth2TokenTypeHandler> tokenTypeHandlers,
+        final List<OAuth2GrantTypeHandler> grantTypeHandlers,
+        final List<OAuth2ClientAuthenticationHandler> authenticationHandlers) {
       this.fetcher = fetcher;
       this.config = config;
       this.tokenTypeHandlers = tokenTypeHandlers;
+      this.grantTypeHandlers = grantTypeHandlers;
+      this.authenticationHandlers = authenticationHandlers;
     }
 
     public OAuth2Request get() {
-      return new BasicOAuth2Request(this.config, this.fetcher, this.tokenTypeHandlers);
+      return new BasicOAuth2Request(this.config, this.fetcher, this.tokenTypeHandlers,
+          this.grantTypeHandlers, this.authenticationHandlers);
     }
   }
 
@@ -71,8 +78,12 @@ public class OAuth2Module extends AbstractModule {
         final OAuth2Persister persister, final OAuth2Encrypter encrypter,
         final String globalRedirectUri,
         @Nullable @Named("shindig.contextroot") final String contextRoot,
-        final Provider<OAuth2Message> oauth2MessageProvider) {
-      this.store = new BasicOAuth2Store(cache, persister, oauth2MessageProvider);
+        final Provider<OAuth2Message> oauth2MessageProvider,
+        final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
+        final List<OAuth2GrantTypeHandler> grantTypeHandlers) {
+
+      this.store = new BasicOAuth2Store(cache, persister, oauth2MessageProvider,
+          authenticationHandlers, grantTypeHandlers);
 
       if (importFromConfig) {
         final OAuth2Persister source = new OAuth2PersisterImpl(encrypter, hostProvider,

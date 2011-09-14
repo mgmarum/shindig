@@ -17,8 +17,8 @@ import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.common.util.ResourceLoader;
 import org.apache.shindig.gadgets.oauth2.OAuth2Client;
-import org.apache.shindig.gadgets.oauth2.OAuth2Client.Flow;
 import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
+import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 import org.apache.shindig.gadgets.oauth2.OAuth2Provider;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token.Type;
@@ -40,22 +40,14 @@ import com.google.inject.name.Named;
 
 @Singleton
 public class OAuth2PersisterImpl implements OAuth2Persister {
-
-  private static final String CONSUMER_SECRET_KEY = "consumer_secret";
-  private static final String CONSUMER_KEY_KEY = "consumer_key";
-  private static final String REDIRECT_URI = "redirectURI";
+  private static final String NO_CLIENT_AUTHENTICATION = "NONE";
+  private static final String CLIENT_AUTHENTICATION = "client_authentication";
+  private static final String CLIENTS = "clients";
+  private static final String ENDPOINTS = "endpoints";
   private static final String TYPE = "type";
-  private static final String FLOW = "flow";
   private static final String AUTHORIZATION_URL = "authorizationUrl";
   private static final String TOKEN_URL = "tokenUrl";
-  private static final String CODE_FLOW = "code";
-  private static final String TOKEN_FLOW = "token";
-  private static final String CONFIDENTIAL_TYPE2 = "confidential";
-  private static final String PUBLIC_TYPE = "public";
-  private static final String ENDPOINTS = "endpoints";
-  private static final String CLIENTS = "clients";
   private static final String OAUTH2_CONFIG = "config/oauth2.json";
-  private static final String OAUTH2_IMPORT_CONFIG = "config/oauth2.json";
 
   private final OAuth2Encrypter encrypter;
   private final Provider<Authority> hostProvider;
@@ -89,14 +81,14 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
         for (final Iterator<?> j = clients.keys(); j.hasNext();) {
           String gadgetUri = (String) j.next();
           final JSONObject settings = clients.getJSONObject(gadgetUri);
-          String redirectUri = settings.optString(OAuth2PersisterImpl.REDIRECT_URI, null);
+          String redirectUri = settings.optString(OAuth2Message.REDIRECT_URI, null);
           if (redirectUri == null) {
             redirectUri = this.globalRedirectUri;
           }
-          final String secret = settings.optString(OAuth2PersisterImpl.CONSUMER_SECRET_KEY);
-          final String key = settings.getString(OAuth2PersisterImpl.CONSUMER_KEY_KEY);
+          final String secret = settings.optString(OAuth2Message.CLIENT_SECRET);
+          final String key = settings.getString(OAuth2Message.CLIENT_ID);
           final String typeS = settings.optString(OAuth2PersisterImpl.TYPE, null);
-          final String flowS = settings.optString(OAuth2PersisterImpl.FLOW, null);
+          String grantType = settings.optString(OAuth2Message.GRANT_TYPE, null);
           final OAuth2ClientPersistence client = new OAuth2ClientPersistence(this.encrypter);
 
           try {
@@ -120,18 +112,16 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
           }
           client.setRedirectUri(redirectUri);
 
-          Flow flow = Flow.UNKNOWN;
-          if (OAuth2PersisterImpl.CODE_FLOW.equals(flowS)) {
-            flow = Flow.CODE;
-          } else if (OAuth2PersisterImpl.TOKEN_FLOW.equals(flowS)) {
-            flow = Flow.TOKEN;
+          if ((grantType == null) || (grantType.length() == 0)) {
+            grantType = OAuth2Message.AUTHORIZATION;
           }
-          client.setFlow(flow);
+
+          client.setGrantType(grantType);
 
           OAuth2Client.Type type = OAuth2Client.Type.UNKNOWN;
-          if (OAuth2PersisterImpl.CONFIDENTIAL_TYPE2.equals(typeS)) {
+          if (OAuth2Message.CONFIDENTIAL_CLIENT_TYPE.equals(typeS)) {
             type = OAuth2Client.Type.CONFIDENTIAL;
-          } else if (OAuth2PersisterImpl.PUBLIC_TYPE.equals(typeS)) {
+          } else if (OAuth2Message.PUBLIC_CLIENT_TYPE.equals(typeS)) {
             type = OAuth2Client.Type.PUBLIC;
           }
           client.setType(type);
@@ -140,8 +130,10 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
         }
       }
     } catch (final JSONException e) {
+      e.printStackTrace();
       throw new OAuth2PersistenceException(e);
     } catch (final IOException e) {
+      e.printStackTrace();
       throw new OAuth2PersistenceException(e);
     }
 
@@ -159,7 +151,10 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
         final JSONObject provider = providers.getJSONObject(providerName);
         final JSONObject endpoints = provider.getJSONObject(OAuth2PersisterImpl.ENDPOINTS);
 
-        final int supportedProfiles = 0;
+        final String clientAuthenticationType = provider
+            .optString(OAuth2PersisterImpl.CLIENT_AUTHENTICATION,
+                OAuth2PersisterImpl.NO_CLIENT_AUTHENTICATION);
+
         String authorizationUrl = endpoints.optString(OAuth2PersisterImpl.AUTHORIZATION_URL, null);
 
         if ((this.hostProvider != null) && (authorizationUrl != null)) {
@@ -179,12 +174,15 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
         oauth2Provider.setName(providerName);
         oauth2Provider.setAuthorizationUrl(authorizationUrl);
         oauth2Provider.setTokenUrl(tokenUrl);
-        
+        oauth2Provider.setClientAuthenticationType(clientAuthenticationType);
+
         ret.add(oauth2Provider);
       }
     } catch (final JSONException e) {
+      e.printStackTrace();
       throw new OAuth2PersistenceException(e);
     } catch (final IOException e) {
+      e.printStackTrace();
       throw new OAuth2PersistenceException(e);
     }
 
@@ -234,11 +232,11 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
     return new OAuth2TokenPersistence(this.encrypter);
   }
 
-  public OAuth2Provider findProvider(Integer index) throws OAuth2PersistenceException {
+  public OAuth2Provider findProvider(final Integer index) throws OAuth2PersistenceException {
     return null;
   }
 
-  public OAuth2Client findClient(Integer index) throws OAuth2PersistenceException {
+  public OAuth2Client findClient(final Integer index) throws OAuth2PersistenceException {
     return null;
   }
 }
