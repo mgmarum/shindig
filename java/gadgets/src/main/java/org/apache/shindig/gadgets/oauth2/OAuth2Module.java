@@ -8,6 +8,8 @@
 
 package org.apache.shindig.gadgets.oauth2;
 
+import java.util.List;
+
 import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
@@ -41,15 +43,17 @@ public class OAuth2Module extends AbstractModule {
   public static class OAuth2RequestProvider implements Provider<OAuth2Request> {
     private final HttpFetcher fetcher;
     private final OAuth2FetcherConfig config;
+    private final List<OAuth2TokenTypeHandler> tokenTypeHandlers;
 
     @Inject
-    public OAuth2RequestProvider(final HttpFetcher fetcher, final OAuth2FetcherConfig config) {
+    public OAuth2RequestProvider(final HttpFetcher fetcher, final OAuth2FetcherConfig config, final List<OAuth2TokenTypeHandler> tokenTypeHandlers) {
       this.fetcher = fetcher;
       this.config = config;
+      this.tokenTypeHandlers = tokenTypeHandlers;
     }
 
     public OAuth2Request get() {
-      return new OAuth2Request(this.config, this.fetcher);
+      return new BasicOAuth2Request(this.config, this.fetcher, this.tokenTypeHandlers);
     }
   }
 

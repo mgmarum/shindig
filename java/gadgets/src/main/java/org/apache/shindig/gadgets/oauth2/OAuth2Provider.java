@@ -12,20 +12,15 @@ import java.io.Serializable;
 //NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public interface OAuth2Provider extends Serializable {
-  public String getName();
-
-  public void setName(String name);
-
   public String getAuthorizationUrl();
 
-  public void setAuthorizationUrl(String authorizationUrl);
+  public String getName();
 
   public String getTokenUrl();
 
+  public void setAuthorizationUrl(String authorizationUrl);
+
+  public void setName(String name);
+
   public void setTokenUrl(String tokenUrl);
-
-  public int getSupportedProfiles();
-
-  public void setSupportedProfiles(int supportedProfiles);
-
 }

@@ -8,39 +8,35 @@ public interface OAuth2Token extends Serializable {
     ACCESS, REFRESH
   }
 
-  public Type getType();
-
-  public void setType(Type type);
-
-  public String getSecret();
-
-  public void setSecret(String secret) throws OAuth2EncryptionException;
-
-  public String getEncryptedSecret();
-
-  public void setEncryptedSecret(String encryptedSecret) throws OAuth2EncryptionException;
-
-  public String getProviderName();
-
-  public void setProviderName(String providerName);
+  public int getExpiresIn();
 
   public String getGadgetUri();
 
-  public void setGadgetUri(String gadgetUri);
-
-  public String getUser();
-
-  public void setUser(String user);
+  public String getProviderName();
 
   public String getScope();
 
-  public void setScope(String scope);
-
-  public int getExpiresIn();
-
-  public void setExpiresIn(int expiresIn);
+  public String getSecret();
 
   public String getTokenType();
 
+  public Type getType();
+
+  public String getUser();
+
+  public void setExpiresIn(int expiresIn);
+
+  public void setGadgetUri(String gadgetUri);
+
+  public void setProviderName(String providerName);
+
+  public void setScope(String scope);
+
+  public void setSecret(String secret) throws OAuth2EncryptionException;
+
   public void setTokenType(String tokenType);
+
+  public void setType(Type type);
+
+  public void setUser(String user);
 }

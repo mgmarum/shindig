@@ -24,7 +24,8 @@ public interface OAuth2Message {
   public final static String INVALID_SCOPE = "invalid_scope";
   public final static String SERVER_ERROR = "server_error";
   public final static String TEMPORARILY_UNAVAILABLE = "temporarily_unavailable";
-
+  public final static String BEARER_TOKEN_TYPE = "Bearer";
+  
   public String getAccessToken();
 
   public String getAuthorization();

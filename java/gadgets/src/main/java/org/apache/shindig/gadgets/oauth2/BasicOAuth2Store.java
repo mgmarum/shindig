@@ -32,7 +32,8 @@ public class BasicOAuth2Store implements OAuth2Store {
   private final Provider<OAuth2Message> oauth2MessageProvider;
 
   @Inject
-  public BasicOAuth2Store(final OAuth2Cache cache, final OAuth2Persister persister, final Provider<OAuth2Message> oauth2MessageProvider) {
+  public BasicOAuth2Store(final OAuth2Cache cache, final OAuth2Persister persister,
+      final Provider<OAuth2Message> oauth2MessageProvider) {
     this.cache = cache;
     this.persister = persister;
     this.oauth2MessageProvider = oauth2MessageProvider;
@@ -101,11 +102,13 @@ public class BasicOAuth2Store implements OAuth2Store {
     return client;
   }
 
-  public OAuth2Token getToken(final Integer index) throws GadgetException {
+  public OAuth2Token getToken(final String providerName, final String gadgetUri, final String user,
+      final String scope, final OAuth2Token.Type type) throws GadgetException {
+    Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
     OAuth2Token token = this.cache.getToken(index);
     if (token == null) {
       try {
-        token = this.persister.findToken(index);
+        token = this.persister.findToken(providerName, gadgetUri, user, scope, type);
         if (token != null) {
           this.cache.storeToken(index, token);
         }
@@ -118,27 +121,25 @@ public class BasicOAuth2Store implements OAuth2Store {
     return token;
   }
 
-  public OAuth2Token getToken(final String providerName, final String gadgetUri, final String user,
-      final String scope, final OAuth2Token.Type type) throws GadgetException {
-    final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
-    return this.getToken(index);
-  }
-
   public void setToken(final OAuth2Token token) throws GadgetException {
-    final Integer index = this.cache.getTokenIndex(token);
-    final OAuth2Token existingToken = this.getToken(index);
-    try {
-      if (existingToken == null) {
-        this.persister.insertToken(token);
-      } else {
-        this.cache.removeToken(index);
-        this.persister.updateToken(token);
+    if (token != null) {
+      final Integer index = this.cache.getTokenIndex(token);
+      final OAuth2Token existingToken = this.getToken(token.getProviderName(), token.getGadgetUri(), token.getUser(), token.getScope(), token.getType());
+      try {
+        if (existingToken == null) {
+          this.persister.insertToken(token);
+        } else {
+          this.cache.removeToken(index);
+          this.persister.updateToken(token);
+        }
+        this.cache.storeToken(index, token);
+      } catch (final OAuth2CacheException e) {
+        throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error storing OAuth2 token " + index,
+            e);
+      } catch (final OAuth2PersistenceException e) {
+        throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error storing OAuth2 token " + index,
+            e);
       }
-      this.cache.storeToken(index, token);
-    } catch (final OAuth2CacheException e) {
-      throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error storing OAuth2 token " + index, e);
-    } catch (final OAuth2PersistenceException e) {
-      throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error storing OAuth2 token " + index, e);
     }
   }
 
@@ -187,8 +188,8 @@ public class BasicOAuth2Store implements OAuth2Store {
   public OAuth2CallbackState createOAuth2CallbackState(final OAuth2Accessor accessor,
       final OAuth2Client client, final Flow flow, final SecurityToken securityToken,
       final HttpFetcher fetcher) {
-    final OAuth2CallbackState ret = new OAuth2CallbackState(accessor, client, flow,
-        securityToken, fetcher, this.oauth2MessageProvider);
+    final OAuth2CallbackState ret = new OAuth2CallbackState(accessor, client, flow, securityToken,
+        fetcher, this.oauth2MessageProvider);
     final Integer stateKey = ret.getStateKey();
     this.cache.storeOAuth2CallbackState(stateKey, ret);
     return ret;

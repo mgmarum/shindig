@@ -8,16 +8,27 @@
 
 package org.apache.shindig.gadgets.oauth2.sample;
 
+import java.util.List;
+
 import org.apache.shindig.gadgets.oauth2.OAuth2TokenTypeHandler;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public class OAuth2TokenTypeHandlerModule extends AbstractModule {
-
+  
   @Override
   protected void configure() {
-    this.bind(OAuth2TokenTypeHandler.class).to(BearerTokenHandler.class);
+  }
+  
+  @Provides
+  @Singleton
+  List<OAuth2TokenTypeHandler> provideTokenHandlers(
+          final BearerTokenHandler bearerTokenHandler) {
+      return ImmutableList.of((OAuth2TokenTypeHandler) bearerTokenHandler);
   }
 }

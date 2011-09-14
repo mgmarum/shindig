@@ -14,42 +14,38 @@ import java.io.Serializable;
 
 public interface OAuth2Client extends Serializable {
   public enum Flow {
-    UNKNOWN, CODE, TOKEN
+    CODE, TOKEN, UNKNOWN
   }
 
   public enum Type {
-    UNKNOWN, CONFIDENTIAL, PUBLIC
+    CONFIDENTIAL, PUBLIC, UNKNOWN
   }
-
-  public String getProviderName();
-
-  public void setProviderName(String providerName);
-
-  public String getRedirectUri();
-
-  public void setRedirectUri(String redirectUri);
-
-  public String getGadgetUri();
-
-  public void setGadgetUri(String gadgetUri);
-
-  public String getKey();
-
-  public void setKey(String key);
-
-  public String getSecret();
-
-  public void setSecret(final String secret) throws OAuth2EncryptionException;
-
-  public String getEncryptedSecret();
-
-  public void setEncryptedSecret(String encryptedSecret) throws OAuth2EncryptionException;
 
   public Flow getFlow();
 
-  public void setFlow(Flow flow);
+  public String getGadgetUri();
+
+  public String getKey();
+
+  public String getProviderName();
+
+  public String getRedirectUri();
+
+  public String getSecret();
 
   public Type getType();
+
+  public void setFlow(Flow flow);
+
+  public void setGadgetUri(String gadgetUri);
+
+  public void setKey(String key);
+
+  public void setProviderName(String providerName);
+
+  public void setRedirectUri(String redirectUri);
+
+  public void setSecret(final String secret) throws OAuth2EncryptionException;
 
   public void setType(Type type);
 }

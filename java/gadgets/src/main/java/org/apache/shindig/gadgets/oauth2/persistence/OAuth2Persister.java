@@ -29,16 +29,16 @@ public interface OAuth2Persister {
   OAuth2Token findToken(String providerName, String gadgetUri, String user, String scope,
       OAuth2Token.Type type) throws OAuth2PersistenceException;
 
-  OAuth2Token findToken(Integer index) throws OAuth2PersistenceException;
-
-  OAuth2Provider findProvider(Integer index) throws OAuth2PersistenceException;
-
-  OAuth2Client findClient(Integer index) throws OAuth2PersistenceException;
+//  OAuth2Token findToken(Integer index) throws OAuth2PersistenceException;
+//
+//  OAuth2Provider findProvider(Integer index) throws OAuth2PersistenceException;
+//
+//  OAuth2Client findClient(Integer index) throws OAuth2PersistenceException;
 
   boolean removeToken(String providerName, String gadgetUri, String user, String scope,
       OAuth2Token.Type type) throws OAuth2PersistenceException;
 
-  boolean removeToken(Integer index) throws OAuth2PersistenceException;
+//  boolean removeToken(Integer index) throws OAuth2PersistenceException;
 
   void insertToken(OAuth2Token token) throws OAuth2PersistenceException;
 

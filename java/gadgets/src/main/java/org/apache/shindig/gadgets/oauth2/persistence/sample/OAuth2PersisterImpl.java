@@ -97,7 +97,7 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
           final String key = settings.getString(OAuth2PersisterImpl.CONSUMER_KEY_KEY);
           final String typeS = settings.optString(OAuth2PersisterImpl.TYPE, null);
           final String flowS = settings.optString(OAuth2PersisterImpl.FLOW, null);
-          final OAuth2Client client = new OAuth2ClientPersistence(this.encrypter);
+          final OAuth2ClientPersistence client = new OAuth2ClientPersistence(this.encrypter);
 
           try {
             client.setEncryptedSecret(secret);
@@ -179,7 +179,6 @@ public class OAuth2PersisterImpl implements OAuth2Persister {
         oauth2Provider.setName(providerName);
         oauth2Provider.setAuthorizationUrl(authorizationUrl);
         oauth2Provider.setTokenUrl(tokenUrl);
-        oauth2Provider.setSupportedProfiles(supportedProfiles);  // TODO ARC
         
         ret.add(oauth2Provider);
       }
