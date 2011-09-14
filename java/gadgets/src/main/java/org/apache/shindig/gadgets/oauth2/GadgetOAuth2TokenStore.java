@@ -8,6 +8,7 @@
 package org.apache.shindig.gadgets.oauth2;
 
 import org.apache.shindig.auth.SecurityToken;
+import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.GadgetContext;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.GadgetSpecFactory;
@@ -34,7 +35,7 @@ public class GadgetOAuth2TokenStore {
 
   public OAuth2Accessor getOAuth2Accessor(final SecurityToken securityToken,
       final OAuth2Arguments arguments, final OAuth2FetcherConfig fetcherConfig,
-      final HttpFetcher fetcher) throws OAuth2RequestException {
+      final HttpFetcher fetcher, final Uri gadgetUri) throws OAuth2RequestException {
 
     if ((this.store == null) || (arguments == null) || (fetcherConfig == null) || (fetcher == null)) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
@@ -61,7 +62,7 @@ public class GadgetOAuth2TokenStore {
 
     OAuth2Client client;
     try {
-      client = this.store.getClient(provider.getName(), securityToken.getAppUrl());
+      client = this.store.getClient(provider.getName(), gadgetUri.toString());
     } catch (final GadgetException e) {
       gadgetException = e;
       client = null;
@@ -73,12 +74,12 @@ public class GadgetOAuth2TokenStore {
               + securityToken.getAppUrl(), gadgetException);
     }
 
-    final OAuth2SpecInfo specInfo = this.lookupSpecInfo(securityToken, arguments, provider, client);
+    final OAuth2SpecInfo specInfo = this.lookupSpecInfo(securityToken, arguments, provider, client, gadgetUri);
 
     if (specInfo == null) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
           "OAuth2Accessor unable to retrieve specinfo " + provider.getName() + " , "
-              + securityToken.getAppUrl(), gadgetException);
+              + gadgetUri.toString(), gadgetException);
     }
 
     final OAuth2Accessor ret = new OAuth2Accessor(provider, client, this.store, securityToken,
@@ -115,9 +116,9 @@ public class GadgetOAuth2TokenStore {
   }
 
   private OAuth2SpecInfo lookupSpecInfo(final SecurityToken securityToken,
-      final OAuth2Arguments arguments, final OAuth2Provider provider, final OAuth2Client client)
+      final OAuth2Arguments arguments, final OAuth2Provider provider, final OAuth2Client client, final Uri gadgetUri)
       throws OAuth2RequestException {
-    final GadgetSpec spec = this.findSpec(securityToken, arguments);
+    final GadgetSpec spec = this.findSpec(securityToken, arguments, gadgetUri);
     final OAuth2Spec oauthSpec = spec.getModulePrefs().getOAuth2Spec();
     if (oauthSpec == null) {
       throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_CONFIGURATION,
@@ -154,10 +155,10 @@ public class GadgetOAuth2TokenStore {
     return new OAuth2SpecInfo(authorizationUrl, clientId, redirectUri, tokenUrl, service.getScope());
   }
 
-  private GadgetSpec findSpec(final SecurityToken securityToken, final OAuth2Arguments arguments)
+  private GadgetSpec findSpec(final SecurityToken securityToken, final OAuth2Arguments arguments, final Uri gadgetUri)
       throws OAuth2RequestException {
     try {
-      final GadgetContext context = new OAuth2GadgetContext(securityToken, arguments);
+      final GadgetContext context = new OAuth2GadgetContext(securityToken, arguments, gadgetUri);
       return this.specFactory.getGadgetSpec(context);
     } catch (final IllegalArgumentException e) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,

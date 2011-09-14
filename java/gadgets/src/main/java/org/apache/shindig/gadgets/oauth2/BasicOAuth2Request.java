@@ -85,7 +85,7 @@ public class BasicOAuth2Request implements OAuth2Request {
     try {
       this.accessor = this.fetcherConfig.getTokenStore().getOAuth2Accessor(
           this.realRequest.getSecurityToken(), this.realRequest.getOAuth2Arguments(),
-          this.fetcherConfig, this.fetcher);
+          this.fetcherConfig, this.fetcher, this.realRequest.getGadget());
       this.callbackState = this.accessor.getCallbackState();
       response = this.fetchWithRetry();
     } catch (final OAuth2RequestException e) {
