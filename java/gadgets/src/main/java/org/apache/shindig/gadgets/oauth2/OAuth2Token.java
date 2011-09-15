@@ -11,7 +11,7 @@ public interface OAuth2Token extends Serializable {
 
   public String getGadgetUri();
 
-  public String getProviderName();
+  public String getServiceName();
 
   public String getScope();
 
@@ -27,7 +27,7 @@ public interface OAuth2Token extends Serializable {
 
   public void setGadgetUri(String gadgetUri);
 
-  public void setProviderName(String providerName);
+  public void setServiceName(String serviceName);
 
   public void setScope(String scope);
 

@@ -18,7 +18,6 @@ import org.apache.shindig.gadgets.http.HttpFetcher;
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public class OAuth2Accessor {
-  private final OAuth2Provider provider;
   private final OAuth2Client client;
   private final OAuth2Store store;
   private final SecurityToken securityToken;
@@ -36,9 +35,8 @@ public class OAuth2Accessor {
   private final OAuth2CallbackState callbackState;
   private final HttpFetcher fetcher;
 
-  public OAuth2Accessor(final OAuth2Provider provider, final OAuth2Client client,
+  public OAuth2Accessor(final OAuth2Client client,
       final OAuth2Store store, final SecurityToken securityToken, final HttpFetcher fetcher) {
-    this.provider = provider;
     this.client = client;
     this.store = store;
     this.securityToken = securityToken;
@@ -84,7 +82,7 @@ public class OAuth2Accessor {
   public OAuth2Token getAccessToken() {
     if ((this.accessToken == null) && (this.client != null)) {
       try {
-        this.accessToken = this.store.getToken(this.client.getProviderName(),
+        this.accessToken = this.store.getToken(this.client.getServiceName(),
             this.client.getGadgetUri(), this.securityToken.getViewerId(), this.scope,
             OAuth2Token.Type.ACCESS);
       } catch (final GadgetException e) {
@@ -101,7 +99,7 @@ public class OAuth2Accessor {
   public OAuth2Token getRefreshToken() {
     if ((this.refreshToken == null) && (this.client != null)) {
       try {
-        this.refreshToken = this.store.getToken(this.client.getProviderName(),
+        this.refreshToken = this.store.getToken(this.client.getServiceName(),
             this.client.getGadgetUri(), this.securityToken.getViewerId(), this.scope,
             OAuth2Token.Type.REFRESH);
       } catch (final GadgetException e) {
@@ -145,10 +143,6 @@ public class OAuth2Accessor {
 
   public void setGrantType(final String grantType) {
     this.grantType = grantType;
-  }
-
-  public OAuth2Provider getProvider() {
-    return this.provider;
   }
 
   public OAuth2Client getClient() {

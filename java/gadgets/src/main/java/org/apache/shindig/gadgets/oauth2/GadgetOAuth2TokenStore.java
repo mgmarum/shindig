@@ -45,24 +45,10 @@ public class GadgetOAuth2TokenStore {
 
     final String serviceName = arguments.getServiceName();
 
-    OAuth2Provider provider;
     GadgetException gadgetException = null;
+    OAuth2Client client = null;
     try {
-      provider = this.store.getProvider(serviceName);
-    } catch (final GadgetException e) {
-      gadgetException = e;
-      provider = null;
-    }
-
-    if (provider == null) {
-      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
-          "OAuth2Accessor unable to retrieve provider " + serviceName, gadgetException);
-
-    }
-
-    OAuth2Client client;
-    try {
-      client = this.store.getClient(provider.getName(), gadgetUri.toString());
+      client = this.store.getClient(serviceName, gadgetUri.toString());
     } catch (final GadgetException e) {
       gadgetException = e;
       client = null;
@@ -70,19 +56,19 @@ public class GadgetOAuth2TokenStore {
 
     if (client == null) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
-          "OAuth2Accessor unable to retrieve client " + provider.getName() + " , "
+          "OAuth2Accessor unable to retrieve client " + serviceName + " , "
               + securityToken.getAppUrl(), gadgetException);
     }
 
-    final OAuth2SpecInfo specInfo = this.lookupSpecInfo(securityToken, arguments, provider, client, gadgetUri);
+    final OAuth2SpecInfo specInfo = this.lookupSpecInfo(securityToken, arguments, client, gadgetUri);
 
     if (specInfo == null) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
-          "OAuth2Accessor unable to retrieve specinfo " + provider.getName() + " , "
+          "OAuth2Accessor unable to retrieve specinfo " + serviceName + " , "
               + gadgetUri.toString(), gadgetException);
     }
 
-    final OAuth2Accessor ret = new OAuth2Accessor(provider, client, this.store, securityToken,
+    final OAuth2Accessor ret = new OAuth2Accessor(client, this.store, securityToken,
         fetcher);
 
     ret.setAuthorizationUrl(specInfo.getAuthorizationUrl());
@@ -94,14 +80,14 @@ public class GadgetOAuth2TokenStore {
     ret.setGrantType(client.getGrantType());
 
     try {
-      final OAuth2Token accessToken = this.store.getToken(provider.getName(),
+      final OAuth2Token accessToken = this.store.getToken(serviceName,
           client.getGadgetUri(), securityToken.getViewerId(), specInfo.getScope(),
           OAuth2Token.Type.ACCESS);
       if (accessToken != null) {
         ret.setAccessToken(accessToken);
       }
 
-      final OAuth2Token refreshToken = this.store.getToken(provider.getName(),
+      final OAuth2Token refreshToken = this.store.getToken(serviceName,
           client.getGadgetUri(), securityToken.getViewerId(), specInfo.getScope(),
           OAuth2Token.Type.REFRESH);
       if (refreshToken != null) {
@@ -109,14 +95,14 @@ public class GadgetOAuth2TokenStore {
       }
     } catch (final GadgetException e) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "Unable to retrieve token "
-          + provider.getName() + " , " + securityToken.getAppUrl(), e);
+          + serviceName + " , " + securityToken.getAppUrl(), e);
     }
 
     return ret;
   }
 
   private OAuth2SpecInfo lookupSpecInfo(final SecurityToken securityToken,
-      final OAuth2Arguments arguments, final OAuth2Provider provider, final OAuth2Client client, final Uri gadgetUri)
+      final OAuth2Arguments arguments, final OAuth2Client client, final Uri gadgetUri)
       throws OAuth2RequestException {
     final GadgetSpec spec = this.findSpec(securityToken, arguments, gadgetUri);
     final OAuth2Spec oauthSpec = spec.getModulePrefs().getOAuth2Spec();
@@ -133,13 +119,13 @@ public class GadgetOAuth2TokenStore {
               + Joiner.on(',').join(oauthSpec.getServices().keySet()) + '.');
     }
 
-    final String clientId = client.getKey();
+    final String clientId = client.getClientId();
     final String redirectUri = client.getRedirectUri();
 
     String authorizationUrl = null;
     final EndPoint authorizationUrlEndpoint = service.getAuthorizationUrl();
     if (authorizationUrlEndpoint == null) {
-      authorizationUrl = provider.getAuthorizationUrl();
+      authorizationUrl = client.getAuthorizationUrl();
     } else {
       authorizationUrl = authorizationUrlEndpoint.url.toString();
     }
@@ -147,7 +133,7 @@ public class GadgetOAuth2TokenStore {
     String tokenUrl = null;
     final EndPoint tokenUrlEndpoint = service.getTokenUrl();
     if (tokenUrlEndpoint == null) {
-      tokenUrl = provider.getTokenUrl();
+      tokenUrl = client.getTokenUrl();
     } else {
       tokenUrl = tokenUrlEndpoint.url.toString();
     }

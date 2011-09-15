@@ -16,8 +16,9 @@ import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Encrypter;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2PersistenceException;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
-import org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersisterImpl;
+import org.apache.shindig.gadgets.oauth2.persistence.sample.JSONOAuth2Persister;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -86,9 +87,13 @@ public class OAuth2Module extends AbstractModule {
           authenticationHandlers, grantTypeHandlers);
 
       if (importFromConfig) {
-        final OAuth2Persister source = new OAuth2PersisterImpl(encrypter, hostProvider,
-            globalRedirectUri, contextRoot);
-        this.store.runImport(source, persister, importClean);
+        try {
+          final OAuth2Persister source = new JSONOAuth2Persister(encrypter, hostProvider,
+              globalRedirectUri, contextRoot);
+          this.store.runImport(source, persister, importClean);
+        } catch (final OAuth2PersistenceException e) {
+          e.printStackTrace();
+        }
       }
 
       try {

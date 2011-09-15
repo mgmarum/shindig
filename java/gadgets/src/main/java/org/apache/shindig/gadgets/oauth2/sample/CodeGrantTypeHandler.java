@@ -34,8 +34,8 @@ public class CodeGrantTypeHandler implements OAuth2GrantTypeHandler {
     queryParams.put(OAuth2Message.AUTHORIZATION, authorizationCode);
     queryParams.put(OAuth2Message.REDIRECT_URI, accessor.getClient().getRedirectUri());
 
-    final String clientId = accessor.getClient().getKey();
-    final String secret = accessor.getClient().getSecret();
+    final String clientId = accessor.getClient().getClientId();
+    final String secret = accessor.getClient().getClientSecret();
     queryParams.put(OAuth2Message.CLIENT_ID, clientId);
     queryParams.put(OAuth2Message.CLIENT_SECRET, secret);
 

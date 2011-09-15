@@ -7,9 +7,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class OAuth2EncrypterImpl implements OAuth2Encrypter {
+public class NoOpEncrypter implements OAuth2Encrypter {
   @Inject
-  public OAuth2EncrypterImpl() {
+  public NoOpEncrypter() {
 
   }
 

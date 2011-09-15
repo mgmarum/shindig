@@ -1,12 +1,12 @@
 <Module>
-  <ModulePrefs title="Demo OAuth2 Implicit Gadget (Simple pull from Google Contacts)">
+  <ModulePrefs title="Demo OAuth2 Authorization Code Gadget (Simple pull from Facebook Friends">
     <OAuth2>
-      <Service name="googleAPI" scope="https://www.google.com/m8/feeds/" >
+      <Service name="facebook" scope="user_about_me" >
      </Service>
     </OAuth2>
     <Require feature="oauthpopup" />
 	<!-- using google contacts api as an example-->
-    <Preload authz="oauth2" oauth_service_name="googleAPI" href="https://www.google.com/m8/feeds/contacts/default/full" />
+    <Preload authz="oauth2" oauth_service_name="facebook" href="https://graph.facebook.com/me/friends" />
   </ModulePrefs>
   <Content type="html">
       <![CDATA[
@@ -51,7 +51,7 @@
       }
 
       function fetchData() {
-        url = "https://www.google.com/m8/feeds/contacts/default/full";
+        url = "https://graph.facebook.com/me/friends";
         var params = {};
         params[gadgets.io.RequestParameters.CONTENT_TYPE] =
           gadgets.io.ContentType.TEXT;
@@ -59,7 +59,7 @@
           gadgets.io.AuthorizationType.OAUTH2;
         params[gadgets.io.RequestParameters.METHOD] =
           gadgets.io.MethodType.GET;
-        params[gadgets.io.RequestParameters.OAUTH_SERVICE_NAME] = "googleAPI";
+        params[gadgets.io.RequestParameters.OAUTH_SERVICE_NAME] = "facebook";
         params[gadgets.io.RequestParameters.REFRESH_INTERVAL] = "0";
 
         gadgets.io.makeRequest(url, function (response) {

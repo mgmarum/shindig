@@ -18,8 +18,8 @@ import com.google.inject.AbstractModule;
 public class OAuth2PersistenceModule extends AbstractModule {
   @Override
   protected void configure() {
-    this.bind(OAuth2Persister.class).to(OAuth2PersisterImpl.class);
-    this.bind(OAuth2Cache.class).to(OAuth2CacheImpl.class);
-    this.bind(OAuth2Encrypter.class).to(OAuth2EncrypterImpl.class);
+    this.bind(OAuth2Persister.class).to(JSONOAuth2Persister.class);
+    this.bind(OAuth2Cache.class).to(InMemoryCache.class);
+    this.bind(OAuth2Encrypter.class).to(NoOpEncrypter.class);
   }
 }

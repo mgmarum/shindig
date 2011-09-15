@@ -1,66 +1,107 @@
-/*
- * This file is intended to be contributed back to the
- * Open Source Shindig project.  (Or at least submitted
- * for review.)  
- * 
- * NO IBM CONFIDENTIAL CODE OR INFORMATION!
- */
-
+/*******************************************************************************
+ * OAuth2Client persistence for the default OAuth2Persister                    *
+ *    org.apache.shindig.gadgets.oauth2.persistence.sample.JSONOAuth2Persister *
+ *                                                                             *
+ * Used in conjunction with the OAuth2 <ModulePrefs> described in:             *
+ *                                                                             *
+ *    http://code.google.com/p/opensocial-resources/issues/detail?id=1209      *
+ *                                                                             *
+ * to attain the information necessary to complete the request when a Gadget   *
+ * issues a makeRequest()
+ *                                                                             *
+ *                                                                             *
+ ******************************************************************************* 
+**/
 {
-   "googleAPI" : {
-        "client_authentication"   : "NONE",   
-            
-        "endpoints" : {
-            "authorizationUrl"        : "https://accounts.google.com/o/oauth2/auth",
-            "tokenUrl"                : "https://accounts.google.com/o/oauth2/token"
-        },
-        
-       "clients" : {
-           "http://%authority%%contextRoot%/samplecontainer/examples/oauth2_code.xml" : {
-                "redirect_uri" : "http://%authority%%contextRoot%/gadgets/oauth2callback",
-                "type" : "confidential",
-                "grant_type" : "code",
-                "client_id" : "756575909974-nq6e6p8au376tjj599o5fjd37kiibjeq.apps.googleusercontent.com",
-                "client_secret" : "5MrCHchhauFpkNbutJBunzQ6"
-           }       
-       }
+   "gadgetBindings" : {
+      "%origin%%contextRoot%/samplecontainer/examples/oauth2/oauth2_google.xml" : {
+         "googleAPI" : {
+            "clientName"          : "googleApi_client1",
+            "allowModuleOverride" : "true"
+         }
+      },
+      "%origin%%contextRoot%/samplecontainer/examples/oauth2/oauth2_facebook.xml" : {
+          "facebook" : {
+             "clientName"          : "facebook_client1",
+             "allowModuleOverride" : "true"
+          }
+      },
+      "%origin%%contextRoot%/samplecontainer/examples/oauth2/shindig_authorization.xml" : {
+         "shindigOAuth2Provider" : {
+            "clientName"          : "shindig_client1",
+            "allowModuleOverride" : "true"
+         }
+      },
+      "%origin%%contextRoot%/samplecontainer/examples/oauth2/shindig_client_credentials.xml" : {
+         "shindigOAuth2Provider" : {
+            "clientName"          : "shindig_client2",
+            "allowModuleOverride" : "true"
+         }
+      }      
    },
    
-   "facebook" : {
-        "client_authentication"   : "NONE",
+   "clients" : {
+      "googleApi_client1" : {
+         "providerName"  : "googleAPI",
+         "redirect_uri"  : "http://%authority%%contextRoot%/gadgets/oauth2callback",
+         "type"          : "confidential",
+         "grant_type"    : "code",
+         "client_id"     : "756575909974-nq6e6p8au376tjj599o5fjd37kiibjeq.apps.googleusercontent.com",
+         "client_secret" : "5MrCHchhauFpkNbutJBunzQ6"
+      },
+      
+      "facebook_client1" : {
+         "providerName"  : "facebook",
+         "redirect_uri"  : "http://%authority%%contextRoot%/gadgets/oauth2callback",
+         "type"          : "confidential",
+         "grant_type"    : "code",
+         "client_id"     : "140338476061882",
+         "client_secret" : "e94b4aa758947760b09f2f872d70740b"
+      },
+      
+      "shindig_client1" : {
+         "providerName"  : "shindigOAuth2Provider",
+         "type"          : "confidential",
+         "grant_type"    : "code",
+         "client_id"     : "shindigClient",
+         "client_secret" : "U78KJM98372AMGL87612993M"
+      },
+      
+      
+      "shindig_client2" : {
+         "providerName"  : "shindigOAuth2Provider",
+         "type"          : "confidential",
+         "grant_type"    : "client_credentials",
+         "client_id"     : "testClientCredentialsClient",
+         "client_secret" : "clientCredentialsClient_secret"
+      }                      
+   },
+   
+   "providers" : {
+      "googleAPI" : {
+        "client_authentication" : "STANDARD",   
+            
+        "endpoints" : {
+            "authorizationUrl"  : "https://accounts.google.com/o/oauth2/auth",
+            "tokenUrl"          : "https://accounts.google.com/o/oauth2/token"
+        }
+      },
+      
+      "facebook" : {
+         "client_authentication" : "STANDARD",
                
         "endpoints" : {
-            "authorizationUrl" : "https://www.facebook.com/dialog/oauth",
-            "tokenUrl"         : "https://graph.facebook.com/oauth/access_token"
-        },
-        
-       "clients" : {
-           "http://%authority%%contextRoot%/samplecontainer/examples/oauth2_facebook.xml" : {
-                "redirect_uri" : "http://%authority%%contextRoot%/gadgets/oauth2callback",
-                "type" : "confidential",
-                "grant_type" : "code",
-                "client_id" : "140338476061882",
-                "client_secret" : "e94b4aa758947760b09f2f872d70740b"
-           }
-       }
-    },
-    
-    "shindigOAuth2Provider" : {
-       	"client_authentication"   : "NONE",
-		"endpoints" : {
-        	"authorizationUrl" : "%origin%%contextRoot%/oauth2/authorize",
-        	"tokenUrl"         : "%origin%%contextRoot%/oauth2/token"
-        },
-		"clients" : {
-        	"%origin%%contextRoot%/samplecontainer/examples/oauth2/shindig_authorization.xml" : {
-           		"redirectURI" : "%origin%%contextRoot%/gadgets/oauth2callback",
-                "type" : "confidential",
-                "flow" : "code",
-                "client_id" : "shindigClient",
-                "client_secret" : "U78KJM98372AMGL87612993M"
-           }        
-       }
-   }      
+            "authorizationUrl"   : "https://www.facebook.com/dialog/oauth",
+            "tokenUrl"           : "https://graph.facebook.com/oauth/access_token"
+        }
+      },
+      
+      "shindigOAuth2Provider" : {
+         "client_authentication" : "STANDARD",
+		 "endpoints" : {
+            "authorizationUrl"   : "%origin%%contextRoot%/oauth2/authorize",
+            "tokenUrl"           : "%origin%%contextRoot%/oauth2/token"
+         }
+      }
+   }
 }
-  
-

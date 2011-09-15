@@ -180,7 +180,7 @@ public class BasicOAuth2Request implements OAuth2Request {
   }
 
   private void buildAuthorizationUrl() throws OAuth2RequestException {
-    final String authUrl = this.accessor.getProvider().getAuthorizationUrl();
+    final String authUrl = this.accessor.getClient().getAuthorizationUrl();
     if (authUrl == null) {
       throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_TOKEN_URL, "authorization");
     }

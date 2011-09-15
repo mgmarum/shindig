@@ -179,8 +179,8 @@ public class OAuth2CallbackState implements Serializable {
     request.setMethod("POST");
     request.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
 
-    final String clientId = this.client.getKey();
-    final String secret = this.client.getSecret();
+    final String clientId = this.client.getClientId();
+    final String secret = this.client.getClientSecret();
 
     request.setHeader(OAuth2Message.CLIENT_ID, clientId);
     request.setHeader(OAuth2Message.CLIENT_SECRET, secret);
@@ -189,7 +189,7 @@ public class OAuth2CallbackState implements Serializable {
 
     for (final OAuth2ClientAuthenticationHandler authenticationHandler : this.authenticationHandlers) {
       if (authenticationHandler.geClientAuthenticationType().equalsIgnoreCase(
-          this.accessor.getProvider().getClientAuthenticationType())) {
+          this.client.getClientAuthenticationType())) {
         authenticationHandler.addOAuth2Authentication(request, this.accessor);
       }
     }
@@ -214,7 +214,7 @@ public class OAuth2CallbackState implements Serializable {
         final String refreshToken = msg.getRefreshToken();
         final String expiresIn = msg.getExpiresIn();
         final String tokenType = msg.getTokenType();
-        final String providerName = this.client.getProviderName();
+        final String serviceName = this.client.getServiceName();
         final String gadgetUri = this.client.getGadgetUri();
         final String scope = this.accessor.getScope();
         final String user = this.securityToken.getViewerId();
@@ -229,7 +229,7 @@ public class OAuth2CallbackState implements Serializable {
             storedAccessToken.setExpiresIn(0);
           }
           storedAccessToken.setGadgetUri(gadgetUri);
-          storedAccessToken.setProviderName(providerName);
+          storedAccessToken.setServiceName(serviceName);
           storedAccessToken.setScope(scope);
           storedAccessToken.setSecret(accessToken);
           storedAccessToken.setTokenType(tokenType);
@@ -242,7 +242,7 @@ public class OAuth2CallbackState implements Serializable {
           final OAuth2Token storedRefreshToken = store.createToken();
           storedRefreshToken.setExpiresIn(0);
           storedRefreshToken.setGadgetUri(gadgetUri);
-          storedRefreshToken.setProviderName(providerName);
+          storedRefreshToken.setServiceName(serviceName);
           storedRefreshToken.setScope(scope);
           storedRefreshToken.setSecret(refreshToken);
           storedRefreshToken.setTokenType(tokenType);
@@ -268,7 +268,7 @@ public class OAuth2CallbackState implements Serializable {
   }
 
   private String buildRefreshTokenUrl() throws OAuth2RequestException {
-    final String refreshUrl = this.accessor.getProvider().getTokenUrl();
+    final String refreshUrl = this.client.getTokenUrl();
     if (refreshUrl == null) {
       throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_TOKEN_URL, "token");
     }
@@ -294,8 +294,8 @@ public class OAuth2CallbackState implements Serializable {
       queryParams.put("scope", accessor.getScope());
     }
 
-    final String clientId = this.client.getKey();
-    final String secret = this.client.getSecret();
+    final String clientId = this.client.getClientId();
+    final String secret = this.client.getClientSecret();
     queryParams.put("client_id", clientId);
     queryParams.put("client_secret", secret);
 

@@ -56,13 +56,6 @@ public class BasicOAuth2Store implements OAuth2Store {
     }
 
     try {
-      final Set<OAuth2Provider> providers = this.persister.loadProviders();
-      this.cache.storeProviders(providers);
-    } catch (final OAuth2PersistenceException e) {
-      throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 providers", e);
-    }
-
-    try {
       final Set<OAuth2Token> tokens = this.persister.loadTokens();
       this.cache.storeTokens(tokens);
     } catch (final OAuth2PersistenceException e) {
@@ -71,50 +64,32 @@ public class BasicOAuth2Store implements OAuth2Store {
     return true;
   }
 
-  public OAuth2Provider getProvider(final String providerName) throws GadgetException {
-    final Integer index = this.cache.getProviderIndex(providerName);
-    OAuth2Provider provider = this.cache.getProvider(index);
-    if (provider == null) {
-      try {
-        provider = this.persister.findProvider(providerName);
-        if (provider != null) {
-          this.cache.storeProvider(index, provider);
-        }
-      } catch (final OAuth2PersistenceException e) {
-        throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 provider "
-            + providerName, e);
-      }
-    }
-
-    return provider;
-  }
-
-  public OAuth2Client getClient(final String providerName, final String gadgetUri)
+  public OAuth2Client getClient(final String serviceName, final String gadgetUri)
       throws GadgetException {
-    final Integer index = this.cache.getClientIndex(providerName, gadgetUri);
+    final Integer index = this.cache.getClientIndex(serviceName, gadgetUri);
     OAuth2Client client = this.cache.getClient(index);
     if (client == null) {
       try {
-        client = this.persister.findClient(providerName, gadgetUri);
+        client = this.persister.findClient(serviceName, gadgetUri);
         if (client != null) {
           this.cache.storeClient(index, client);
         }
       } catch (final OAuth2PersistenceException e) {
         throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 client "
-            + providerName, e);
+            + serviceName, e);
       }
     }
 
     return client;
   }
 
-  public OAuth2Token getToken(final String providerName, final String gadgetUri, final String user,
+  public OAuth2Token getToken(final String serviceName, final String gadgetUri, final String user,
       final String scope, final OAuth2Token.Type type) throws GadgetException {
-    final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
+    final Integer index = this.cache.getTokenIndex(serviceName, gadgetUri, user, scope, type);
     OAuth2Token token = this.cache.getToken(index);
     if (token == null) {
       try {
-        token = this.persister.findToken(providerName, gadgetUri, user, scope, type);
+        token = this.persister.findToken(serviceName, gadgetUri, user, scope, type);
         if (token != null) {
           this.cache.storeToken(index, token);
         }
@@ -130,7 +105,7 @@ public class BasicOAuth2Store implements OAuth2Store {
   public void setToken(final OAuth2Token token) throws GadgetException {
     if (token != null) {
       final Integer index = this.cache.getTokenIndex(token);
-      final OAuth2Token existingToken = this.getToken(token.getProviderName(),
+      final OAuth2Token existingToken = this.getToken(token.getServiceName(),
           token.getGadgetUri(), token.getUser(), token.getScope(), token.getType());
       try {
         if (existingToken == null) {
@@ -152,32 +127,31 @@ public class BasicOAuth2Store implements OAuth2Store {
 
   public OAuth2Token removeToken(final OAuth2Token token) throws GadgetException {
     if (token != null) {
-      return this.removeToken(token.getProviderName(), token.getGadgetUri(), token.getUser(),
+      return this.removeToken(token.getServiceName(), token.getGadgetUri(), token.getUser(),
           token.getScope(), token.getType());
     }
     return null;
   }
 
-  public OAuth2Token removeToken(final String providerName, final String gadgetUri,
+  public OAuth2Token removeToken(final String serviceName, final String gadgetUri,
       final String user, final String scope, final Type type) throws GadgetException {
-    final Integer index = this.cache.getTokenIndex(providerName, gadgetUri, user, scope, type);
+    final Integer index = this.cache.getTokenIndex(serviceName, gadgetUri, user, scope, type);
     try {
       final OAuth2Token token = this.cache.removeToken(index);
       if (token != null) {
-        this.persister.removeToken(providerName, gadgetUri, user, scope, type);
+        this.persister.removeToken(serviceName, gadgetUri, user, scope, type);
       }
 
       return token;
     } catch (final OAuth2PersistenceException e) {
       throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 token "
-          + providerName, e);
+          + serviceName, e);
     }
   }
 
   public boolean clearCache() throws GadgetException {
     try {
       this.cache.clearClients();
-      this.cache.clearProviders();
       this.cache.clearTokens();
     } catch (final OAuth2PersistenceException e) {
       throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error clearing OAuth2 cache", e);

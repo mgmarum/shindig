@@ -96,8 +96,8 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
     request.setMethod("POST");
     request.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
 
-    final String clientId = accessor.getClient().getKey();
-    final String secret = accessor.getClient().getSecret();
+    final String clientId = accessor.getClient().getClientId();
+    final String secret = accessor.getClient().getClientSecret();
 
     request.setHeader(OAuth2Message.CLIENT_ID, clientId);
     request.setHeader(OAuth2Message.CLIENT_SECRET, secret);
@@ -107,7 +107,7 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
     for (final OAuth2ClientAuthenticationHandler authenticationHandler : callbackState
         .getAuthenticationHandlers()) {
       if (authenticationHandler.geClientAuthenticationType().equalsIgnoreCase(
-          accessor.getProvider().getClientAuthenticationType())) {
+          accessor.getClient().getClientAuthenticationType())) {
         authenticationHandler.addOAuth2Authentication(request, accessor);
       }
     }
@@ -159,7 +159,7 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
         final String refreshToken = msg.getRefreshToken();
         final String expiresIn = msg.getExpiresIn();
         final String tokenType = msg.getTokenType();
-        final String providerName = client.getProviderName();
+        final String providerName = client.getServiceName();
         final String gadgetUri = client.getGadgetUri();
         final String scope = accessor.getScope();
         final String user = accessor.getSecurityToken().getViewerId();
@@ -174,7 +174,7 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
             storedAccessToken.setExpiresIn(0);
           }
           storedAccessToken.setGadgetUri(gadgetUri);
-          storedAccessToken.setProviderName(providerName);
+          storedAccessToken.setServiceName(providerName);
           storedAccessToken.setScope(scope);
           storedAccessToken.setSecret(accessToken);
           storedAccessToken.setTokenType(tokenType);
@@ -187,7 +187,7 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
           final OAuth2Token storedRefreshToken = store.createToken();
           storedRefreshToken.setExpiresIn(0);
           storedRefreshToken.setGadgetUri(gadgetUri);
-          storedRefreshToken.setProviderName(providerName);
+          storedRefreshToken.setServiceName(providerName);
           storedRefreshToken.setScope(scope);
           storedRefreshToken.setSecret(refreshToken);
           storedRefreshToken.setTokenType(tokenType);

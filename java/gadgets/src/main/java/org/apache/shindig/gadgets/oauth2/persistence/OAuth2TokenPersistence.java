@@ -15,7 +15,7 @@ public class OAuth2TokenPersistence implements OAuth2Token, Serializable {
   private Type type;
   private String secret;
   private String encryptedSecret;
-  private String providerName;
+  private String serviceName;
   private String gadgetUri;
   private String user;
   private String scope;
@@ -53,12 +53,12 @@ public class OAuth2TokenPersistence implements OAuth2Token, Serializable {
     this.secret = this.encrypter.decrypt(encryptedSecret);
   }
 
-  public String getProviderName() {
-    return this.providerName;
+  public String getServiceName() {
+    return this.serviceName;
   }
 
-  public void setProviderName(final String providerName) {
-    this.providerName = providerName;
+  public void setServiceName(final String serviceName) {
+    this.serviceName = serviceName;
   }
 
   public String getGadgetUri() {
@@ -106,7 +106,7 @@ public class OAuth2TokenPersistence implements OAuth2Token, Serializable {
     boolean ret = false;
     if (OAuth2TokenPersistence.class.isInstance(obj)) {
       final OAuth2TokenPersistence otherClient = (OAuth2TokenPersistence) obj;
-      if (this.providerName.equals(otherClient.getProviderName())) {
+      if (this.serviceName.equals(otherClient.getServiceName())) {
         if (this.user.equals(otherClient.getUser())) {
           if (this.scope.equals(otherClient.getScope())) {
             if (this.type.equals(otherClient.getType())) {
@@ -124,8 +124,8 @@ public class OAuth2TokenPersistence implements OAuth2Token, Serializable {
 
   @Override
   public int hashCode() {
-    if ((this.providerName != null) && (this.gadgetUri != null)) {
-      return (this.providerName + ":" + this.gadgetUri + ":" + this.user + ":" + this.scope + ":" + this.type)
+    if ((this.serviceName != null) && (this.gadgetUri != null)) {
+      return (this.serviceName + ":" + this.gadgetUri + ":" + this.user + ":" + this.scope + ":" + this.type)
           .hashCode();
     }
 
@@ -134,8 +134,8 @@ public class OAuth2TokenPersistence implements OAuth2Token, Serializable {
 
   @Override
   public String toString() {
-    return "org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2TokenImpl: providerName = "
-        + this.providerName + " , user = " + this.user + " , gadgetUri = " + this.gadgetUri
+    return "org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2TokenImpl: serviceName = "
+        + this.serviceName + " , user = " + this.user + " , gadgetUri = " + this.gadgetUri
         + " , scope = " + this.scope + " , tokenType = " + this.getTokenType() + " , expiresIn = "
         + this.expiresIn + " , type = " + this.type.name();
   }

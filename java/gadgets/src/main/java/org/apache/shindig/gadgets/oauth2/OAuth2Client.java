@@ -16,31 +16,47 @@ public interface OAuth2Client extends Serializable {
     CONFIDENTIAL, PUBLIC, UNKNOWN
   }
 
+  public String getAuthorizationUrl();
+
+  public String getClientAuthenticationType();
+
+  public String getClientId();
+
+  public String getClientSecret();
+
   public String getGadgetUri();
 
-  public String getKey();
-
-  public String getProviderName();
-
+  public String getGrantType();
+ 
   public String getRedirectUri();
 
-  public String getSecret();
+  public String getServiceName();
+
+  public String getTokenUrl();
 
   public Type getType();
 
+  public boolean isAllowModuleOverride();
+  
+  public void setAllowModuleOverride(boolean allowModuleOverride);
+  
+  public void setAuthorizationUrl(String authorizationUrl);
+
+  public void setClientAuthenticationType(String ClientAuthenticationType);
+
+  public void setClientId(final String clientId);
+  
+  public void setClientSecret(final String clientSecret) throws OAuth2EncryptionException;
+
   public void setGadgetUri(String gadgetUri);
-
-  public void setKey(String key);
-
-  public void setProviderName(String providerName);
-
-  public void setRedirectUri(String redirectUri);
-
-  public void setSecret(final String secret) throws OAuth2EncryptionException;
-
-  public void setType(Type type);
 
   public void setGrantType(String grantType);
 
-  public String getGrantType();
+  public void setRedirectUri(String redirectUri);
+  
+  public void setServiceName(String serviceName);
+
+  public void setTokenUrl(String tokenUrl);
+
+  public void setType(Type type);
 }

@@ -19,8 +19,8 @@ public class BasicAuthenticationHandler implements OAuth2ClientAuthenticationHan
   }
 
   public void addOAuth2Authentication(final HttpRequest request, final OAuth2Accessor accessor) {
-    final String clientId = accessor.getClient().getKey();
-    final String secret = accessor.getClient().getSecret();
+    final String clientId = accessor.getClient().getClientId();
+    final String secret = accessor.getClient().getClientSecret();
 
     final String authString = clientId + ":" + secret;
     final byte[] authBytes = Base64.encodeBase64(authString.getBytes());
