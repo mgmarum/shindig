@@ -21,8 +21,10 @@ package org.apache.shindig.gadgets.spec;
 import com.google.common.collect.Maps;
 import com.google.common.collect.ImmutableMap;
 
+import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.common.xml.XmlUtil;
+import org.apache.shindig.gadgets.oauth2.OAuth2Arguments;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

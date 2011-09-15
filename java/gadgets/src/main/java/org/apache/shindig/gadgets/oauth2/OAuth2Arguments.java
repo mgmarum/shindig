@@ -27,16 +27,20 @@ import com.google.common.base.Objects;
 
 public class OAuth2Arguments {
   private static final String SERVICE_PARAM = "OAUTH_SERVICE_NAME";
+  private static final String SCOPE_PARAM = "OAUTH_SCOPE";
   private static final String BYPASS_SPEC_CACHE_PARAM = "bypassSpecCache";
 
   private final String serviceName;
   private final boolean bypassSpecCache;
+  private final String scope;
+
   private final Map<String, String> requestOptions = new TreeMap<String, String>(
       String.CASE_INSENSITIVE_ORDER);
 
   public OAuth2Arguments(final AuthType auth, final HttpServletRequest request)
       throws GadgetException {
     this.serviceName = OAuth2Arguments.getRequestParam(request, OAuth2Arguments.SERVICE_PARAM, "");
+    this.scope = OAuth2Arguments.getRequestParam(request, OAuth2Arguments.SCOPE_PARAM, "");
     this.bypassSpecCache = "1".equals(OAuth2Arguments.getRequestParam(request,
         OAuth2Arguments.BYPASS_SPEC_CACHE_PARAM, null));
     final Enumeration<String> params = this.getParameterNames(request);
@@ -59,6 +63,8 @@ public class OAuth2Arguments {
     this.requestOptions.putAll(map);
     this.serviceName = OAuth2Arguments.getAuthInfoParam(this.requestOptions,
         OAuth2Arguments.SERVICE_PARAM, "");
+    this.scope = OAuth2Arguments.getAuthInfoParam(this.requestOptions, OAuth2Arguments.SCOPE_PARAM,
+        "");
     this.bypassSpecCache = "1".equals(OAuth2Arguments.getAuthInfoParam(this.requestOptions,
         OAuth2Arguments.BYPASS_SPEC_CACHE_PARAM, null));
   }
@@ -83,12 +89,17 @@ public class OAuth2Arguments {
 
   public OAuth2Arguments(final OAuth2Arguments orig) {
     this.serviceName = orig.serviceName;
+    this.scope = orig.scope;
     this.bypassSpecCache = orig.bypassSpecCache;
     this.requestOptions.putAll(orig.requestOptions);
   }
 
   public String getServiceName() {
     return this.serviceName;
+  }
+
+  public String getScope() {
+    return this.scope;
   }
 
   public boolean getBypassSpecCache() {

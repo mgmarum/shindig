@@ -41,27 +41,30 @@ public class OAuth2Module extends AbstractModule {
   }
 
   public static class OAuth2RequestProvider implements Provider<OAuth2Request> {
-    private final HttpFetcher fetcher;
     private final OAuth2FetcherConfig config;
+    private final HttpFetcher fetcher;
     private final List<OAuth2TokenTypeHandler> tokenTypeHandlers;
     private final List<OAuth2GrantTypeHandler> grantTypeHandlers;
     private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
+    private final Provider<OAuth2Message> oauth2MessageProvider;
 
     @Inject
-    public OAuth2RequestProvider(final HttpFetcher fetcher, final OAuth2FetcherConfig config,
+    public OAuth2RequestProvider(final OAuth2FetcherConfig config, final HttpFetcher fetcher,
         final List<OAuth2TokenTypeHandler> tokenTypeHandlers,
         final List<OAuth2GrantTypeHandler> grantTypeHandlers,
-        final List<OAuth2ClientAuthenticationHandler> authenticationHandlers) {
-      this.fetcher = fetcher;
+        final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
+        final Provider<OAuth2Message> oauth2MessageProvider) {
       this.config = config;
+      this.fetcher = fetcher;
       this.tokenTypeHandlers = tokenTypeHandlers;
       this.grantTypeHandlers = grantTypeHandlers;
       this.authenticationHandlers = authenticationHandlers;
+      this.oauth2MessageProvider = oauth2MessageProvider;
     }
 
     public OAuth2Request get() {
       return new BasicOAuth2Request(this.config, this.fetcher, this.tokenTypeHandlers,
-          this.grantTypeHandlers, this.authenticationHandlers);
+          this.grantTypeHandlers, this.authenticationHandlers, this.oauth2MessageProvider);
     }
   }
 
@@ -83,8 +86,7 @@ public class OAuth2Module extends AbstractModule {
         final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
         final List<OAuth2GrantTypeHandler> grantTypeHandlers) {
 
-      this.store = new BasicOAuth2Store(cache, persister, oauth2MessageProvider,
-          authenticationHandlers, grantTypeHandlers);
+      this.store = new BasicOAuth2Store(cache, persister, oauth2MessageProvider);
 
       if (importFromConfig) {
         try {

@@ -18,13 +18,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.shindig.common.servlet.HttpUtil;
 import org.apache.shindig.common.servlet.InjectedServlet;
 import org.apache.shindig.common.uri.UriBuilder;
-import org.apache.shindig.gadgets.oauth2.BasicOAuth2Store;
+import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2AuthorizationResponseHandler;
-import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
-import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
 import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
+import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
 import org.apache.shindig.gadgets.oauth2.OAuth2ResponseParams;
+import org.apache.shindig.gadgets.oauth2.OAuth2Store;
 
 import com.google.inject.Inject;
 
@@ -47,10 +47,10 @@ public class OAuth2CallbackServlet extends InjectedServlet {
       + "</html>\n";
 
   private transient List<OAuth2AuthorizationResponseHandler> authorizationResponseHandlers;
-  private transient BasicOAuth2Store store;
+  private transient OAuth2Store store;
 
   @Inject
-  public void setOAuth2Store(final BasicOAuth2Store store) {
+  public void setOAuth2Store(final OAuth2Store store) {
     this.store = store;
   }
 
@@ -64,30 +64,30 @@ public class OAuth2CallbackServlet extends InjectedServlet {
   protected void doGet(final HttpServletRequest request, final HttpServletResponse resp)
       throws IOException {
 
-    OAuth2Message msg = null;
-    for (final OAuth2AuthorizationResponseHandler authorizationResponseHandler : this.authorizationResponseHandlers) {
-      msg = authorizationResponseHandler.handleRequest(request);
-      if (msg != null) {
-        break;
+    final String requestStateKey = request.getParameter(OAuth2Message.STATE);
+    final Integer index = Integer.decode(requestStateKey);
+
+    OAuth2Accessor accessor;
+    OAuth2Message msg;
+    try {
+      accessor = this.store.getOAuth2Accessor(index);
+
+      msg = null;
+      for (final OAuth2AuthorizationResponseHandler authorizationResponseHandler : this.authorizationResponseHandlers) {
+        msg = authorizationResponseHandler.handleRequest(accessor, request);
+        if (msg != null) {
+          break;
+        }
       }
-    }
-    
-    OAuth2Error error = null;
-    if (msg == null) {
+    } catch (final OAuth2RequestException e) {
       this.sendError(OAuth2Error.UNKNOWN_PROBLEM, null, null, request, resp);
       return;
     }
 
-    OAuth2CallbackState callbackState = null;
-    final String stateString = msg.getState();
-    if (stateString == null) {
-      error = OAuth2Error.NO_STATE;
-    } else {
-      final Integer stateKey = Integer.decode(stateString);
-      callbackState = this.store.getOAuth2CallbackState(stateKey);
-      if (callbackState == null) {
-        error = OAuth2Error.INVALID_STATE;
-      }
+    OAuth2Error error = null;
+    if (msg == null) {
+      this.sendError(OAuth2Error.UNKNOWN_PROBLEM, null, null, request, resp);
+      return;
     }
 
     if (error == null) {
@@ -95,9 +95,9 @@ public class OAuth2CallbackServlet extends InjectedServlet {
     }
 
     if (error == null) {
-      if (callbackState.getRealCallbackUrl() != null) {
+      if (accessor.getRealCallbackUrl() != null) {
         // Copy the query parameters from this URL over to the real URL.
-        final UriBuilder realUri = UriBuilder.parse(callbackState.getRealCallbackUrl());
+        final UriBuilder realUri = UriBuilder.parse(accessor.getRealCallbackUrl());
         final Map<String, List<String>> params = UriBuilder.splitParameters(request
             .getQueryString());
         for (final Map.Entry<String, List<String>> entry : params.entrySet()) {
@@ -114,17 +114,15 @@ public class OAuth2CallbackServlet extends InjectedServlet {
       }
     }
 
-    this.sendError(error, msg, callbackState, request, resp);
+    this.sendError(error, msg, accessor, request, resp);
   }
 
   private void sendError(final OAuth2Error error, final OAuth2Message msg,
-      final OAuth2CallbackState callbackState, final HttpServletRequest request,
+      final OAuth2Accessor accessor, final HttpServletRequest request,
       final HttpServletResponse resp) throws IOException {
-    if ((callbackState != null) && (callbackState.getRealErrorCallbackUrl() != null)) {
-      callbackState.changeState(State.AUTHORIZATION_FAILED);
-
+    if ((accessor != null) && (accessor.getRealErrorCallbackUrl() != null)) {
       // Copy the query parameters from this URL over to the real URL.
-      final UriBuilder realUri = UriBuilder.parse(callbackState.getRealErrorCallbackUrl());
+      final UriBuilder realUri = UriBuilder.parse(accessor.getRealErrorCallbackUrl());
       final Map<String, List<String>> params = UriBuilder.splitParameters(request.getQueryString());
       for (final Map.Entry<String, List<String>> entry : params.entrySet()) {
         realUri.putQueryParameter(entry.getKey(), entry.getValue());

@@ -7,15 +7,24 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.common.logging.i18n.MessageKeys;
+import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.http.HttpResponseBuilder;
-import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
@@ -24,7 +33,7 @@ public class BasicOAuth2Request implements OAuth2Request {
   // class name for logging purpose
   private static final String classname = BasicOAuth2Request.class.getName();
 
-  protected final OAuth2FetcherConfig fetcherConfig;
+  private final OAuth2FetcherConfig fetcherConfig;
 
   private final HttpFetcher fetcher;
 
@@ -34,7 +43,7 @@ public class BasicOAuth2Request implements OAuth2Request {
 
   private OAuth2Accessor accessor;
 
-  private OAuth2CallbackState callbackState;
+  private OAuth2Store store;
 
   private boolean refreshTry = false;
 
@@ -44,21 +53,26 @@ public class BasicOAuth2Request implements OAuth2Request {
 
   private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
 
+  private final Provider<OAuth2Message> oauth2MessageProvider;
+
   /**
    * @param fetcherConfig
    *          configuration options for the fetcher
    * @param fetcher
    *          fetcher to use for actually making requests
    */
+  @Inject
   public BasicOAuth2Request(final OAuth2FetcherConfig fetcherConfig, final HttpFetcher fetcher,
       final List<OAuth2TokenTypeHandler> tokenTypeHandlers,
       final List<OAuth2GrantTypeHandler> grantTypeHandlers,
-      final List<OAuth2ClientAuthenticationHandler> authenticationHandlers) {
+      final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
+      final Provider<OAuth2Message> oauth2MessageProvider) {
     this.fetcherConfig = fetcherConfig;
     this.fetcher = fetcher;
     this.tokenTypeHandlers = tokenTypeHandlers;
     this.grantTypeHandlers = grantTypeHandlers;
     this.authenticationHandlers = authenticationHandlers;
+    this.oauth2MessageProvider = oauth2MessageProvider;
   }
 
   public HttpResponse fetch(final HttpRequest request) {
@@ -77,16 +91,22 @@ public class BasicOAuth2Request implements OAuth2Request {
       this.responseParams.logDetailedWarning(BasicOAuth2Request.classname, "fetch",
           MessageKeys.OAUTH_FETCH_UNEXPECTED_ERROR, e);
       throw e;
+    } finally {
+      this.store.removeOAuth2Accessor(this.accessor);
     }
   }
 
   private HttpResponse fetchNoThrow() {
     HttpResponseBuilder response = null;
     try {
-      this.accessor = this.fetcherConfig.getTokenStore().getOAuth2Accessor(
-          this.realRequest.getSecurityToken(), this.realRequest.getOAuth2Arguments(),
-          this.fetcherConfig, this.fetcher, this.realRequest.getGadget());
-      this.callbackState = this.accessor.getCallbackState();
+      this.store = this.fetcherConfig.getOAuth2Store();
+
+      final SecurityToken securityToken = this.realRequest.getSecurityToken();
+      final OAuth2Arguments arguments = this.realRequest.getOAuth2Arguments();
+
+      this.accessor = this.fetcherConfig.getTokenStore().getOAuth2Accessor(securityToken,
+          arguments, this.realRequest.getGadget());
+
       response = this.fetchWithRetry();
     } catch (final OAuth2RequestException e) {
       e.printStackTrace(); // TODO ARC
@@ -153,11 +173,10 @@ public class BasicOAuth2Request implements OAuth2Request {
       if (BasicOAuth2Request.haveRefreshToken(this.accessor) != null) {
         // TODO ARC
         this.checkCanAuthorize();
-        this.callbackState.refreshToken();
+        this.refreshToken();
       } else {
         this.checkCanAuthorize();
         this.buildAuthorizationUrl();
-        this.callbackState.changeState(State.AUTHORIZATION_REQUESTED);
 
         return new HttpResponseBuilder().setHttpStatusCode(HttpResponse.SC_OK).setStrictNoCache();
       }
@@ -180,7 +199,7 @@ public class BasicOAuth2Request implements OAuth2Request {
   }
 
   private void buildAuthorizationUrl() throws OAuth2RequestException {
-    final String authUrl = this.accessor.getClient().getAuthorizationUrl();
+    final String authUrl = this.accessor.getAuthorizationUrl();
     if (authUrl == null) {
       throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_TOKEN_URL, "authorization");
     }
@@ -188,7 +207,7 @@ public class BasicOAuth2Request implements OAuth2Request {
     String completeAuthUrl = authUrl;
     for (final OAuth2GrantTypeHandler grantTypeHandler : this.grantTypeHandlers) {
       if (grantTypeHandler.getGrantType().equalsIgnoreCase(this.accessor.getGrantType())) {
-        completeAuthUrl = grantTypeHandler.getCompleteAuthorizationUrl(authUrl, this.accessor);
+        completeAuthUrl = grantTypeHandler.getCompleteAuthorizationUrl(this.accessor, authUrl);
       }
     }
 
@@ -268,7 +287,6 @@ public class BasicOAuth2Request implements OAuth2Request {
         if ((accessToken != null) && (refreshToken != null)) {
           // We need a refresh, remove the access token and try again
           this.accessor.setAccessToken(null);
-          this.accessor.getStore().removeToken(accessToken);
           // make sure if we get a 2nd 401 we don't loop infinitely
           return this.fetch(this.realRequest, true);
         }
@@ -280,5 +298,138 @@ public class BasicOAuth2Request implements OAuth2Request {
     } finally {
       this.responseParams.addRequestTrace(request, response);
     }
+  }
+
+  public OAuth2Error refreshToken() throws OAuth2RequestException {
+    final String refershTokenUrl = this.buildRefreshTokenUrl();
+
+    HttpResponse response = null;
+    final HttpRequest request = new HttpRequest(Uri.parse(refershTokenUrl));
+    request.setMethod("POST");
+    request.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+
+    final String clientId = this.accessor.getClientId();
+    final String secret = this.accessor.getClientSecret();
+
+    request.setHeader(OAuth2Message.CLIENT_ID, clientId);
+    request.setHeader(OAuth2Message.CLIENT_SECRET, secret);
+    request.setParam(OAuth2Message.CLIENT_ID, clientId);
+    request.setParam(OAuth2Message.CLIENT_SECRET, secret);
+
+    for (final OAuth2ClientAuthenticationHandler authenticationHandler : this.authenticationHandlers) {
+      if (authenticationHandler.geClientAuthenticationType().equalsIgnoreCase(
+          this.accessor.getClientAuthenticationType())) {
+        authenticationHandler.addOAuth2Authentication(request, this.accessor);
+      }
+    }
+
+    try {
+      final byte[] body = this.getRefreshBody(this.accessor).getBytes("UTF-8");
+      request.setPostBody(body);
+
+      response = this.fetcher.fetch(request);
+      if (response == null) {
+        throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE);
+      }
+      final OAuth2Message msg = this.oauth2MessageProvider.get();
+
+      final JSONObject responseJson = new JSONObject(response.getResponseAsString());
+      msg.parseJSON(responseJson.toString());
+      final OAuth2Error error = msg.getError();
+      if (error == null) {
+        final String accessToken = msg.getAccessToken();
+        final String refreshToken = msg.getRefreshToken();
+        final String expiresIn = msg.getExpiresIn();
+        final String tokenType = msg.getTokenType();
+        final String serviceName = this.accessor.getServiceName();
+        final String gadgetUri = this.accessor.getGadgetUri();
+        final String scope = this.accessor.getScope();
+        final String user = this.accessor.getUser();
+
+        if (accessToken != null) {
+          final OAuth2Token storedAccessToken = this.store.createToken();
+          if (expiresIn != null) {
+            storedAccessToken.setExpiresIn(Integer.decode(expiresIn));
+          } else {
+            storedAccessToken.setExpiresIn(0);
+          }
+          storedAccessToken.setGadgetUri(gadgetUri);
+          storedAccessToken.setServiceName(serviceName);
+          storedAccessToken.setScope(scope);
+          storedAccessToken.setSecret(accessToken);
+          storedAccessToken.setTokenType(tokenType);
+          storedAccessToken.setType(OAuth2Token.Type.ACCESS);
+          storedAccessToken.setUser(user);
+          this.store.setToken(storedAccessToken);
+          this.accessor.setAccessToken(storedAccessToken);
+        }
+
+        if (refreshToken != null) {
+          final OAuth2Token storedRefreshToken = this.store.createToken();
+          storedRefreshToken.setExpiresIn(0);
+          storedRefreshToken.setGadgetUri(gadgetUri);
+          storedRefreshToken.setServiceName(serviceName);
+          storedRefreshToken.setScope(scope);
+          storedRefreshToken.setSecret(refreshToken);
+          storedRefreshToken.setTokenType(tokenType);
+          storedRefreshToken.setType(OAuth2Token.Type.REFRESH);
+          storedRefreshToken.setUser(user);
+          this.store.setToken(storedRefreshToken);
+          this.accessor.setRefreshToken(storedRefreshToken);
+        }
+      } else {
+        throw new RuntimeException("@@@ TODO ARC, implement refresh token error handling");
+      }
+      // TODO ARC make this exceptions better
+    } catch (final GadgetException e) {
+      throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE, "", e);
+    } catch (final UnsupportedEncodingException e) {
+      throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE, "", e);
+    } catch (final JSONException e) {
+      throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE, "", e);
+    }
+
+    return null;
+  }
+
+  private String buildRefreshTokenUrl() throws OAuth2RequestException {
+    final String refreshUrl = this.accessor.getTokenUrl();
+    if (refreshUrl == null) {
+      throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_TOKEN_URL, "token");
+    }
+
+    final String completeRefershTokenUrl = this.getCompleteRefreshUrl(refreshUrl);
+
+    return completeRefershTokenUrl;
+  }
+
+  private String getCompleteRefreshUrl(final String refreshUrl) throws OAuth2RequestException {
+    final String ret = OAuth2Utils.buildUrl(refreshUrl, null, null);
+
+    return ret;
+  }
+
+  private String getRefreshBody(final OAuth2Accessor accessor) throws OAuth2RequestException {
+    String ret = "";
+
+    final Map<String, String> queryParams = new HashMap<String, String>(5);
+    queryParams.put(OAuth2Message.GRANT_TYPE, OAuth2Message.REFRESH_TOKEN);
+    queryParams.put(OAuth2Message.REFRESH_TOKEN, this.accessor.getRefreshToken().getSecret());
+    if ((accessor.getScope() != null) && (accessor.getScope().length() > 0)) {
+      queryParams.put(OAuth2Message.SCOPE, accessor.getScope());
+    }
+
+    final String clientId = this.accessor.getClientId();
+    final String secret = this.accessor.getClientSecret();
+    queryParams.put(OAuth2Message.CLIENT_ID, clientId);
+    queryParams.put(OAuth2Message.CLIENT_SECRET, secret);
+
+    ret = OAuth2Utils.buildUrl(ret, queryParams, null);
+
+    if ((ret.startsWith("?")) || (ret.startsWith("&"))) {
+      ret = ret.substring(1);
+    }
+
+    return ret;
   }
 }

@@ -15,19 +15,19 @@ public class OAuth2GadgetBinding {
   }
 
   public boolean isAllowOverride() {
-    return allowOverride;
+    return this.allowOverride;
   }
 
   public String getGadgetUri() {
-    return gadgetUri;
+    return this.gadgetUri;
   }
 
   public String getGadgetServiceName() {
-    return gadgetServiceName;
+    return this.gadgetServiceName;
   }
 
   public String getClientName() {
-    return clientName;
+    return this.clientName;
   }
 
   @Override

@@ -17,6 +17,6 @@ public interface OAuth2GrantTypeHandler {
   public String getAuthorizationBody(OAuth2Accessor accessor, String authorizationCode)
       throws OAuth2RequestException;
 
-  public String getCompleteAuthorizationUrl(String authorizationUrl, OAuth2Accessor accessor)
+  public String getCompleteAuthorizationUrl(OAuth2Accessor accessor, String authorizationUrl)
       throws OAuth2RequestException;
 }

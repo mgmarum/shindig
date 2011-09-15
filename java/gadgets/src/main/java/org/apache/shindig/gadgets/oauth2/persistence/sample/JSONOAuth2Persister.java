@@ -18,16 +18,15 @@ import java.util.Set;
 import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.common.util.ResourceLoader;
-import org.apache.shindig.gadgets.oauth2.OAuth2Client;
+import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token.Type;
-import org.apache.shindig.gadgets.oauth2.persistence.OAuth2ClientPersistence;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Encrypter;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2PersistenceException;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
-import org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2Provider;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2TokenPersistence;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -88,27 +87,24 @@ public class JSONOAuth2Persister implements OAuth2Persister {
 
   public Set<OAuth2Client> loadClients() throws OAuth2PersistenceException {
     final Map<String, OAuth2GadgetBinding> gadgetBindings = this.loadGadgetBindings();
-    System.err.println("@@@ gadgetBidnings = " + gadgetBindings);
     final Map<String, OAuth2Provider> providers = this.loadProviders();
-    System.err.println("@@@ providers = " + providers);
-    
+
     final Map<String, OAuth2Client> internalMap = new HashMap<String, OAuth2Client>();
 
     try {
-      final JSONObject clients = configFile.getJSONObject(JSONOAuth2Persister.CLIENTS);
+      final JSONObject clients = this.configFile.getJSONObject(JSONOAuth2Persister.CLIENTS);
       for (final Iterator<?> j = clients.keys(); j.hasNext();) {
-        String clientName = (String) j.next();
+        final String clientName = (String) j.next();
         final JSONObject settings = clients.getJSONObject(clientName);
-        
-        final OAuth2ClientPersistence client = new OAuth2ClientPersistence(this.encrypter);
-        
-        final String providerName = settings.getString(PROVIDER_NAME);
-        System.err.println("@@@ providerName = " + providerName);
+
+        final OAuth2Client client = new OAuth2Client(this.encrypter);
+
+        final String providerName = settings.getString(JSONOAuth2Persister.PROVIDER_NAME);
         final OAuth2Provider provider = providers.get(providerName);
         client.setAuthorizationUrl(provider.getAuthorizationUrl());
         client.setClientAuthenticationType(provider.getClientAuthenticationType());
         client.setTokenUrl(provider.getTokenUrl());
-        
+
         String redirectUri = settings.optString(OAuth2Message.REDIRECT_URI, null);
         if (redirectUri == null) {
           redirectUri = this.globalRedirectUri;
@@ -117,7 +113,6 @@ public class JSONOAuth2Persister implements OAuth2Persister {
         final String clientId = settings.getString(OAuth2Message.CLIENT_ID);
         final String typeS = settings.optString(JSONOAuth2Persister.TYPE, null);
         String grantType = settings.optString(OAuth2Message.GRANT_TYPE, null);
-        
 
         try {
           client.setEncryptedSecret(secret);
@@ -141,11 +136,11 @@ public class JSONOAuth2Persister implements OAuth2Persister {
 
         client.setGrantType(grantType);
 
-        OAuth2Client.Type type = OAuth2Client.Type.UNKNOWN;
+        OAuth2Accessor.Type type = OAuth2Accessor.Type.UNKNOWN;
         if (OAuth2Message.CONFIDENTIAL_CLIENT_TYPE.equals(typeS)) {
-          type = OAuth2Client.Type.CONFIDENTIAL;
+          type = OAuth2Accessor.Type.CONFIDENTIAL;
         } else if (OAuth2Message.PUBLIC_CLIENT_TYPE.equals(typeS)) {
-          type = OAuth2Client.Type.PUBLIC;
+          type = OAuth2Accessor.Type.PUBLIC;
         }
         client.setType(type);
 
@@ -155,7 +150,7 @@ public class JSONOAuth2Persister implements OAuth2Persister {
       e.printStackTrace();
       throw new OAuth2PersistenceException(e);
     }
-    
+
     final Set<OAuth2Client> ret = new HashSet<OAuth2Client>(gadgetBindings.size());
     for (final OAuth2GadgetBinding binding : gadgetBindings.values()) {
       final String clientName = binding.getClientName();
@@ -163,12 +158,10 @@ public class JSONOAuth2Persister implements OAuth2Persister {
       client.setGadgetUri(binding.getGadgetUri());
       client.setServiceName(binding.getGadgetServiceName());
       client.setAllowModuleOverride(binding.isAllowOverride());
-      
-      System.err.println("@@@ client = " + client);
-      
+
       ret.add(client);
     }
-    
+
     return ret;
   }
 
@@ -176,7 +169,8 @@ public class JSONOAuth2Persister implements OAuth2Persister {
     final Map<String, OAuth2GadgetBinding> ret = new HashMap<String, OAuth2GadgetBinding>();
 
     try {
-      final JSONObject bindings = configFile.getJSONObject(JSONOAuth2Persister.GADGET_BINDGINGS);
+      final JSONObject bindings = this.configFile
+          .getJSONObject(JSONOAuth2Persister.GADGET_BINDGINGS);
       for (final Iterator<?> i = bindings.keys(); i.hasNext();) {
         final String gadgetUriS = (String) i.next();
         String gadgetUri = null;
@@ -190,11 +184,14 @@ public class JSONOAuth2Persister implements OAuth2Persister {
         for (final Iterator<?> j = binding.keys(); j.hasNext();) {
           final String gadgetServiceName = (String) j.next();
           final JSONObject settings = binding.getJSONObject(gadgetServiceName);
-          final String clientName = settings.getString(CLIENT_NAME);
-          final boolean allowOverride = settings.getBoolean(ALLOW_MODULE_OVERRIDE);
-          final OAuth2GadgetBinding gadgetBinding = new OAuth2GadgetBinding(gadgetUri, gadgetServiceName, clientName, allowOverride);
+          final String clientName = settings.getString(JSONOAuth2Persister.CLIENT_NAME);
+          final boolean allowOverride = settings
+              .getBoolean(JSONOAuth2Persister.ALLOW_MODULE_OVERRIDE);
+          final OAuth2GadgetBinding gadgetBinding = new OAuth2GadgetBinding(gadgetUri,
+              gadgetServiceName, clientName, allowOverride);
 
-          ret.put(gadgetBinding.getGadgetUri() + ":" + gadgetBinding.getGadgetServiceName(), gadgetBinding);
+          ret.put(gadgetBinding.getGadgetUri() + ":" + gadgetBinding.getGadgetServiceName(),
+              gadgetBinding);
         }
       }
 
@@ -210,7 +207,7 @@ public class JSONOAuth2Persister implements OAuth2Persister {
     final Map<String, OAuth2Provider> ret = new HashMap<String, OAuth2Provider>();
 
     try {
-      final JSONObject providers = configFile.getJSONObject(JSONOAuth2Persister.PROVIDERS);
+      final JSONObject providers = this.configFile.getJSONObject(JSONOAuth2Persister.PROVIDERS);
       for (final Iterator<?> i = providers.keys(); i.hasNext();) {
         final String providerName = (String) i.next();
         final JSONObject provider = providers.getJSONObject(providerName);
@@ -244,7 +241,7 @@ public class JSONOAuth2Persister implements OAuth2Persister {
         oauth2Provider.setAuthorizationUrl(authorizationUrl);
         oauth2Provider.setTokenUrl(tokenUrl);
         oauth2Provider.setClientAuthenticationType(clientAuthenticationType);
-        
+
         ret.put(oauth2Provider.getName(), oauth2Provider);
       }
     } catch (final JSONException e) {

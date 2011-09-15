@@ -7,9 +7,7 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
-import org.apache.shindig.auth.SecurityToken;
-import org.apache.shindig.gadgets.GadgetException;
-import org.apache.shindig.gadgets.http.HttpFetcher;
+import java.io.Serializable;
 
 /**
  * OAuth2 related data accessor
@@ -17,155 +15,52 @@ import org.apache.shindig.gadgets.http.HttpFetcher;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
-public class OAuth2Accessor {
-  private final OAuth2Client client;
-  private final OAuth2Store store;
-  private final SecurityToken securityToken;
-  private String authorizationCode;
-  private String clientId;
-  private String redirectUri;
-  private String scope;
-  private String state;
-  private OAuth2Token accessToken;
-  private OAuth2Token refreshToken;
-  private String authorizationUrl;
-  private String tokenUrl;
-  private OAuth2Client.Type type;
-  private String grantType;
-  private final OAuth2CallbackState callbackState;
-  private final HttpFetcher fetcher;
-
-  public OAuth2Accessor(final OAuth2Client client,
-      final OAuth2Store store, final SecurityToken securityToken, final HttpFetcher fetcher) {
-    this.client = client;
-    this.store = store;
-    this.securityToken = securityToken;
-    this.grantType = this.client.getGrantType();
-
-    this.callbackState = this.store.createOAuth2CallbackState(this, client, this.grantType,
-        securityToken, fetcher);
-    this.fetcher = fetcher;
+public interface OAuth2Accessor extends Serializable {
+  public enum Type {
+    CONFIDENTIAL, PUBLIC, UNKNOWN
   }
 
-  public String getAuthorizationCode() {
-    return this.authorizationCode;
-  }
+  public OAuth2Token getAccessToken();
 
-  public void setAuthorizationCode(final String authorizationCode) {
-    this.authorizationCode = authorizationCode;
-  }
+  public String getAuthorizationUrl();
 
-  public String getClientId() {
-    return this.clientId;
-  }
+  public String getClientAuthenticationType();
 
-  public void setClientId(final String clientId) {
-    this.clientId = clientId;
-  }
+  public String getClientId();
 
-  public String getRedirectUri() {
-    return this.redirectUri;
-  }
+  public String getClientSecret();
 
-  public void setRedirectUri(final String redirectUri) {
-    this.redirectUri = redirectUri;
-  }
+  public String getGadgetUri();
 
-  public String getScope() {
-    return this.scope;
-  }
+  public String getGrantType();
 
-  public void setScope(final String scope) {
-    this.scope = scope;
-  }
+  public String getRealCallbackUrl();
 
-  public OAuth2Token getAccessToken() {
-    if ((this.accessToken == null) && (this.client != null)) {
-      try {
-        this.accessToken = this.store.getToken(this.client.getServiceName(),
-            this.client.getGadgetUri(), this.securityToken.getViewerId(), this.scope,
-            OAuth2Token.Type.ACCESS);
-      } catch (final GadgetException e) {
-        ;
-      }
-    }
-    return this.accessToken;
-  }
+  public String getRealErrorCallbackUrl();
 
-  public void setAccessToken(final OAuth2Token accessToken) {
-    this.accessToken = accessToken;
-  }
+  public String getRedirectUri();
 
-  public OAuth2Token getRefreshToken() {
-    if ((this.refreshToken == null) && (this.client != null)) {
-      try {
-        this.refreshToken = this.store.getToken(this.client.getServiceName(),
-            this.client.getGadgetUri(), this.securityToken.getViewerId(), this.scope,
-            OAuth2Token.Type.REFRESH);
-      } catch (final GadgetException e) {
-        ;
-      }
-    }
-    return this.refreshToken;
-  }
+  public OAuth2Token getRefreshToken();
 
-  public void setRefreshToken(final OAuth2Token refreshToken) {
-    this.refreshToken = refreshToken;
-  }
+  public String getScope();
 
-  public String getAuthorizationUrl() {
-    return this.authorizationUrl;
-  }
+  public String getServiceName();
 
-  public void setAuthorizationUrl(final String authorizationUrl) {
-    this.authorizationUrl = authorizationUrl;
-  }
+  public String getState();
 
-  public String getTokenUrl() {
-    return this.tokenUrl;
-  }
+  public String getTokenUrl();
 
-  public void setTokenUrl(final String tokenUrl) {
-    this.tokenUrl = tokenUrl;
-  }
+  public Type getType();
 
-  public OAuth2Client.Type getType() {
-    return this.type;
-  }
+  public String getUser();
 
-  public void setType(final OAuth2Client.Type type) {
-    this.type = type;
-  }
+  public boolean isAllowModuleOverrides();
 
-  public String getGrantType() {
-    return this.grantType;
-  }
+  public void setAccessToken(OAuth2Token accessToken);
 
-  public void setGrantType(final String grantType) {
-    this.grantType = grantType;
-  }
+  public void setAuthorizationUrl(String authorizationUrl);
 
-  public OAuth2Client getClient() {
-    return this.client;
-  }
+  public void setRefreshToken(OAuth2Token refreshToken);
 
-  public OAuth2CallbackState getCallbackState() {
-    return this.callbackState;
-  }
-
-  public HttpFetcher getFetcher() {
-    return this.fetcher;
-  }
-
-  public OAuth2Store getStore() {
-    return this.store;
-  }
-
-  public SecurityToken getSecurityToken() {
-    return this.securityToken;
-  }
-
-  public String getState() {
-    return this.state;
-  }
+  public void setTokenUrl(String tokenUrl);
 }

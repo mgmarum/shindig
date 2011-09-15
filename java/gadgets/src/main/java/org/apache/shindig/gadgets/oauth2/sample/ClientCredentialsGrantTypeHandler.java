@@ -26,8 +26,8 @@ public class ClientCredentialsGrantTypeHandler implements OAuth2GrantTypeHandler
     return "";
   }
 
-  public String getCompleteAuthorizationUrl(final String authorizationUrl,
-      final OAuth2Accessor accessor) throws OAuth2RequestException {
+  public String getCompleteAuthorizationUrl(final OAuth2Accessor accessor,
+      final String authorizationUrl) throws OAuth2RequestException {
     return authorizationUrl;
   }
 }

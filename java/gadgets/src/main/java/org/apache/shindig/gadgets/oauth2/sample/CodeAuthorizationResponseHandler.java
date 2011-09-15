@@ -1,18 +1,17 @@
 package org.apache.shindig.gadgets.oauth2.sample;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.GadgetException;
+import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2AuthorizationResponseHandler;
-import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState;
-import org.apache.shindig.gadgets.oauth2.OAuth2CallbackState.State;
-import org.apache.shindig.gadgets.oauth2.OAuth2Client;
 import org.apache.shindig.gadgets.oauth2.OAuth2ClientAuthenticationHandler;
 import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2GrantTypeHandler;
@@ -32,50 +31,33 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
 
   private final Provider<OAuth2Message> oauth2MessageProvider;
   private final OAuth2Store store;
+  private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
+  private final List<OAuth2GrantTypeHandler> grantTypeHandlers;
+  private final HttpFetcher fetcher;
 
   @Inject
   public CodeAuthorizationResponseHandler(final Provider<OAuth2Message> oauth2MessageProvider,
-      final OAuth2Store store) {
+      final OAuth2Store store,
+      final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
+      final List<OAuth2GrantTypeHandler> grantTypeHandlers, final HttpFetcher fetcher) {
     this.oauth2MessageProvider = oauth2MessageProvider;
     this.store = store;
+    this.authenticationHandlers = authenticationHandlers;
+    this.fetcher = fetcher;
+    this.grantTypeHandlers = grantTypeHandlers;
   }
 
   public String[] getResponseTypes() {
     return CodeAuthorizationResponseHandler.RESPONSE_TYPES;
   }
 
-  public OAuth2Message handleRequest(final HttpServletRequest request) {
+  public OAuth2Message handleRequest(final OAuth2Accessor accessor, final HttpServletRequest request)
+      throws OAuth2RequestException {
+
     final OAuth2Message msg = this.oauth2MessageProvider.get();
     msg.parseRequest(request);
 
-    OAuth2Error error = null;
-    OAuth2CallbackState callbackState = null;
-    final String stateString = msg.getState();
-
-    if (stateString == null) {
-      error = OAuth2Error.NO_STATE;
-    } else {
-      final Integer stateKey = Integer.decode(stateString);
-      callbackState = this.store.getOAuth2CallbackState(stateKey);
-      if (callbackState == null) {
-        error = OAuth2Error.INVALID_STATE;
-      } else {
-        error = msg.getError();
-      }
-    }
-
-    if (msg.getAuthorization() != null) {
-      if (callbackState.getState() == State.AUTHORIZATION_REQUESTED) {
-        callbackState.changeState(State.AUTHORIZATION_SUCCEEDED);
-        try {
-          error = this.setAuthorizationCode(msg.getAuthorization(), callbackState);
-        } catch (final OAuth2RequestException e) {
-          error = OAuth2Error.UNKNOWN_PROBLEM;
-        }
-      }
-    } else {
-      error = OAuth2Error.UNKNOWN_PROBLEM;
-    }
+    final OAuth2Error error = this.setAuthorizationCode(msg.getAuthorization(), accessor);
 
     if (error == null) {
       return msg;
@@ -85,9 +67,7 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
   }
 
   public OAuth2Error setAuthorizationCode(final String authorizationCode,
-      final OAuth2CallbackState callbackState) throws OAuth2RequestException {
-
-    final OAuth2Accessor accessor = callbackState.getAccessor();
+      final OAuth2Accessor accessor) throws OAuth2RequestException {
 
     final String tokenUrl = this.getCompleteTokenUrl(accessor.getTokenUrl());
 
@@ -96,25 +76,24 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
     request.setMethod("POST");
     request.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
 
-    final String clientId = accessor.getClient().getClientId();
-    final String secret = accessor.getClient().getClientSecret();
+    final String clientId = accessor.getClientId();
+    final String secret = accessor.getClientSecret();
 
     request.setHeader(OAuth2Message.CLIENT_ID, clientId);
     request.setHeader(OAuth2Message.CLIENT_SECRET, secret);
     request.setParam(OAuth2Message.CLIENT_ID, clientId);
     request.setParam(OAuth2Message.CLIENT_SECRET, secret);
 
-    for (final OAuth2ClientAuthenticationHandler authenticationHandler : callbackState
-        .getAuthenticationHandlers()) {
+    for (final OAuth2ClientAuthenticationHandler authenticationHandler : this.authenticationHandlers) {
       if (authenticationHandler.geClientAuthenticationType().equalsIgnoreCase(
-          accessor.getClient().getClientAuthenticationType())) {
+          accessor.getClientAuthenticationType())) {
         authenticationHandler.addOAuth2Authentication(request, accessor);
       }
     }
 
     try {
       byte[] body = {};
-      for (final OAuth2GrantTypeHandler grantTypeHandler : callbackState.getGrantTypeHandlers()) {
+      for (final OAuth2GrantTypeHandler grantTypeHandler : this.grantTypeHandlers) {
         if (grantTypeHandler.getGrantType().equalsIgnoreCase(accessor.getGrantType())) {
           body = grantTypeHandler.getAuthorizationBody(accessor, authorizationCode).getBytes(
               "UTF-8");
@@ -124,9 +103,7 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
 
       request.setPostBody(body);
 
-      callbackState.changeState(State.ACCESS_REQUESTED);
-
-      response = callbackState.getFetcher().fetch(request);
+      response = this.fetcher.fetch(request);
 
       if (response == null) {
         throw new OAuth2RequestException(OAuth2Error.MISSING_SERVER_RESPONSE);
@@ -140,7 +117,6 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
       final String contentType = response.getHeader("Content-Type");
       final String responseString = response.getResponseAsString();
       final OAuth2Message msg = this.oauth2MessageProvider.get();
-      final OAuth2Client client = callbackState.getClient();
 
       if (contentType.startsWith("text/plain")) {
         // Facebook does this
@@ -159,15 +135,13 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
         final String refreshToken = msg.getRefreshToken();
         final String expiresIn = msg.getExpiresIn();
         final String tokenType = msg.getTokenType();
-        final String providerName = client.getServiceName();
-        final String gadgetUri = client.getGadgetUri();
+        final String providerName = accessor.getServiceName();
+        final String gadgetUri = accessor.getGadgetUri();
         final String scope = accessor.getScope();
-        final String user = accessor.getSecurityToken().getViewerId();
-
-        final OAuth2Store store = accessor.getStore();
+        final String user = accessor.getUser();
 
         if (accessToken != null) {
-          final OAuth2Token storedAccessToken = store.createToken();
+          final OAuth2Token storedAccessToken = this.store.createToken();
           if (expiresIn != null) {
             storedAccessToken.setExpiresIn(Integer.decode(expiresIn));
           } else {
@@ -180,11 +154,12 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
           storedAccessToken.setTokenType(tokenType);
           storedAccessToken.setType(OAuth2Token.Type.ACCESS);
           storedAccessToken.setUser(user);
-          store.setToken(storedAccessToken);
+          this.store.setToken(storedAccessToken);
+          accessor.setAccessToken(storedAccessToken);
         }
 
         if (refreshToken != null) {
-          final OAuth2Token storedRefreshToken = store.createToken();
+          final OAuth2Token storedRefreshToken = this.store.createToken();
           storedRefreshToken.setExpiresIn(0);
           storedRefreshToken.setGadgetUri(gadgetUri);
           storedRefreshToken.setServiceName(providerName);
@@ -193,10 +168,9 @@ public class CodeAuthorizationResponseHandler implements OAuth2AuthorizationResp
           storedRefreshToken.setTokenType(tokenType);
           storedRefreshToken.setType(OAuth2Token.Type.REFRESH);
           storedRefreshToken.setUser(user);
-          store.setToken(storedRefreshToken);
+          this.store.setToken(storedRefreshToken);
+          accessor.setRefreshToken(storedRefreshToken);
         }
-
-        callbackState.changeState(State.ACCESS_SUCCEEDED);
       } else {
         throw new RuntimeException("@@@ TODO ARC, implement access token error handling");
       }

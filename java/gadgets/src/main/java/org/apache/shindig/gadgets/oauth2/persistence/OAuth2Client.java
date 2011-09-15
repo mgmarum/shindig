@@ -2,13 +2,13 @@ package org.apache.shindig.gadgets.oauth2.persistence;
 
 import java.io.Serializable;
 
-import org.apache.shindig.gadgets.oauth2.OAuth2Client;
+import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 
 import com.google.inject.Inject;
 
-public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
+public class OAuth2Client implements Serializable {
   /**
    * 
    */
@@ -26,10 +26,10 @@ public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
   private String redirectUri;
   private String serviceName;
   private String tokenUrl;
-  private Type type = Type.UNKNOWN;
+  private OAuth2Accessor.Type type = OAuth2Accessor.Type.UNKNOWN;
 
   @Inject
-  public OAuth2ClientPersistence(final OAuth2Encrypter encrypter) {
+  public OAuth2Client(final OAuth2Encrypter encrypter) {
     this.encrypter = encrypter;
   }
 
@@ -92,7 +92,7 @@ public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
     return this.tokenUrl;
   }
 
-  public OAuth2Client.Type getType() {
+  public OAuth2Accessor.Type getType() {
     return this.type;
   }
 
@@ -155,7 +155,7 @@ public class OAuth2ClientPersistence implements OAuth2Client, Serializable {
     this.tokenUrl = tokenUrl;
   }
 
-  public void setType(final OAuth2Client.Type type) {
+  public void setType(final OAuth2Accessor.Type type) {
     this.type = type;
   }
 

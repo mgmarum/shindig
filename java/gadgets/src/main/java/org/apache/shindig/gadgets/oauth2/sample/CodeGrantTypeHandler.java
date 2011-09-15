@@ -32,10 +32,10 @@ public class CodeGrantTypeHandler implements OAuth2GrantTypeHandler {
     final Map<String, String> queryParams = new HashMap<String, String>(5);
     queryParams.put(OAuth2Message.GRANT_TYPE, this.getResponseType());
     queryParams.put(OAuth2Message.AUTHORIZATION, authorizationCode);
-    queryParams.put(OAuth2Message.REDIRECT_URI, accessor.getClient().getRedirectUri());
+    queryParams.put(OAuth2Message.REDIRECT_URI, accessor.getRedirectUri());
 
-    final String clientId = accessor.getClient().getClientId();
-    final String secret = accessor.getClient().getClientSecret();
+    final String clientId = accessor.getClientId();
+    final String secret = accessor.getClientSecret();
     queryParams.put(OAuth2Message.CLIENT_ID, clientId);
     queryParams.put(OAuth2Message.CLIENT_SECRET, secret);
 
@@ -48,8 +48,8 @@ public class CodeGrantTypeHandler implements OAuth2GrantTypeHandler {
     return ret;
   }
 
-  public String getCompleteAuthorizationUrl(final String authorizationUrl,
-      final OAuth2Accessor accessor) throws OAuth2RequestException {
+  public String getCompleteAuthorizationUrl(final OAuth2Accessor accessor,
+      final String authorizationUrl) throws OAuth2RequestException {
     final Map<String, String> queryParams = new HashMap<String, String>(5);
     queryParams.put(OAuth2Message.RESPONSE_TYPE, this.getGrantType());
     queryParams.put(OAuth2Message.CLIENT_ID, accessor.getClientId());
@@ -57,12 +57,12 @@ public class CodeGrantTypeHandler implements OAuth2GrantTypeHandler {
     if ((redirectUri != null) && (redirectUri.length() > 0)) {
       queryParams.put(OAuth2Message.REDIRECT_URI, redirectUri);
     }
-    if (accessor.getCallbackState().getStateKey() != null) {
-      final String state = Integer.toString(accessor.getCallbackState().getStateKey());
-      if ((state != null) && (state.length() > 0)) {
-        queryParams.put(OAuth2Message.STATE, state);
-      }
+
+    final String state = accessor.getState();
+    if ((state != null) && (state.length() > 0)) {
+      queryParams.put(OAuth2Message.STATE, state);
     }
+
     final String scope = accessor.getScope();
     if ((scope != null) && (scope.length() > 0)) {
       queryParams.put(OAuth2Message.SCOPE, scope);

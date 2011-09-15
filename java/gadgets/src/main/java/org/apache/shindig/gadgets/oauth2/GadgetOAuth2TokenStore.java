@@ -12,7 +12,6 @@ import org.apache.shindig.common.uri.Uri;
 import org.apache.shindig.gadgets.GadgetContext;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.GadgetSpecFactory;
-import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.spec.GadgetSpec;
 import org.apache.shindig.gadgets.spec.OAuth2Service;
 import org.apache.shindig.gadgets.spec.OAuth2Service.EndPoint;
@@ -33,77 +32,74 @@ public class GadgetOAuth2TokenStore {
     this.specFactory = specFactory;
   }
 
-  public OAuth2Accessor getOAuth2Accessor(final SecurityToken securityToken,
-      final OAuth2Arguments arguments, final OAuth2FetcherConfig fetcherConfig,
-      final HttpFetcher fetcher, final Uri gadgetUri) throws OAuth2RequestException {
+  public OAuth2Store getOAuth2Store() {
+    return this.store;
+  }
 
-    if ((this.store == null) || (arguments == null) || (fetcherConfig == null) || (fetcher == null)) {
+  public OAuth2Accessor getOAuth2Accessor(final SecurityToken securityToken,
+      final OAuth2Arguments arguments, final Uri gadgetUri) throws OAuth2RequestException {
+
+    if ((this.store == null) || (gadgetUri == null) || (securityToken == null)) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
-          "OAuth2Accessor missing a param --- store = " + this.store + " , arguments = "
-              + arguments + " , fetcherConfig = " + fetcherConfig + " , fetcher = " + fetcher);
+          "OAuth2Accessor missing a param --- store = " + this.store + " , gadgetUri = "
+              + gadgetUri + " , securityToken = " + securityToken);
     }
 
     final String serviceName = arguments.getServiceName();
 
-    GadgetException gadgetException = null;
-    OAuth2Client client = null;
-    try {
-      client = this.store.getClient(serviceName, gadgetUri.toString());
-    } catch (final GadgetException e) {
-      gadgetException = e;
-      client = null;
-    }
-
-    if (client == null) {
-      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
-          "OAuth2Accessor unable to retrieve client " + serviceName + " , "
-              + securityToken.getAppUrl(), gadgetException);
-    }
-
-    final OAuth2SpecInfo specInfo = this.lookupSpecInfo(securityToken, arguments, client, gadgetUri);
+    final OAuth2SpecInfo specInfo = this.lookupSpecInfo(securityToken, arguments, gadgetUri);
 
     if (specInfo == null) {
       throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
-          "OAuth2Accessor unable to retrieve specinfo " + serviceName + " , "
-              + gadgetUri.toString(), gadgetException);
+          "OAuth2Accessor unable to retrieve specinfo " + gadgetUri.toString() + " , "
+              + arguments.getServiceName());
     }
 
-    final OAuth2Accessor ret = new OAuth2Accessor(client, this.store, securityToken,
-        fetcher);
+    String scope = arguments.getScope();
+    if ((scope == null) || (scope.length() == 0)) {
+      // no scope on request, default to module prefs scope
+      scope = specInfo.getScope();
+    }
 
-    ret.setAuthorizationUrl(specInfo.getAuthorizationUrl());
-    ret.setClientId(specInfo.getClientId());
-    ret.setRedirectUri(specInfo.getRedirectUri());
-    ret.setTokenUrl(specInfo.getTokenUrl());
-    ret.setScope(specInfo.getScope());
-    ret.setType(client.getType());
-    ret.setGrantType(client.getGrantType());
+    if ((scope == null) || (scope.length() == 0)) {
+      scope = "";
+    }
 
+    OAuth2Accessor persistedAccessor;
     try {
-      final OAuth2Token accessToken = this.store.getToken(serviceName,
-          client.getGadgetUri(), securityToken.getViewerId(), specInfo.getScope(),
-          OAuth2Token.Type.ACCESS);
-      if (accessToken != null) {
-        ret.setAccessToken(accessToken);
-      }
-
-      final OAuth2Token refreshToken = this.store.getToken(serviceName,
-          client.getGadgetUri(), securityToken.getViewerId(), specInfo.getScope(),
-          OAuth2Token.Type.REFRESH);
-      if (refreshToken != null) {
-        ret.setRefreshToken(refreshToken);
-      }
+      persistedAccessor = this.store.getOAuth2Accessor(gadgetUri.toString(), serviceName,
+          securityToken.getViewerId(), scope);
     } catch (final GadgetException e) {
-      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "Unable to retrieve token "
-          + serviceName + " , " + securityToken.getAppUrl(), e);
+      persistedAccessor = null;
     }
 
-    return ret;
+    if (persistedAccessor == null) {
+      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM,
+          "getOAuth2Accessor() unable to retrieve accessor " + serviceName + " , "
+              + gadgetUri.toString());
+    }
+
+    final OAuth2Accessor mergedAccessor = new BasicOAuth2Accessor(persistedAccessor);
+
+    if (persistedAccessor.isAllowModuleOverrides()) {
+      final String specAuthorizationUrl = specInfo.getAuthorizationUrl();
+      final String specTokenUrl = specInfo.getTokenUrl();
+
+      if ((specAuthorizationUrl != null) && (specAuthorizationUrl.length() > 0)) {
+        mergedAccessor.setAuthorizationUrl(specAuthorizationUrl);
+      }
+      if ((specTokenUrl != null) && (specTokenUrl.length() > 0)) {
+        mergedAccessor.setTokenUrl(specTokenUrl);
+      }
+    }
+
+    this.store.storeOAuth2Accessor(mergedAccessor);
+
+    return mergedAccessor;
   }
 
   private OAuth2SpecInfo lookupSpecInfo(final SecurityToken securityToken,
-      final OAuth2Arguments arguments, final OAuth2Client client, final Uri gadgetUri)
-      throws OAuth2RequestException {
+      final OAuth2Arguments arguments, final Uri gadgetUri) throws OAuth2RequestException {
     final GadgetSpec spec = this.findSpec(securityToken, arguments, gadgetUri);
     final OAuth2Spec oauthSpec = spec.getModulePrefs().getOAuth2Spec();
     if (oauthSpec == null) {
@@ -119,30 +115,23 @@ public class GadgetOAuth2TokenStore {
               + Joiner.on(',').join(oauthSpec.getServices().keySet()) + '.');
     }
 
-    final String clientId = client.getClientId();
-    final String redirectUri = client.getRedirectUri();
-
     String authorizationUrl = null;
     final EndPoint authorizationUrlEndpoint = service.getAuthorizationUrl();
-    if (authorizationUrlEndpoint == null) {
-      authorizationUrl = client.getAuthorizationUrl();
-    } else {
+    if (authorizationUrlEndpoint != null) {
       authorizationUrl = authorizationUrlEndpoint.url.toString();
     }
 
     String tokenUrl = null;
     final EndPoint tokenUrlEndpoint = service.getTokenUrl();
-    if (tokenUrlEndpoint == null) {
-      tokenUrl = client.getTokenUrl();
-    } else {
+    if (tokenUrlEndpoint != null) {
       tokenUrl = tokenUrlEndpoint.url.toString();
     }
 
-    return new OAuth2SpecInfo(authorizationUrl, clientId, redirectUri, tokenUrl, service.getScope());
+    return new OAuth2SpecInfo(authorizationUrl, tokenUrl, service.getScope());
   }
 
-  private GadgetSpec findSpec(final SecurityToken securityToken, final OAuth2Arguments arguments, final Uri gadgetUri)
-      throws OAuth2RequestException {
+  private GadgetSpec findSpec(final SecurityToken securityToken, final OAuth2Arguments arguments,
+      final Uri gadgetUri) throws OAuth2RequestException {
     try {
       final GadgetContext context = new OAuth2GadgetContext(securityToken, arguments, gadgetUri);
       return this.specFactory.getGadgetSpec(context);
@@ -157,30 +146,17 @@ public class GadgetOAuth2TokenStore {
 
   private static class OAuth2SpecInfo {
     private final String authorizationUrl;
-    private final String clientId;
-    private final String redirectUri;
     private final String tokenUrl;
     private final String scope;
 
-    public OAuth2SpecInfo(final String authorizationUrl, final String clientId,
-        final String redirectUri, final String tokenUrl, final String scope) {
+    public OAuth2SpecInfo(final String authorizationUrl, final String tokenUrl, final String scope) {
       this.authorizationUrl = authorizationUrl;
-      this.clientId = clientId;
-      this.redirectUri = redirectUri;
       this.tokenUrl = tokenUrl;
       this.scope = scope;
     }
 
     public String getAuthorizationUrl() {
       return this.authorizationUrl;
-    }
-
-    public String getClientId() {
-      return this.clientId;
-    }
-
-    public String getRedirectUri() {
-      return this.redirectUri;
     }
 
     public String getTokenUrl() {

@@ -23,12 +23,19 @@ public class OAuth2GadgetContext extends GadgetContext {
   private final String container;
   private final Uri appUrl;
   private final boolean bypassSpecCache;
+  private final String scope;
 
-  public OAuth2GadgetContext(final SecurityToken securityToken, final OAuth2Arguments arguments, final Uri gadgetUri) {
+  public OAuth2GadgetContext(final SecurityToken securityToken, final OAuth2Arguments arguments,
+      final Uri gadgetUri) {
     this.securityToken = securityToken;
     this.container = securityToken.getContainer();
     this.appUrl = gadgetUri;
     this.bypassSpecCache = arguments.getBypassSpecCache();
+    this.scope = arguments.getScope();
+  }
+
+  public String getScope() {
+    return this.scope;
   }
 
   @Override
