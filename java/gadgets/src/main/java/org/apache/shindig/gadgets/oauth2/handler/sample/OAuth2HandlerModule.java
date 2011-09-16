@@ -29,6 +29,10 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
+/**
+ * Injects the default handlers.
+ * 
+ */
 public class OAuth2HandlerModule extends AbstractModule {
 
   @Override

@@ -18,11 +18,13 @@ package org.apache.shindig.gadgets.oauth2.persistence;
 
 import org.apache.shindig.gadgets.GadgetException;
 
+/**
+ * Subclass of {@link OAuth2PersistenceException} for secret
+ * encryption/decryption issues.
+ * 
+ */
 public class OAuth2EncryptionException extends GadgetException {
-  /**
-   * 
-   */
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = -3884237661767049433L;
 
   public OAuth2EncryptionException(final Exception cause) {
     super(Code.OAUTH_STORAGE_ERROR, cause);

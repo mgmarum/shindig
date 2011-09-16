@@ -80,7 +80,7 @@ public class BasicOAuth2Store implements OAuth2Store {
       try {
         token = this.persister.findToken(gadgetUri, serviceName, user, scope, type);
         if (token != null) {
-          this.cache.storeToken(index, token);
+          this.cache.storeToken(token);
         }
       } catch (final OAuth2PersistenceException e) {
         throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 token " + index,
@@ -103,7 +103,7 @@ public class BasicOAuth2Store implements OAuth2Store {
           this.cache.removeToken(index);
           this.persister.updateToken(token);
         }
-        this.cache.storeToken(index, token);
+        this.cache.storeToken(token);
       } catch (final OAuth2CacheException e) {
         throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error storing OAuth2 token " + index,
             e);
@@ -207,7 +207,7 @@ public class BasicOAuth2Store implements OAuth2Store {
       try {
         client = this.persister.findClient(gadgetUri, serviceName);
         if (client != null) {
-          this.cache.storeClient(index, client);
+          this.cache.storeClient(client);
         }
       } catch (final OAuth2PersistenceException e) {
         throw new GadgetException(Code.OAUTH_STORAGE_ERROR, "Error loading OAuth2 client "

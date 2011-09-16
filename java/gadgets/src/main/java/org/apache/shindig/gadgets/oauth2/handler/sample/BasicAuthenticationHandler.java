@@ -22,6 +22,13 @@ import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 import org.apache.shindig.gadgets.oauth2.handler.ClientAuthenticationHandler;
 
+/**
+ * 
+ * See {@link ClientAuthenticationHandler}
+ * 
+ * Handler for Basic Authentication
+ * 
+ */
 public class BasicAuthenticationHandler implements ClientAuthenticationHandler {
   public BasicAuthenticationHandler() {
   }

@@ -20,17 +20,63 @@ import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
 
+/**
+ * Enables injection of new Grant Type schemes into the system.
+ * 
+ * If a {@link GrantRequestHandler#getGrantType()} matches a
+ * {@link OAuth2Accessor#getGrantType()} it will be invoked to initiate the
+ * grant request.
+ * 
+ * By default "code" and "client_credentials" are supported.
+ * 
+ * Only one GrantRequestHandler will be executed (first to match.)
+ * 
+ */
 public interface GrantRequestHandler {
+  /**
+   * 
+   * @return the grant_type this handler initiates
+   */
   public String getGrantType();
 
+  /**
+   * 
+   * @return true to redirect the client to the
+   *         {@link #getCompleteUrl(OAuth2Accessor)}
+   */
   public boolean isRedirectRequired();
 
+  /**
+   * 
+   * @return true if the response is from the token endpoint i.e.
+   *         client_credentials
+   */
   public boolean isTokenEndpointResponse();
 
+  /**
+   * 
+   * @return true if the response is from the authorization endpoint, i.e. code
+   */
   public boolean isAuthorizationEndpointResponse();
 
+  /**
+   * If {@link #isRedirectRequired()} is false the system will executes this
+   * request.
+   * 
+   * @param accessor
+   * @param completeAuthorizationUrl
+   * @return
+   * @throws OAuth2RequestException
+   */
   public HttpRequest getAuthorizationRequest(OAuth2Accessor accessor,
       String completeAuthorizationUrl) throws OAuth2RequestException;
 
+  /**
+   * Url to send redirects to.
+   * 
+   * @param accessor
+   * @return
+   * @throws OAuth2RequestException
+   */
   public String getCompleteUrl(OAuth2Accessor accessor) throws OAuth2RequestException;
 }

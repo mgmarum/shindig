@@ -18,6 +18,7 @@ package org.apache.shindig.gadgets.oauth2;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -28,6 +29,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.shindig.common.uri.Uri;
 
 /**
  * Some common OAuth2 related utility methods
@@ -103,22 +105,53 @@ public class OAuth2Utils {
    */
   public static String buildUrl(final String url, final Map<String, String> queryParams,
       final Map<String, String> fragmentParams) {
-    final StringBuffer buff = new StringBuffer(url);
+    // Get any existing params
+    final Uri uri = Uri.parse(url);
+    final Map<String, List<String>> existingQueryParams = uri.getQueryParameters();
+    final Map<String, List<String>> existingFragmentParams = uri.getFragmentParameters();
+    final int index = url.indexOf('?');
+    String urlNoParams = url;
+    if (index >= 0) {
+      urlNoParams = urlNoParams.substring(0, index);
+    }
+
+    final Map<String, String> queryParams2 = new HashMap<String, String>();
+    if (existingQueryParams != null) {
+      for (final String paramName : existingQueryParams.keySet()) {
+        queryParams2.put(paramName, existingQueryParams.get(paramName).get(0));
+      }
+    }
+
+    final Map<String, String> fragmentParams2 = new HashMap<String, String>();
+    if (existingFragmentParams != null) {
+      for (final String paramName : existingFragmentParams.keySet()) {
+        fragmentParams2.put(paramName, existingFragmentParams.get(paramName).get(0));
+      }
+    }
+
+    if (queryParams != null) {
+      queryParams2.putAll(queryParams);
+    }
+    if (fragmentParams != null) {
+      fragmentParams2.putAll(fragmentParams);
+    }
+
+    final StringBuffer buff = new StringBuffer(urlNoParams);
     if ((queryParams != null) && !queryParams.isEmpty()) {
-      if (url.contains("?")) {
+      if (urlNoParams.contains("?")) {
         buff.append('&');
       } else {
         buff.append('?');
       }
-      buff.append(OAuth2Utils.convertQueryString(queryParams));
+      buff.append(OAuth2Utils.convertQueryString(queryParams2));
     }
     if ((fragmentParams != null) && !fragmentParams.isEmpty()) {
-      if (url.contains("#")) {
+      if (urlNoParams.contains("#")) {
         buff.append('&');
       } else {
         buff.append('#');
       }
-      buff.append(OAuth2Utils.convertQueryString(fragmentParams));
+      buff.append(OAuth2Utils.convertQueryString(fragmentParams2));
     }
     return buff.toString();
   }

@@ -19,11 +19,34 @@ package org.apache.shindig.gadgets.oauth2.handler;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
+import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 
+/**
+ * 
+ * Enables inject of token type handlers to add OAuth2 auth data to resource
+ * requests.
+ * 
+ * By default shindig supports "Bearer" token types.
+ * 
+ * Matches on {@link OAuth2Token#getTokenType()}
+ * 
+ * All matching handlers are executed.
+ * 
+ */
 public interface ResourceRequestHandler {
-
+  /**
+   * 
+   * @return the token type this handler handles
+   */
   public String getTokenType();
 
+  /**
+   * Do the handler magic for the token type.
+   * 
+   * @param accessor
+   * @param request
+   * @throws OAuth2RequestException
+   */
   public void addOAuth2Params(final OAuth2Accessor accessor, final HttpRequest request)
       throws OAuth2RequestException;
 }

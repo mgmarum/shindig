@@ -30,6 +30,11 @@ import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Client;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+/**
+ * 
+ * {@link OAuth2Cache} implementation using in-memory {@link HashMap}s.
+ * 
+ */
 @Singleton
 public class InMemoryCache implements OAuth2Cache {
   private final static String OAUTH2_PREFIX = "OAUTH2_";
@@ -67,8 +72,14 @@ public class InMemoryCache implements OAuth2Cache {
     return this.tokens.get(index);
   }
 
-  public void storeToken(final Integer index, final OAuth2Token token) throws OAuth2CacheException {
-    this.tokens.put(index, token);
+  public Integer storeToken(final OAuth2Token token) throws OAuth2CacheException {
+    if (token != null) {
+      final Integer index = this.getTokenIndex(token);
+      this.tokens.put(index, token);
+      return index;
+    }
+
+    return null;
   }
 
   public void storeTokens(final Collection<OAuth2Token> tokens) throws OAuth2CacheException {
@@ -98,9 +109,13 @@ public class InMemoryCache implements OAuth2Cache {
     return ret;
   }
 
-  public void storeClient(final Integer index, final OAuth2Client client)
-      throws OAuth2CacheException {
-    this.clients.put(index, client);
+  public Integer storeClient(final OAuth2Client client) throws OAuth2CacheException {
+    if (client != null) {
+      final Integer index = this.getClientIndex(client.getGadgetUri(), client.getServiceName());
+      this.clients.put(index, client);
+    }
+
+    return null;
   }
 
   public void storeClients(final Collection<OAuth2Client> clients) throws OAuth2CacheException {
@@ -127,12 +142,15 @@ public class InMemoryCache implements OAuth2Cache {
     return this.accessors.remove(accessor);
   }
 
-  public void storeOAuth2Accessor(final OAuth2Accessor accessor) {
+  public Integer storeOAuth2Accessor(final OAuth2Accessor accessor) {
     if (accessor != null) {
-      this.accessors.put(
-          this.getOAuth2AccessorIndex(accessor.getGadgetUri(), accessor.getServiceName(),
-              accessor.getUser(), accessor.getScope()), accessor);
+      final Integer index = this.getOAuth2AccessorIndex(accessor.getGadgetUri(),
+          accessor.getServiceName(), accessor.getUser(), accessor.getScope());
+      this.accessors.put(index, accessor);
+      return index;
     }
+
+    return null;
   }
 
   public OAuth2Accessor getOAuth2Accessor(final Integer index) {

@@ -16,6 +16,10 @@
  */
 package org.apache.shindig.gadgets.oauth2.persistence.sample;
 
+/**
+ * Binds a gadget to a client.
+ * 
+ */
 public class OAuth2GadgetBinding {
   private final String gadgetUri;
   private final String gadgetServiceName;

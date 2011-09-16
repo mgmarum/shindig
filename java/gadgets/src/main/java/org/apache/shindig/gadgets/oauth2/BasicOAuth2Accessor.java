@@ -22,7 +22,8 @@ package org.apache.shindig.gadgets.oauth2;
  * see {@link OAuth2Accessor}
  */
 public class BasicOAuth2Accessor implements OAuth2Accessor {
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 3347883060790082094L;
+  
   private OAuth2Token accessToken;
   private final boolean allowModuleOverrides;
   private String authorizationUrl;

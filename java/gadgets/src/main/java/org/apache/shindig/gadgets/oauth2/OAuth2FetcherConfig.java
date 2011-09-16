@@ -28,7 +28,7 @@ public class OAuth2FetcherConfig {
 
   @Inject
   public OAuth2FetcherConfig(final GadgetOAuth2TokenStore tokenStore,
-      @Named("shindig.oauth2.viewer-access-tokens-enabled") boolean viewerAccessTokensEnabled) {
+      @Named("shindig.oauth2.viewer-access-tokens-enabled") final boolean viewerAccessTokensEnabled) {
     this.tokenStore = tokenStore;
     this.viewerAccessTokensEnabled = viewerAccessTokensEnabled;
   }
@@ -51,6 +51,6 @@ public class OAuth2FetcherConfig {
    * @return true if the owner pages do not allow user controlled javascript
    */
   public boolean isViewerAccessTokensEnabled() {
-    return viewerAccessTokensEnabled;
+    return this.viewerAccessTokensEnabled;
   }
 }

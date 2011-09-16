@@ -39,6 +39,12 @@ import org.apache.shindig.gadgets.oauth2.handler.TokenEndpointResponseHandler;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
+/**
+ * 
+ * See {@link AuthorizationEndpointResponseHandler}
+ * 
+ * Handles the "code" flow
+ */
 public class CodeAuthorizationResponseHandler implements AuthorizationEndpointResponseHandler {
   private final Provider<OAuth2Message> oauth2MessageProvider;
   private final List<ClientAuthenticationHandler> clientAuthenticationHandlers;

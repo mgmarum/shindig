@@ -22,8 +22,10 @@ import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
 
 import com.google.inject.AbstractModule;
 
-//NO IBM CONFIDENTIAL CODE OR INFORMATION!
-
+/**
+ * Binds default persistence classes for shindig.
+ * 
+ */
 public class OAuth2PersistenceModule extends AbstractModule {
   @Override
   protected void configure() {

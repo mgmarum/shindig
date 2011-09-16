@@ -23,11 +23,15 @@ import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 
 import com.google.inject.Inject;
 
+/**
+ * Data class for client data stored in persistence.
+ * 
+ * Uses the injected {@link OAuth2Encrypter} protect the client_secret in the
+ * persistence store.
+ * 
+ */
 public class OAuth2Client implements Serializable {
-  /**
-   * 
-   */
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = -6090033505867216220L;
 
   private boolean allowModuleOverride;
   private String authorizationUrl;

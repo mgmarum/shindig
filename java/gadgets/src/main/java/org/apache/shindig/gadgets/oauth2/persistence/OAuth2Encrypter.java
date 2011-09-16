@@ -16,6 +16,14 @@
  */
 package org.apache.shindig.gadgets.oauth2.persistence;
 
+/**
+ * Injected into the system to encrypt/decrypt client and token secrets in the
+ * persistence layer.
+ * 
+ * This does not apply to any broader concept of token signing or other signing
+ * from the OAuth 1.0 implementation.
+ * 
+ */
 public interface OAuth2Encrypter {
   public String encrypt(String plainSecret) throws OAuth2EncryptionException;
 

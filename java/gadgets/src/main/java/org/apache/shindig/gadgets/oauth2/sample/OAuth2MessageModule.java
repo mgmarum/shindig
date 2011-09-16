@@ -22,6 +22,10 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
+/**
+ * Injects the default {@link OAuth2Message} implmentation.
+ * 
+ */
 public class OAuth2MessageModule extends AbstractModule {
   @Override
   protected void configure() {

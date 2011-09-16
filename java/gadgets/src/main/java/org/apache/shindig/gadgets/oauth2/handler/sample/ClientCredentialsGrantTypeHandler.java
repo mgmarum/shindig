@@ -33,6 +33,12 @@ import org.apache.shindig.gadgets.oauth2.handler.GrantRequestHandler;
 
 import com.google.inject.Inject;
 
+/**
+ * 
+ * See {@link GrantRequestHandler}
+ * 
+ * Handles the "client_credentials" flow
+ */
 public class ClientCredentialsGrantTypeHandler implements GrantRequestHandler {
 
   private final List<ClientAuthenticationHandler> clientAuthenticationHandlers;

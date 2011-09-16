@@ -28,6 +28,12 @@ import org.apache.shindig.gadgets.oauth2.handler.GrantRequestHandler;
 
 import com.google.inject.Inject;
 
+/**
+ * 
+ * See {@link GrantRequestHandler}
+ * 
+ * Handles the "authorization_code" flow
+ */
 public class CodeGrantTypeHandler implements GrantRequestHandler {
 
   @Inject

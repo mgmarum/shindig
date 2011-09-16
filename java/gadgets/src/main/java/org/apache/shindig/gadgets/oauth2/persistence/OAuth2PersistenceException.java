@@ -16,12 +16,11 @@
  */
 package org.apache.shindig.gadgets.oauth2.persistence;
 
+/**
+ * Exception class for errors that occur in the persistence layer.
+ */
 public class OAuth2PersistenceException extends Exception {
-
-  /**
-   * 
-   */
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = -8550943441259921635L;
 
   public OAuth2PersistenceException(final Exception cause) {
     super(cause);

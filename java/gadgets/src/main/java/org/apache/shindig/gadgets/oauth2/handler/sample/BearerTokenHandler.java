@@ -29,6 +29,12 @@ import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 import org.apache.shindig.gadgets.oauth2.OAuth2Utils;
 import org.apache.shindig.gadgets.oauth2.handler.ResourceRequestHandler;
 
+/**
+ * 
+ * See {@link ResourceRequestHandler}
+ * 
+ * Handles the Bearer token type
+ */
 public class BearerTokenHandler implements ResourceRequestHandler {
 
   public BearerTokenHandler() {

@@ -29,6 +29,10 @@ import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * See {@link OAuth2Message}
+ * 
+ */
 public class BasicOAuth2Message implements OAuth2Message {
   private final Map<String, String> params;
 

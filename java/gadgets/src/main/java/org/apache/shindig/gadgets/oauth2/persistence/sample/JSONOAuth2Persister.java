@@ -45,6 +45,11 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+/**
+ * Persistence implementation that reads <code>config/oauth2.json</code> on
+ * startup
+ * 
+ */
 @Singleton
 public class JSONOAuth2Persister implements OAuth2Persister {
   private static final String NO_CLIENT_AUTHENTICATION = "NONE";

@@ -61,8 +61,6 @@ public class BasicOAuth2Request implements OAuth2Request {
 
   private OAuth2Store store;
 
-  private boolean refreshTry = false;
-
   private final List<AuthorizationEndpointResponseHandler> authorizationEndpointResponseHandlers;
 
   private final List<ClientAuthenticationHandler> clientAuthenticationHandlers;
@@ -100,13 +98,8 @@ public class BasicOAuth2Request implements OAuth2Request {
   }
 
   public HttpResponse fetch(final HttpRequest request) {
-    return this.fetch(request, false);
-  }
-
-  public HttpResponse fetch(final HttpRequest request, final boolean refreshTry) {
     this.realRequest = request;
     this.responseParams = new OAuth2ResponseParams(request.getSecurityToken(), request);
-    this.refreshTry = refreshTry;
     try {
       return this.fetchNoThrow();
     } catch (final RuntimeException e) {
@@ -221,13 +214,13 @@ public class BasicOAuth2Request implements OAuth2Request {
   }
 
   private void checkCanAuthorize() throws OAuth2RequestException {
-    String pageOwner = realRequest.getSecurityToken().getOwnerId();
-    String pageViewer = realRequest.getSecurityToken().getViewerId();
+    final String pageOwner = this.realRequest.getSecurityToken().getOwnerId();
+    final String pageViewer = this.realRequest.getSecurityToken().getViewerId();
 
-    if (pageOwner == null || pageViewer == null) {
+    if ((pageOwner == null) || (pageViewer == null)) {
       throw new OAuth2RequestException(OAuth2Error.UNAUTHENTICATED);
     }
-    if (!fetcherConfig.isViewerAccessTokensEnabled() && !pageOwner.equals(pageViewer)) {
+    if (!this.fetcherConfig.isViewerAccessTokensEnabled() && !pageOwner.equals(pageViewer)) {
       throw new OAuth2RequestException(OAuth2Error.NOT_OWNER);
     }
   }
@@ -310,14 +303,15 @@ public class BasicOAuth2Request implements OAuth2Request {
   private HttpResponseBuilder fetchData() throws OAuth2RequestException {
     HttpResponseBuilder builder = null;
 
-    final HttpResponse response = this.fetchFromServer(this.realRequest);
+    final HttpResponse response = this.fetchFromServer(this.realRequest, false);
 
     builder = new HttpResponseBuilder(response);
 
     return builder;
   }
 
-  private HttpResponse fetchFromServer(final HttpRequest request) throws OAuth2RequestException {
+  private HttpResponse fetchFromServer(final HttpRequest request, final boolean refreshTry)
+      throws OAuth2RequestException {
     HttpResponse response = null;
 
     final OAuth2Token accessToken = this.accessor.getAccessToken();
@@ -344,12 +338,19 @@ public class BasicOAuth2Request implements OAuth2Request {
 
       final int responseCode = response.getHttpStatusCode();
 
-      if (!this.refreshTry && (responseCode >= 400) && (responseCode < 500)) {
+      if (!refreshTry && (responseCode >= 400) && (responseCode < 500)) {
         if ((accessToken != null) && (refreshToken != null)) {
           // We need a refresh, remove the access token and try again
           this.accessor.setAccessToken(null);
+          this.refreshToken();
           // make sure if we get a 2nd 401 we don't loop infinitely
-          return this.fetch(this.realRequest, true);
+          return this.fetchFromServer(this.realRequest, true);
+        } else {
+          if (refreshToken != null) {
+            this.accessor.setAccessToken(null);
+            this.accessor.setRefreshToken(null);
+            this.store.removeToken(refreshToken);
+          }
         }
       }
 

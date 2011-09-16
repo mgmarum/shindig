@@ -22,6 +22,10 @@ import org.apache.shindig.gadgets.oauth2.persistence.OAuth2EncryptionException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+/**
+ * Sample of {@link OAuth2Encrypter} inteface that does nothing.
+ * 
+ */
 @Singleton
 public class NoOpEncrypter implements OAuth2Encrypter {
   @Inject

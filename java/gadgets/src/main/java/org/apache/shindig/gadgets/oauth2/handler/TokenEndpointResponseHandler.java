@@ -20,8 +20,46 @@ import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 
+/**
+ * When an TokenEndpointResponseHandler is injected into the system it will be
+ * called on every response from the token server that it claims to handle.
+ * 
+ * See {@link http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4}
+ * 
+ * By default shindig has handlers for the Authorization Code and Client
+ * Credential flows.
+ * 
+ */
 public interface TokenEndpointResponseHandler {
+  /**
+   * Does the handler support this {@link OAuth2Accessor} / {@link HttpResponse}
+   * response?
+   * 
+   * @param accessor
+   * @param request
+   * @return <code>true</code> if handleRequest() should be invoked
+   */
   public boolean handlesResponse(OAuth2Accessor accessor, HttpResponse response);
 
+  /**
+   * Let the handler do it's magic including any accessor/store updates.
+   * 
+   * If the handler is executed but did no meaningful work it should return
+   * <code>null</code>.
+   * 
+   * If the handler is executed and encountered an error that should stop the
+   * authorization process it should set the error parameter in the
+   * {@link OAuth2Message}.
+   * 
+   * Otherwise, return an {@link OAuth2Message} with it's results.
+   * 
+   * Applies in particular to the client_credentials flow.
+   * 
+   * See {@link http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.4.1}
+   * 
+   * @param accessor
+   * @param response
+   * @return see above
+   */
   public OAuth2Message handleResponse(OAuth2Accessor accessor, HttpResponse response);
 }

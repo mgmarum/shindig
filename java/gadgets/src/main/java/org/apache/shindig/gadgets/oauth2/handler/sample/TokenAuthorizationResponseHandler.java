@@ -31,6 +31,12 @@ import org.json.JSONObject;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
+/**
+ * 
+ * See {@link TokenEndpointResponseHandler}
+ * 
+ * Handles the "client_credentials" flow
+ */
 public class TokenAuthorizationResponseHandler implements TokenEndpointResponseHandler {
   private final Provider<OAuth2Message> oauth2MessageProvider;
   private final OAuth2Store store;
@@ -129,9 +135,4 @@ public class TokenAuthorizationResponseHandler implements TokenEndpointResponseH
 
     return msg;
   }
-
-  private static OAuth2Error parseError(final HttpResponse response) {
-    return OAuth2Error.UNKNOWN_PROBLEM; // TODO ARC, improve error response
-  }
-
 }
