@@ -75,18 +75,24 @@ public class OAuth2Module extends AbstractModule {
 
     @Inject
     public OAuth2StoreProvider(
-        @Named(OAuth2Module.OAUTH2_REDIRECT_URI) final String defaultRedirectUri,
+        @Named(OAuth2Module.OAUTH2_REDIRECT_URI) final String globalRedirectUri,
         @Named(OAuth2Module.OAUTH2_IMPORT) final boolean importFromConfig,
         @Named(OAuth2Module.OAUTH2_IMPORT_CLEAN) final boolean importClean,
         final Provider<Authority> hostProvider, final OAuth2Cache cache,
         final OAuth2Persister persister, final OAuth2Encrypter encrypter,
-        final String globalRedirectUri,
         @Nullable @Named("shindig.contextroot") final String contextRoot,
         final Provider<OAuth2Message> oauth2MessageProvider,
         final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
         final List<OAuth2GrantTypeHandler> grantTypeHandlers) {
 
-      this.store = new BasicOAuth2Store(cache, persister, oauth2MessageProvider);
+      String redirectUri = globalRedirectUri;
+      if (hostProvider != null) {
+        redirectUri = redirectUri.replace("%authority%", hostProvider.get().getAuthority());
+        redirectUri = redirectUri.replace("%contextRoot%", contextRoot);
+        redirectUri = redirectUri.replace("%origin%", hostProvider.get().getOrigin());
+      }
+
+      this.store = new BasicOAuth2Store(cache, persister, oauth2MessageProvider, redirectUri);
 
       if (importFromConfig) {
         try {

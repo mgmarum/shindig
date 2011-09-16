@@ -23,14 +23,16 @@ public class BasicOAuth2Accessor implements OAuth2Accessor {
   private String tokenUrl;
   private Type type;
   private final String user;
+  private final String globalRedirectUri;
 
   public BasicOAuth2Accessor(final String gadgetUri, final String serviceName, final String user,
-      final String scope, final boolean allowModuleOverrides, final OAuth2Store store) {
+      final String scope, final boolean allowModuleOverrides, final OAuth2Store store, final String globalRedirectUri) {
     this.gadgetUri = gadgetUri;
     this.serviceName = serviceName;
     this.user = user;
     this.scope = scope;
     this.allowModuleOverrides = allowModuleOverrides;
+    this.globalRedirectUri = globalRedirectUri;
     this.state = store.getOAuth2AccessorIndex(gadgetUri, serviceName, user, scope).toString();
   }
 
@@ -53,6 +55,7 @@ public class BasicOAuth2Accessor implements OAuth2Accessor {
     this.type = accessor.getType();
     this.user = accessor.getUser();
     this.allowModuleOverrides = false;
+    this.globalRedirectUri = null;
   }
 
   public OAuth2Token getAccessToken() {
@@ -124,6 +127,9 @@ public class BasicOAuth2Accessor implements OAuth2Accessor {
   }
 
   public String getRedirectUri() {
+    if ((this.redirectUri == null) || (this.redirectUri.length() == 0)) {
+      return this.globalRedirectUri;
+    }
     return this.redirectUri;
   }
 

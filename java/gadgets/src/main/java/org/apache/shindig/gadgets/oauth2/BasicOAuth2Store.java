@@ -26,12 +26,14 @@ import com.google.inject.Provider;
 public class BasicOAuth2Store implements OAuth2Store {
   private final OAuth2Cache cache;
   private final OAuth2Persister persister;
+  private final String globalRedirectUri;
 
   @Inject
   public BasicOAuth2Store(final OAuth2Cache cache, final OAuth2Persister persister,
-      final Provider<OAuth2Message> oauth2MessageProvider) {
+      final Provider<OAuth2Message> oauth2MessageProvider, final String globalRedirectUri) {
     this.cache = cache;
     this.persister = persister;
+    this.globalRedirectUri = globalRedirectUri;
   }
 
   public boolean init() throws GadgetException {
@@ -160,7 +162,7 @@ public class BasicOAuth2Store implements OAuth2Store {
             OAuth2Token.Type.REFRESH);
 
         final BasicOAuth2Accessor newAccessor = new BasicOAuth2Accessor(gadgetUri, serviceName,
-            user, scope, client.isAllowModuleOverride(), this);
+            user, scope, client.isAllowModuleOverride(), this, this.globalRedirectUri);
         newAccessor.setAccessToken(accessToken);
         newAccessor.setAuthorizationUrl(client.getAuthorizationUrl());
         newAccessor.setClientAuthenticationType(client.getClientAuthenticationType());
