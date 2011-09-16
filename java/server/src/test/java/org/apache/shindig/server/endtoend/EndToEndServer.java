@@ -26,7 +26,7 @@ import org.apache.shindig.gadgets.oauth.OAuthModule;
 import org.apache.shindig.gadgets.oauth2.OAuth2Module;
 import org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersistenceModule;
 import org.apache.shindig.gadgets.oauth2.sample.OAuth2MessageModule;
-import org.apache.shindig.gadgets.oauth2.sample.OAuth2HandlerModule;
+import org.apache.shindig.gadgets.oauth2.handler.sample.OAuth2HandlerModule;
 import org.apache.shindig.gadgets.servlet.ConcatProxyServlet;
 import org.apache.shindig.gadgets.servlet.GadgetRenderingServlet;
 import org.apache.shindig.gadgets.servlet.JsServlet;
