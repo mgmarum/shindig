@@ -37,7 +37,7 @@
       org.apache.shindig.gadgets.oauth.OAuthModule:
       org.apache.shindig.gadgets.oauth2.OAuth2Module:
       org.apache.shindig.gadgets.oauth2.sample.OAuth2MessageModule:
-      org.apache.shindig.gadgets.oauth2.sample.OAuth2HandlerModule: 
+      org.apache.shindig.gadgets.oauth2.handler.sample.OAuth2HandlerModule: 
       org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersistenceModule:     
       org.apache.shindig.common.cache.ehcache.EhCacheModule:
       org.apache.shindig.sample.shiro.ShiroGuiceModule:

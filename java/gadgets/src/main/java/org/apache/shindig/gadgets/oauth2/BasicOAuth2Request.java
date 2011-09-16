@@ -20,6 +20,11 @@ import org.apache.shindig.gadgets.http.HttpFetcher;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.http.HttpResponseBuilder;
+import org.apache.shindig.gadgets.oauth2.handler.AuthorizationEndpointResponseHandler;
+import org.apache.shindig.gadgets.oauth2.handler.ClientAuthenticationHandler;
+import org.apache.shindig.gadgets.oauth2.handler.GrantRequestHandler;
+import org.apache.shindig.gadgets.oauth2.handler.ResourceRequestHandler;
+import org.apache.shindig.gadgets.oauth2.handler.TokenEndpointResponseHandler;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,11 +52,15 @@ public class BasicOAuth2Request implements OAuth2Request {
 
   private boolean refreshTry = false;
 
-  private final List<OAuth2TokenTypeHandler> tokenTypeHandlers;
+  private final List<AuthorizationEndpointResponseHandler> authorizationEndpointResponseHandlers;
 
-  private final List<OAuth2GrantTypeHandler> grantTypeHandlers;
+  private final List<ClientAuthenticationHandler> clientAuthenticationHandlers;
 
-  private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
+  private final List<GrantRequestHandler> grantRequestHandlers;
+
+  private final List<ResourceRequestHandler> resourceRequestHandlers;
+
+  private final List<TokenEndpointResponseHandler> tokenEndpointResponseHandlers;
 
   private final Provider<OAuth2Message> oauth2MessageProvider;
 
@@ -63,15 +72,19 @@ public class BasicOAuth2Request implements OAuth2Request {
    */
   @Inject
   public BasicOAuth2Request(final OAuth2FetcherConfig fetcherConfig, final HttpFetcher fetcher,
-      final List<OAuth2TokenTypeHandler> tokenTypeHandlers,
-      final List<OAuth2GrantTypeHandler> grantTypeHandlers,
-      final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
+      final List<AuthorizationEndpointResponseHandler> authorizationEndpointResponseHandlers,
+      final List<ClientAuthenticationHandler> clientAuthenticationHandlers,
+      final List<GrantRequestHandler> grantRequestHandlers,
+      final List<ResourceRequestHandler> resourceRequestHandlers,
+      final List<TokenEndpointResponseHandler> tokenEndpointResponseHandlers,
       final Provider<OAuth2Message> oauth2MessageProvider) {
     this.fetcherConfig = fetcherConfig;
     this.fetcher = fetcher;
-    this.tokenTypeHandlers = tokenTypeHandlers;
-    this.grantTypeHandlers = grantTypeHandlers;
-    this.authenticationHandlers = authenticationHandlers;
+    this.authorizationEndpointResponseHandlers = authorizationEndpointResponseHandlers;
+    this.clientAuthenticationHandlers = clientAuthenticationHandlers;
+    this.grantRequestHandlers = grantRequestHandlers;
+    this.resourceRequestHandlers = resourceRequestHandlers;
+    this.tokenEndpointResponseHandlers = tokenEndpointResponseHandlers;
     this.oauth2MessageProvider = oauth2MessageProvider;
   }
 
@@ -109,7 +122,6 @@ public class BasicOAuth2Request implements OAuth2Request {
 
       response = this.fetchWithRetry();
     } catch (final OAuth2RequestException e) {
-      e.printStackTrace(); // TODO ARC
       // No data for us.
       if (OAuth2Error.UNAUTHENTICATED.name().equals(e.getError())) {
         this.responseParams.logDetailedInfo(BasicOAuth2Request.classname, "fetchNoThrow",
@@ -171,14 +183,26 @@ public class BasicOAuth2Request implements OAuth2Request {
       // We don't have an access token, we need to try and get one
       // First step see if we have a refresh token
       if (BasicOAuth2Request.haveRefreshToken(this.accessor) != null) {
-        // TODO ARC
         this.checkCanAuthorize();
         this.refreshToken();
       } else {
         this.checkCanAuthorize();
-        this.buildAuthorizationUrl();
 
-        return new HttpResponseBuilder().setHttpStatusCode(HttpResponse.SC_OK).setStrictNoCache();
+        GrantRequestHandler grantRequestHandlerUsed = null;
+        for (final GrantRequestHandler grantRequestHandler : this.grantRequestHandlers) {
+          if (grantRequestHandler.getGrantType().equalsIgnoreCase(this.accessor.getGrantType())) {
+            grantRequestHandlerUsed = grantRequestHandler;
+            break;
+          }
+        }
+
+        final String completeAuthUrl = grantRequestHandlerUsed.getCompleteUrl(this.accessor);
+        if (grantRequestHandlerUsed.isRedirectRequired()) {
+          this.responseParams.setAuthorizationUrl(completeAuthUrl);
+          return new HttpResponseBuilder().setHttpStatusCode(HttpResponse.SC_OK).setStrictNoCache();
+        } else {
+          this.authorize(grantRequestHandlerUsed, completeAuthUrl);
+        }
       }
     }
 
@@ -198,20 +222,47 @@ public class BasicOAuth2Request implements OAuth2Request {
     // }
   }
 
-  private void buildAuthorizationUrl() throws OAuth2RequestException {
-    final String authUrl = this.accessor.getAuthorizationUrl();
-    if (authUrl == null) {
-      throw new OAuth2RequestException(OAuth2Error.BAD_OAUTH_TOKEN_URL, "authorization");
+  private void authorize(final GrantRequestHandler grantRequestHandler, final String completeAuthUrl)
+      throws OAuth2RequestException {
+
+    final HttpRequest authorizationRequest = grantRequestHandler.getAuthorizationRequest(
+        this.accessor, completeAuthUrl);
+
+    HttpResponse authorizationResponse;
+    try {
+      authorizationResponse = this.fetcher.fetch(authorizationRequest);
+    } catch (final GadgetException e) {
+      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "", e);
     }
 
-    String completeAuthUrl = authUrl;
-    for (final OAuth2GrantTypeHandler grantTypeHandler : this.grantTypeHandlers) {
-      if (grantTypeHandler.getGrantType().equalsIgnoreCase(this.accessor.getGrantType())) {
-        completeAuthUrl = grantTypeHandler.getCompleteAuthorizationUrl(this.accessor, authUrl);
+    if (grantRequestHandler.isAuthorizationEndpointResponse()) {
+      for (final AuthorizationEndpointResponseHandler authorizationEndpointResponseHandler : this.authorizationEndpointResponseHandlers) {
+        if (authorizationEndpointResponseHandler.handlesResponse(this.accessor,
+            authorizationResponse)) {
+          final OAuth2Message msg = authorizationEndpointResponseHandler.handleResponse(
+              this.accessor, authorizationResponse);
+          if (msg != null) {
+            if (msg.getError() != null) {
+              throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM);
+            }
+          }
+        }
       }
     }
 
-    this.responseParams.setAuthorizationUrl(completeAuthUrl);
+    if (grantRequestHandler.isTokenEndpointResponse()) {
+      for (final TokenEndpointResponseHandler tokenEndpointResponseHandler : this.tokenEndpointResponseHandlers) {
+        if (tokenEndpointResponseHandler.handlesResponse(this.accessor, authorizationResponse)) {
+          final OAuth2Message msg = tokenEndpointResponseHandler.handleResponse(this.accessor,
+              authorizationResponse);
+          if (msg != null) {
+            if (msg.getError() != null) {
+              throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM);
+            }
+          }
+        }
+      }
+    }
   }
 
   private static OAuth2Token haveAccessToken(final OAuth2Accessor accessor) {
@@ -268,9 +319,9 @@ public class BasicOAuth2Request implements OAuth2Request {
         tokenType = OAuth2Message.BEARER_TOKEN_TYPE;
       }
 
-      for (final OAuth2TokenTypeHandler tokenTypeHandler : this.tokenTypeHandlers) {
-        if (tokenType.equalsIgnoreCase(tokenTypeHandler.getTokenType())) {
-          tokenTypeHandler.addOAuth2Params(this.accessor, request);
+      for (final ResourceRequestHandler resourceRequestHandler : this.resourceRequestHandlers) {
+        if (tokenType.equalsIgnoreCase(resourceRequestHandler.getTokenType())) {
+          resourceRequestHandler.addOAuth2Params(this.accessor, request);
         }
       }
     }
@@ -316,10 +367,10 @@ public class BasicOAuth2Request implements OAuth2Request {
     request.setParam(OAuth2Message.CLIENT_ID, clientId);
     request.setParam(OAuth2Message.CLIENT_SECRET, secret);
 
-    for (final OAuth2ClientAuthenticationHandler authenticationHandler : this.authenticationHandlers) {
-      if (authenticationHandler.geClientAuthenticationType().equalsIgnoreCase(
+    for (final ClientAuthenticationHandler clientAuthenticationHandler : this.clientAuthenticationHandlers) {
+      if (clientAuthenticationHandler.geClientAuthenticationType().equalsIgnoreCase(
           this.accessor.getClientAuthenticationType())) {
-        authenticationHandler.addOAuth2Authentication(request, this.accessor);
+        clientAuthenticationHandler.addOAuth2Authentication(request, this.accessor);
       }
     }
 

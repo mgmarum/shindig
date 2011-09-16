@@ -19,12 +19,11 @@ import org.apache.shindig.common.servlet.HttpUtil;
 import org.apache.shindig.common.servlet.InjectedServlet;
 import org.apache.shindig.common.uri.UriBuilder;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
-import org.apache.shindig.gadgets.oauth2.OAuth2AuthorizationResponseHandler;
 import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
-import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
 import org.apache.shindig.gadgets.oauth2.OAuth2ResponseParams;
 import org.apache.shindig.gadgets.oauth2.OAuth2Store;
+import org.apache.shindig.gadgets.oauth2.handler.AuthorizationEndpointResponseHandler;
 
 import com.google.inject.Inject;
 
@@ -46,7 +45,7 @@ public class OAuth2CallbackServlet extends InjectedServlet {
       + "</body>\n"
       + "</html>\n";
 
-  private transient List<OAuth2AuthorizationResponseHandler> authorizationResponseHandlers;
+  private transient List<AuthorizationEndpointResponseHandler> authorizationEndpointResponseHandlers;
   private transient OAuth2Store store;
 
   @Inject
@@ -56,8 +55,8 @@ public class OAuth2CallbackServlet extends InjectedServlet {
 
   @Inject
   public void setAuthorizationResponseHandlers(
-      final List<OAuth2AuthorizationResponseHandler> authorizationResponseHandlers) {
-    this.authorizationResponseHandlers = authorizationResponseHandlers;
+      final List<AuthorizationEndpointResponseHandler> authorizationEndpointResponseHandlers) {
+    this.authorizationEndpointResponseHandlers = authorizationEndpointResponseHandlers;
   }
 
   @Override
@@ -67,21 +66,20 @@ public class OAuth2CallbackServlet extends InjectedServlet {
     final String requestStateKey = request.getParameter(OAuth2Message.STATE);
     final Integer index = Integer.decode(requestStateKey);
 
-    OAuth2Accessor accessor;
-    OAuth2Message msg;
-    try {
-      accessor = this.store.getOAuth2Accessor(index);
-
-      msg = null;
-      for (final OAuth2AuthorizationResponseHandler authorizationResponseHandler : this.authorizationResponseHandlers) {
-        msg = authorizationResponseHandler.handleRequest(accessor, request);
-        if (msg != null) {
-          break;
-        }
-      }
-    } catch (final OAuth2RequestException e) {
+    final OAuth2Accessor accessor = this.store.getOAuth2Accessor(index);
+    
+    if (accessor == null) {
       this.sendError(OAuth2Error.UNKNOWN_PROBLEM, null, null, request, resp);
       return;
+    }
+    
+    OAuth2Message msg = null;
+
+    for (final AuthorizationEndpointResponseHandler authorizationEndpointResponseHandler : this.authorizationEndpointResponseHandlers) {
+      if (authorizationEndpointResponseHandler.handlesRequest(accessor, request)) {
+        msg = authorizationEndpointResponseHandler.handleRequest(accessor, request);
+        break;
+      }
     }
 
     OAuth2Error error = null;

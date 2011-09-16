@@ -1,17 +1,18 @@
-package org.apache.shindig.gadgets.oauth2.sample;
+package org.apache.shindig.gadgets.oauth2.handler.sample;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
-import org.apache.shindig.gadgets.oauth2.OAuth2GrantTypeHandler;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Utils;
+import org.apache.shindig.gadgets.oauth2.handler.GrantRequestHandler;
 
 import com.google.inject.Inject;
 
-public class CodeGrantTypeHandler implements OAuth2GrantTypeHandler {
+public class CodeGrantTypeHandler implements GrantRequestHandler {
 
   @Inject
   public CodeGrantTypeHandler() {
@@ -25,31 +26,19 @@ public class CodeGrantTypeHandler implements OAuth2GrantTypeHandler {
     return OAuth2Message.AUTHORIZATION_CODE;
   }
 
-  public String getAuthorizationBody(final OAuth2Accessor accessor, final String authorizationCode)
-      throws OAuth2RequestException {
-    String ret = "";
-
-    final Map<String, String> queryParams = new HashMap<String, String>(5);
-    queryParams.put(OAuth2Message.GRANT_TYPE, this.getResponseType());
-    queryParams.put(OAuth2Message.AUTHORIZATION, authorizationCode);
-    queryParams.put(OAuth2Message.REDIRECT_URI, accessor.getRedirectUri());
-
-    final String clientId = accessor.getClientId();
-    final String secret = accessor.getClientSecret();
-    queryParams.put(OAuth2Message.CLIENT_ID, clientId);
-    queryParams.put(OAuth2Message.CLIENT_SECRET, secret);
-
-    ret = OAuth2Utils.buildUrl(ret, queryParams, null);
-
-    if ((ret.startsWith("?")) || (ret.startsWith("&"))) {
-      ret = ret.substring(1);
-    }
-
-    return ret;
+  public boolean isAuthorizationEndpointResponse() {
+    return true;
   }
 
-  public String getCompleteAuthorizationUrl(final OAuth2Accessor accessor,
-      final String authorizationUrl) throws OAuth2RequestException {
+  public boolean isRedirectRequired() {
+    return true;
+  }
+
+  public boolean isTokenEndpointResponse() {
+    return false;
+  }
+
+  public String getCompleteUrl(final OAuth2Accessor accessor) throws OAuth2RequestException {
     final Map<String, String> queryParams = new HashMap<String, String>(5);
     queryParams.put(OAuth2Message.RESPONSE_TYPE, this.getGrantType());
     queryParams.put(OAuth2Message.CLIENT_ID, accessor.getClientId());
@@ -68,9 +57,13 @@ public class CodeGrantTypeHandler implements OAuth2GrantTypeHandler {
       queryParams.put(OAuth2Message.SCOPE, scope);
     }
 
-    final String ret = OAuth2Utils.buildUrl(authorizationUrl, queryParams, null);
+    final String ret = OAuth2Utils.buildUrl(accessor.getAuthorizationUrl(), queryParams, null);
 
     return ret;
   }
 
+  public HttpRequest getAuthorizationRequest(final OAuth2Accessor accessor,
+      final String completeAuthorizationUrl) {
+    return null;
+  }
 }

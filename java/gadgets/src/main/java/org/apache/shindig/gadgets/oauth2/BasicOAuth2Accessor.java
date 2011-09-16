@@ -26,7 +26,8 @@ public class BasicOAuth2Accessor implements OAuth2Accessor {
   private final String globalRedirectUri;
 
   public BasicOAuth2Accessor(final String gadgetUri, final String serviceName, final String user,
-      final String scope, final boolean allowModuleOverrides, final OAuth2Store store, final String globalRedirectUri) {
+      final String scope, final boolean allowModuleOverrides, final OAuth2Store store,
+      final String globalRedirectUri) {
     this.gadgetUri = gadgetUri;
     this.serviceName = serviceName;
     this.user = user;

@@ -1,4 +1,4 @@
-package org.apache.shindig.gadgets.oauth2.sample;
+package org.apache.shindig.gadgets.oauth2.handler.sample;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,14 +10,11 @@ import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
-import org.apache.shindig.gadgets.oauth2.OAuth2TokenTypeHandler;
 import org.apache.shindig.gadgets.oauth2.OAuth2Utils;
+import org.apache.shindig.gadgets.oauth2.handler.ResourceRequestHandler;
 
-import com.google.inject.Inject;
+public class BearerTokenHandler implements ResourceRequestHandler {
 
-public class BearerTokenHandler implements OAuth2TokenTypeHandler {
-
-  @Inject
   public BearerTokenHandler() {
   }
 

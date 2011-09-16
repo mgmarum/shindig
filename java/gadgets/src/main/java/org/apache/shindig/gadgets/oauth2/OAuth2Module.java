@@ -14,6 +14,11 @@ import org.apache.shindig.common.Nullable;
 import org.apache.shindig.common.servlet.Authority;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.http.HttpFetcher;
+import org.apache.shindig.gadgets.oauth2.handler.AuthorizationEndpointResponseHandler;
+import org.apache.shindig.gadgets.oauth2.handler.ClientAuthenticationHandler;
+import org.apache.shindig.gadgets.oauth2.handler.GrantRequestHandler;
+import org.apache.shindig.gadgets.oauth2.handler.ResourceRequestHandler;
+import org.apache.shindig.gadgets.oauth2.handler.TokenEndpointResponseHandler;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Cache;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Encrypter;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2PersistenceException;
@@ -43,28 +48,36 @@ public class OAuth2Module extends AbstractModule {
   public static class OAuth2RequestProvider implements Provider<OAuth2Request> {
     private final OAuth2FetcherConfig config;
     private final HttpFetcher fetcher;
-    private final List<OAuth2TokenTypeHandler> tokenTypeHandlers;
-    private final List<OAuth2GrantTypeHandler> grantTypeHandlers;
-    private final List<OAuth2ClientAuthenticationHandler> authenticationHandlers;
+    private final List<AuthorizationEndpointResponseHandler> authorizationEndpointResponseHandlers;
+    private final List<ClientAuthenticationHandler> clientAuthenticationHandlers;
+    private final List<GrantRequestHandler> grantRequestHandlers;
+    private final List<ResourceRequestHandler> resourceRequestHandlers;
+    private final List<TokenEndpointResponseHandler> tokenEndpointResponseHandlers;
     private final Provider<OAuth2Message> oauth2MessageProvider;
 
     @Inject
     public OAuth2RequestProvider(final OAuth2FetcherConfig config, final HttpFetcher fetcher,
-        final List<OAuth2TokenTypeHandler> tokenTypeHandlers,
-        final List<OAuth2GrantTypeHandler> grantTypeHandlers,
-        final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
+        final List<AuthorizationEndpointResponseHandler> authorizationEndpointResponseHandlers,
+        final List<ClientAuthenticationHandler> clientAuthenticationHandlers,
+        final List<GrantRequestHandler> grantRequestHandlers,
+        final List<ResourceRequestHandler> resourceRequestHandlers,
+        final List<TokenEndpointResponseHandler> tokenEndpointResponseHandlers,
         final Provider<OAuth2Message> oauth2MessageProvider) {
       this.config = config;
       this.fetcher = fetcher;
-      this.tokenTypeHandlers = tokenTypeHandlers;
-      this.grantTypeHandlers = grantTypeHandlers;
-      this.authenticationHandlers = authenticationHandlers;
+      this.authorizationEndpointResponseHandlers = authorizationEndpointResponseHandlers;
+      this.clientAuthenticationHandlers = clientAuthenticationHandlers;
+      this.grantRequestHandlers = grantRequestHandlers;
+      this.resourceRequestHandlers = resourceRequestHandlers;
+      this.tokenEndpointResponseHandlers = tokenEndpointResponseHandlers;
       this.oauth2MessageProvider = oauth2MessageProvider;
     }
 
     public OAuth2Request get() {
-      return new BasicOAuth2Request(this.config, this.fetcher, this.tokenTypeHandlers,
-          this.grantTypeHandlers, this.authenticationHandlers, this.oauth2MessageProvider);
+      return new BasicOAuth2Request(this.config, this.fetcher,
+          this.authorizationEndpointResponseHandlers, this.clientAuthenticationHandlers,
+          this.grantRequestHandlers, this.resourceRequestHandlers,
+          this.tokenEndpointResponseHandlers, this.oauth2MessageProvider);
     }
   }
 
@@ -80,10 +93,7 @@ public class OAuth2Module extends AbstractModule {
         @Named(OAuth2Module.OAUTH2_IMPORT_CLEAN) final boolean importClean,
         final Provider<Authority> hostProvider, final OAuth2Cache cache,
         final OAuth2Persister persister, final OAuth2Encrypter encrypter,
-        @Nullable @Named("shindig.contextroot") final String contextRoot,
-        final Provider<OAuth2Message> oauth2MessageProvider,
-        final List<OAuth2ClientAuthenticationHandler> authenticationHandlers,
-        final List<OAuth2GrantTypeHandler> grantTypeHandlers) {
+        @Nullable @Named("shindig.contextroot") final String contextRoot) {
 
       String redirectUri = globalRedirectUri;
       if (hostProvider != null) {
@@ -92,7 +102,7 @@ public class OAuth2Module extends AbstractModule {
         redirectUri = redirectUri.replace("%origin%", hostProvider.get().getOrigin());
       }
 
-      this.store = new BasicOAuth2Store(cache, persister, oauth2MessageProvider, redirectUri);
+      this.store = new BasicOAuth2Store(cache, persister, redirectUri);
 
       if (importFromConfig) {
         try {

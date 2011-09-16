@@ -5,16 +5,15 @@
  * 
  * NO IBM CONFIDENTIAL CODE OR INFORMATION!
  */
-package org.apache.shindig.gadgets.oauth2;
+package org.apache.shindig.gadgets.oauth2.handler;
 
 import org.apache.shindig.gadgets.http.HttpRequest;
+import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 
 //NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
-public interface OAuth2TokenTypeHandler {
+public interface ClientAuthenticationHandler {
+  public String geClientAuthenticationType();
 
-  public String getTokenType();
-
-  public void addOAuth2Params(final OAuth2Accessor accessor, final HttpRequest request)
-      throws OAuth2RequestException;
+  public void addOAuth2Authentication(HttpRequest request, OAuth2Accessor accessor);
 }

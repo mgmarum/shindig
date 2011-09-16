@@ -18,10 +18,8 @@
  */
 package org.apache.shindig.gadgets.rewrite;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import static org.junit.Assert.assertEquals;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.shindig.common.PropertiesModule;
 import org.apache.shindig.common.uri.Uri;
@@ -31,9 +29,9 @@ import org.apache.shindig.gadgets.Gadget;
 import org.apache.shindig.gadgets.http.HttpRequest;
 import org.apache.shindig.gadgets.oauth.OAuthModule;
 import org.apache.shindig.gadgets.oauth2.OAuth2Module;
+import org.apache.shindig.gadgets.oauth2.handler.sample.OAuth2HandlerModule;
 import org.apache.shindig.gadgets.oauth2.persistence.sample.OAuth2PersistenceModule;
 import org.apache.shindig.gadgets.oauth2.sample.OAuth2MessageModule;
-import org.apache.shindig.gadgets.oauth2.sample.OAuth2HandlerModule;
 import org.apache.shindig.gadgets.parse.ParseModule;
 import org.apache.shindig.gadgets.parse.caja.CajaHtmlParser;
 import org.apache.shindig.gadgets.parse.caja.CajaHtmlSerializer;
@@ -45,7 +43,10 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
-import static org.junit.Assert.assertEquals;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 /**
  * Tests for StyleTagProxyEmbeddedUrlsVisitor.

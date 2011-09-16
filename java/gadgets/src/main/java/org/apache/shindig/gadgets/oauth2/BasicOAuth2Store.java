@@ -19,7 +19,6 @@ import org.apache.shindig.gadgets.oauth2.persistence.OAuth2PersistenceException;
 import org.apache.shindig.gadgets.oauth2.persistence.OAuth2Persister;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 //NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
@@ -30,7 +29,7 @@ public class BasicOAuth2Store implements OAuth2Store {
 
   @Inject
   public BasicOAuth2Store(final OAuth2Cache cache, final OAuth2Persister persister,
-      final Provider<OAuth2Message> oauth2MessageProvider, final String globalRedirectUri) {
+      final String globalRedirectUri) {
     this.cache = cache;
     this.persister = persister;
     this.globalRedirectUri = globalRedirectUri;
