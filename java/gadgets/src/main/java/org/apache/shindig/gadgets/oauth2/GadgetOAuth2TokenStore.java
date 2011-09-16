@@ -1,9 +1,19 @@
-/**
- * This class is intended to be contributed back to the
- * Open Source Shindig project.  (Or at least submitted
- * for review.)  
- * 
- * NO IBM CONFIDENTIAL CODE OR INFORMATION!
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 package org.apache.shindig.gadgets.oauth2;
 
@@ -20,8 +30,12 @@ import org.apache.shindig.gadgets.spec.OAuth2Spec;
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 
-// NO IBM CONFIDENTIAL CODE OR INFORMATION!
-
+/**
+ * Higher-level interface that allows callers to store and retrieve
+ * OAuth2-related data directly from {@code GadgetSpec}s, {@code GadgetContext}s,
+ * etc. See {@link OAuth2Store} for a more detailed explanation of the OAuth 2.0
+ * Data Store.
+ */
 public class GadgetOAuth2TokenStore {
   private final OAuth2Store store;
   private final GadgetSpecFactory specFactory;
@@ -32,10 +46,24 @@ public class GadgetOAuth2TokenStore {
     this.specFactory = specFactory;
   }
 
+  /**
+   *  
+   * @return the {@link OAuth2Store}, never <code>null</code>
+   */
   public OAuth2Store getOAuth2Store() {
     return this.store;
   }
 
+  /**
+   * Retrieves and merges the data from the {@link OAuth2Store}, the gadget spec and the
+   * request itself to populate the OAuth2 data for this requets.
+   * 
+   * @param securityToken {@link SecurityToken} from the request
+   * @param arguments {@link OAuth2Arguments} from the request
+   * @param gadgetUri gadget uri from the request
+   * @return the {@link OAuth2Accessor} for the request
+   * @throws OAuth2RequestException
+   */
   public OAuth2Accessor getOAuth2Accessor(final SecurityToken securityToken,
       final OAuth2Arguments arguments, final Uri gadgetUri) throws OAuth2RequestException {
 

@@ -5,7 +5,7 @@
  * 
  * NO IBM CONFIDENTIAL CODE OR INFORMATION!
  */
-package org.apache.shindig.gadgets.oauth2;
+package org.apache.shindig.gadgets.oauth2.persistence;
 
 import org.apache.shindig.gadgets.GadgetException;
 

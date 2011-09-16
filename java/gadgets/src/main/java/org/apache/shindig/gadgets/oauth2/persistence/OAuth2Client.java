@@ -3,7 +3,6 @@ package org.apache.shindig.gadgets.oauth2.persistence;
 import java.io.Serializable;
 
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
-import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
 
 import com.google.inject.Inject;

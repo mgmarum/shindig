@@ -1,9 +1,20 @@
-/**
- * This class is intended to be contributed back to the
- * Open Source Shindig project.  (Or at least submitted
- * for review.)  
- * 
- * NO IBM CONFIDENTIAL CODE OR INFORMATION!
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.shindig.gadgets.oauth2;
 
@@ -22,9 +33,6 @@ import com.google.common.base.Objects;
 /**
  * Arguments to an OAuth2 fetch sent by the client.
  */
-
-// NO IBM CONFIDENTIAL CODE OR INFORMATION!
-
 public class OAuth2Arguments {
   private static final String SERVICE_PARAM = "OAUTH_SERVICE_NAME";
   private static final String SCOPE_PARAM = "OAUTH_SCOPE";
@@ -37,8 +45,13 @@ public class OAuth2Arguments {
   private final Map<String, String> requestOptions = new TreeMap<String, String>(
       String.CASE_INSENSITIVE_ORDER);
 
-  public OAuth2Arguments(final AuthType auth, final HttpServletRequest request)
-      throws GadgetException {
+  /**
+   * Public constructor to parse OAuth2Arguments from a {@link HttpServletRequest}
+
+   * @param request {@link HttpServletRequest} that came into the server
+   * @throws GadgetException
+   */
+  public OAuth2Arguments(final HttpServletRequest request) throws GadgetException {
     this.serviceName = OAuth2Arguments.getRequestParam(request, OAuth2Arguments.SERVICE_PARAM, "");
     this.scope = OAuth2Arguments.getRequestParam(request, OAuth2Arguments.SCOPE_PARAM, "");
     this.bypassSpecCache = "1".equals(OAuth2Arguments.getRequestParam(request,

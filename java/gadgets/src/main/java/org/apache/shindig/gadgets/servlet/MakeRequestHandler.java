@@ -203,7 +203,7 @@ public class MakeRequestHandler {
     if (auth != AuthType.NONE) {
       if (auth == AuthType.OAUTH2) {
         req.setSecurityToken(extractAndValidateToken(request));
-        req.setOAuth2Arguments(new OAuth2Arguments(auth, request));
+        req.setOAuth2Arguments(new OAuth2Arguments(request));
       } else {
         req.setSecurityToken(extractAndValidateToken(request));
         req.setOAuthArguments(new OAuthArguments(auth, request));

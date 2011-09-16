@@ -34,7 +34,7 @@ import com.google.inject.name.Named;
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 
 public class OAuth2Module extends AbstractModule {
-  private static final String OAUTH2_REDIRECT_URI = "shindig.signing.oauth2.global-redirect-uri";
+  private static final String OAUTH2_REDIRECT_URI = "shindig.oauth2.global-redirect-uri";
   private static final String OAUTH2_IMPORT = "shindig.oauth2.import";
   private static final String OAUTH2_IMPORT_CLEAN = "shindig.oauth2.import.clean";
 

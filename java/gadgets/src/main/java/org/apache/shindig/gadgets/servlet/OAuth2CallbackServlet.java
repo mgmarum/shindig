@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.shindig.common.servlet.HttpUtil;
 import org.apache.shindig.common.servlet.InjectedServlet;
-import org.apache.shindig.common.uri.UriBuilder;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
 import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
@@ -67,12 +66,12 @@ public class OAuth2CallbackServlet extends InjectedServlet {
     final Integer index = Integer.decode(requestStateKey);
 
     final OAuth2Accessor accessor = this.store.getOAuth2Accessor(index);
-    
+
     if (accessor == null) {
       this.sendError(OAuth2Error.UNKNOWN_PROBLEM, null, null, request, resp);
       return;
     }
-    
+
     OAuth2Message msg = null;
 
     for (final AuthorizationEndpointResponseHandler authorizationEndpointResponseHandler : this.authorizationEndpointResponseHandlers) {
@@ -93,23 +92,10 @@ public class OAuth2CallbackServlet extends InjectedServlet {
     }
 
     if (error == null) {
-      if (accessor.getRealCallbackUrl() != null) {
-        // Copy the query parameters from this URL over to the real URL.
-        final UriBuilder realUri = UriBuilder.parse(accessor.getRealCallbackUrl());
-        final Map<String, List<String>> params = UriBuilder.splitParameters(request
-            .getQueryString());
-        for (final Map.Entry<String, List<String>> entry : params.entrySet()) {
-          realUri.putQueryParameter(entry.getKey(), entry.getValue());
-        }
-        HttpUtil.setCachingHeaders(resp, OAuthCallbackServlet.ONE_HOUR_IN_SECONDS, true);
-        resp.sendRedirect(realUri.toString());
-        return;
-      } else {
-        HttpUtil.setCachingHeaders(resp, OAuthCallbackServlet.ONE_HOUR_IN_SECONDS, true);
-        resp.setContentType("text/html; charset=UTF-8");
-        resp.getWriter().write(OAuthCallbackServlet.RESP_BODY);
-        return;
-      }
+      HttpUtil.setCachingHeaders(resp, OAuthCallbackServlet.ONE_HOUR_IN_SECONDS, true);
+      resp.setContentType("text/html; charset=UTF-8");
+      resp.getWriter().write(OAuthCallbackServlet.RESP_BODY);
+      return;
     }
 
     this.sendError(error, msg, accessor, request, resp);
@@ -118,29 +104,18 @@ public class OAuth2CallbackServlet extends InjectedServlet {
   private void sendError(final OAuth2Error error, final OAuth2Message msg,
       final OAuth2Accessor accessor, final HttpServletRequest request,
       final HttpServletResponse resp) throws IOException {
-    if ((accessor != null) && (accessor.getRealErrorCallbackUrl() != null)) {
-      // Copy the query parameters from this URL over to the real URL.
-      final UriBuilder realUri = UriBuilder.parse(accessor.getRealErrorCallbackUrl());
-      final Map<String, List<String>> params = UriBuilder.splitParameters(request.getQueryString());
-      for (final Map.Entry<String, List<String>> entry : params.entrySet()) {
-        realUri.putQueryParameter(entry.getKey(), entry.getValue());
-      }
-      HttpUtil.setCachingHeaders(resp, OAuthCallbackServlet.ONE_HOUR_IN_SECONDS, true);
-      resp.sendRedirect(realUri.toString());
-      return;
+
+    final Map<String, String> queryParams = new HashMap<String, String>();
+    queryParams.put(OAuth2ResponseParams.ERROR_CODE, error.toString());
+    if (msg != null) {
+      queryParams.put(OAuth2ResponseParams.ERROR_TEXT, msg.getErrorDescription());
+      queryParams.put(OAuth2ResponseParams.ERROR_URI, msg.getErrorUri());
     } else {
-      final Map<String, String> queryParams = new HashMap<String, String>();
-      queryParams.put(OAuth2ResponseParams.ERROR_CODE, error.toString());
-      if (msg != null) {
-        queryParams.put(OAuth2ResponseParams.ERROR_TEXT, msg.getErrorDescription());
-        queryParams.put(OAuth2ResponseParams.ERROR_URI, msg.getErrorUri());
-      } else {
-        queryParams.put(OAuth2ResponseParams.ERROR_TEXT, "No valid OAuth2Error reported.");
-      }
-      HttpUtil.setCachingHeaders(resp, OAuthCallbackServlet.ONE_HOUR_IN_SECONDS, true);
-      resp.setContentType("text/html; charset=UTF-8");
-      resp.getWriter().write(OAuth2CallbackServlet.RESP_ERROR_BODY);
-      return;
+      queryParams.put(OAuth2ResponseParams.ERROR_TEXT, "No valid OAuth2Error reported.");
     }
+    HttpUtil.setCachingHeaders(resp, OAuthCallbackServlet.ONE_HOUR_IN_SECONDS, true);
+    resp.setContentType("text/html; charset=UTF-8");
+    resp.getWriter().write(OAuth2CallbackServlet.RESP_ERROR_BODY);
+    return;
   }
 }

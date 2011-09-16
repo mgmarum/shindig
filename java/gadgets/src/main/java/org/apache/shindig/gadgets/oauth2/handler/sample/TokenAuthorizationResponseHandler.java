@@ -3,12 +3,13 @@ package org.apache.shindig.gadgets.oauth2.handler.sample;
 import org.apache.shindig.gadgets.GadgetException;
 import org.apache.shindig.gadgets.http.HttpResponse;
 import org.apache.shindig.gadgets.oauth2.OAuth2Accessor;
-import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Error;
 import org.apache.shindig.gadgets.oauth2.OAuth2Message;
+import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Store;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 import org.apache.shindig.gadgets.oauth2.handler.TokenEndpointResponseHandler;
+import org.apache.shindig.gadgets.oauth2.persistence.OAuth2EncryptionException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -103,7 +104,7 @@ public class TokenAuthorizationResponseHandler implements TokenEndpointResponseH
       }
     } catch (final NumberFormatException e) {
       return null;
-    } catch (final OAuth2EncryptionException e) {
+    } catch (final OAuth2RequestException e) {
       return null;
     } catch (final JSONException e) {
       return null;

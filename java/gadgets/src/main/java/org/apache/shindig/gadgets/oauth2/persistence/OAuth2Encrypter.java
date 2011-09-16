@@ -7,7 +7,6 @@
  */
 package org.apache.shindig.gadgets.oauth2.persistence;
 
-import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
 
 // NO IBM CONFIDENTIAL CODE OR INFORMATION!
 

@@ -31,7 +31,7 @@ public interface OAuth2Token extends Serializable {
 
   public void setScope(String scope);
 
-  public void setSecret(String secret) throws OAuth2EncryptionException;
+  public void setSecret(String secret) throws OAuth2RequestException;
 
   public void setTokenType(String tokenType);
 

@@ -2,7 +2,8 @@ package org.apache.shindig.gadgets.oauth2.persistence;
 
 import java.io.Serializable;
 
-import org.apache.shindig.gadgets.oauth2.OAuth2EncryptionException;
+import org.apache.shindig.gadgets.oauth2.OAuth2Error;
+import org.apache.shindig.gadgets.oauth2.OAuth2RequestException;
 import org.apache.shindig.gadgets.oauth2.OAuth2Token;
 
 import com.google.inject.Inject;
@@ -39,9 +40,13 @@ public class OAuth2TokenPersistence implements OAuth2Token, Serializable {
     return this.secret;
   }
 
-  public void setSecret(final String secret) throws OAuth2EncryptionException {
+  public void setSecret(final String secret) throws OAuth2RequestException {
     this.secret = secret;
-    this.encryptedSecret = this.encrypter.encrypt(secret);
+    try {
+      this.encryptedSecret = this.encrypter.encrypt(secret);
+    } catch (final OAuth2EncryptionException e) {
+      throw new OAuth2RequestException(OAuth2Error.UNKNOWN_PROBLEM, "", e);
+    }
   }
 
   public String getEncryptedSecret() {
