@@ -25,8 +25,12 @@ import javax.servlet.http.HttpServletRequest;
  * Interface representing an OAuth2Message parser that is injected into the
  * {@link OAuth2Request} layer.
  * 
- * It also contains the OAuth2 constants.
- *
+ * It also contains the OAuth 2.0 constants.
+ * 
+ * With the simplicity of the OAuth 2.0 client it is unlikely that another
+ * version of this class will need to be injected, but it can be with
+ * <code>com.google.inject.Provider<OAuth2Message></code>
+ * 
  */
 public interface OAuth2Message {
   public final static String ACCESS_DENIED = "access_denied";
@@ -63,31 +67,101 @@ public interface OAuth2Message {
   public final static String UNSUPPORTED_GRANT_TYPE = "unsupported_grant_type";
   public final static String UNSUPPORTED_RESPONSE_TYPE = "unsupported_response_type";
 
+  /**
+   * After a message is parsed it may contain an access token.
+   * 
+   * @return the access_token in the message
+   */
   public String getAccessToken();
 
+  /**
+   * If this is an Authorization Code flow this method will return the
+   * authorization_code from the message.
+   * 
+   * @return authorization_code in the message
+   */
   public String getAuthorization();
 
+  /**
+   * <code>null</code> error indicates the message parsed cleanly and the
+   * service provider did not return an error.
+   * 
+   * @return the error from the service provider
+   */
   public OAuth2Error getError();
 
+  /**
+   * 
+   * @return the optional error_description from the service provider
+   */
   public String getErrorDescription();
 
+  /**
+   * 
+   * @return the optional error_uri from the service provider
+   */
   public String getErrorUri();
 
+  /**
+   * 
+   * @return "expires_in" parameter in the message
+   */
   public String getExpiresIn();
 
+  /**
+   * 
+   * @return a general {@link Map} of all parameters in the message
+   */
   public Map<String, String> getParameters();
 
+  /**
+   * 
+   * @return the "refresh_token" in the message
+   */
   public String getRefreshToken();
 
+  /**
+   * 
+   * @return the optional state string in the message
+   */
   public String getState();
 
+  /**
+   * 
+   * @return the "token_type" type in the message
+   */
   public String getTokenType();
 
+  /**
+   * Populates an OAuth2Message from a query fragment. Not very useful in
+   * shindig.
+   * 
+   * @param fragment
+   */
   public void parseFragment(String fragment);
 
+  /**
+   * Populates an OAuth2Message from a JSON response body.
+   * 
+   * @param jsonString
+   *          returned from token endpoint request
+   */
   public void parseJSON(String jsonString);
 
+  /**
+   * Populates an OAuth2Message from a URL query string.
+   * 
+   * @param queryString
+   *          from redirect_uri called by servcie provider
+   */
   public void parseQuery(String queryString);
 
+  /**
+   * Populates an OAuth2Message from the entire {@link HttpServletRequest}
+   * 
+   * 
+   * @param request
+   *          to parse
+   */
   public void parseRequest(HttpServletRequest request);
 }

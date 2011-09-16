@@ -32,9 +32,9 @@ import com.google.inject.Inject;
 
 /**
  * Higher-level interface that allows callers to store and retrieve
- * OAuth2-related data directly from {@code GadgetSpec}s, {@code GadgetContext}s,
- * etc. See {@link OAuth2Store} for a more detailed explanation of the OAuth 2.0
- * Data Store.
+ * OAuth2-related data directly from {@code GadgetSpec}s, {@code GadgetContext}
+ * s, etc. See {@link OAuth2Store} for a more detailed explanation of the OAuth
+ * 2.0 Data Store.
  */
 public class GadgetOAuth2TokenStore {
   private final OAuth2Store store;
@@ -47,7 +47,7 @@ public class GadgetOAuth2TokenStore {
   }
 
   /**
-   *  
+   * 
    * @return the {@link OAuth2Store}, never <code>null</code>
    */
   public OAuth2Store getOAuth2Store() {
@@ -55,12 +55,15 @@ public class GadgetOAuth2TokenStore {
   }
 
   /**
-   * Retrieves and merges the data from the {@link OAuth2Store}, the gadget spec and the
-   * request itself to populate the OAuth2 data for this requets.
+   * Retrieves and merges the data from the {@link OAuth2Store}, the gadget spec
+   * and the request itself to populate the OAuth2 data for this requets.
    * 
-   * @param securityToken {@link SecurityToken} from the request
-   * @param arguments {@link OAuth2Arguments} from the request
-   * @param gadgetUri gadget uri from the request
+   * @param securityToken
+   *          {@link SecurityToken} from the request
+   * @param arguments
+   *          {@link OAuth2Arguments} from the request
+   * @param gadgetUri
+   *          gadget uri from the request
    * @return the {@link OAuth2Accessor} for the request
    * @throws OAuth2RequestException
    */

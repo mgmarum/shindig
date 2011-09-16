@@ -25,9 +25,10 @@ import com.google.inject.name.Named;
 public class OAuth2FetcherConfig {
   private final GadgetOAuth2TokenStore tokenStore;
   private final boolean viewerAccessTokensEnabled;
-  
+
   @Inject
-  public OAuth2FetcherConfig(final GadgetOAuth2TokenStore tokenStore, @Named("shindig.oauth2.viewer-access-tokens-enabled") boolean viewerAccessTokensEnabled) {
+  public OAuth2FetcherConfig(final GadgetOAuth2TokenStore tokenStore,
+      @Named("shindig.oauth2.viewer-access-tokens-enabled") boolean viewerAccessTokensEnabled) {
     this.tokenStore = tokenStore;
     this.viewerAccessTokensEnabled = viewerAccessTokensEnabled;
   }
@@ -40,16 +41,16 @@ public class OAuth2FetcherConfig {
   }
 
   /**
-   *  @return the store with persisted client and token information
+   * @return the store with persisted client and token information
    */
   public OAuth2Store getOAuth2Store() {
     return this.tokenStore.getOAuth2Store();
   }
-  
+
   /**
    * @return true if the owner pages do not allow user controlled javascript
    */
   public boolean isViewerAccessTokensEnabled() {
-     return viewerAccessTokensEnabled;
+    return viewerAccessTokensEnabled;
   }
 }

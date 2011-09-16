@@ -36,7 +36,7 @@ public enum OAuth2Error {
   UNAUTHENTICATED("Unauthenticated OAuth fetch"),
 
   NOT_OWNER("Page viewer is not page owner"),
-  
+
   INVALID_REQUEST("%s"),
 
   UNAUTHORIZED_CLIENT("%s"),

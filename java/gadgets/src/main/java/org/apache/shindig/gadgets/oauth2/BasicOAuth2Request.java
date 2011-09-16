@@ -42,7 +42,7 @@ import com.google.inject.Provider;
 
 /**
  * see {@link OAuth2Request}
- *
+ * 
  */
 public class BasicOAuth2Request implements OAuth2Request {
 
@@ -223,7 +223,7 @@ public class BasicOAuth2Request implements OAuth2Request {
   private void checkCanAuthorize() throws OAuth2RequestException {
     String pageOwner = realRequest.getSecurityToken().getOwnerId();
     String pageViewer = realRequest.getSecurityToken().getViewerId();
-   
+
     if (pageOwner == null || pageViewer == null) {
       throw new OAuth2RequestException(OAuth2Error.UNAUTHENTICATED);
     }

@@ -55,6 +55,7 @@ public interface OAuth2Accessor extends Serializable {
 
   /**
    * see {@link ClientAuthenticationHandler}
+   * 
    * @return the type of client authentication the service provider expects
    */
   public String getClientAuthenticationType();
@@ -98,6 +99,8 @@ public interface OAuth2Accessor extends Serializable {
   /**
    * if the gadget request or gadget spec specifies a scope it will be set here
    * 
+   * See {@link http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-3.3}
+   * 
    * @return scope of the request, or "" if none was specified
    */
   public String getScope();
@@ -114,7 +117,6 @@ public interface OAuth2Accessor extends Serializable {
    */
   public String getState();
 
-  
   /**
    * 
    * @return the token endpoint for this accessor.
@@ -135,12 +137,15 @@ public interface OAuth2Accessor extends Serializable {
 
   /**
    * 
-   * @return <code>true</code> if the gadget's <ModulePrefs> can override accessor settings
+   * @return <code>true</code> if the gadget's <ModulePrefs> can override
+   *         accessor settings
    */
   public boolean isAllowModuleOverrides();
 
   /**
-   * updates the access token for the request (does not add it to {@link OAuth2Store})
+   * updates the access token for the request (does not add it to
+   * {@link OAuth2Store})
+   * 
    * @param accessToken
    */
   public void setAccessToken(OAuth2Token accessToken);
@@ -153,7 +158,9 @@ public interface OAuth2Accessor extends Serializable {
   public void setAuthorizationUrl(String authorizationUrl);
 
   /**
-   * updates the refresh token for the request (does not add it to {@link OAuth2Store})
+   * updates the refresh token for the request (does not add it to
+   * {@link OAuth2Store})
+   * 
    * @param accessToken
    */
   public void setRefreshToken(OAuth2Token refreshToken);

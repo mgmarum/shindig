@@ -46,9 +46,11 @@ public class OAuth2Arguments {
       String.CASE_INSENSITIVE_ORDER);
 
   /**
-   * Public constructor to parse OAuth2Arguments from a {@link HttpServletRequest}
-
-   * @param request {@link HttpServletRequest} that came into the server
+   * Public constructor to parse OAuth2Arguments from a
+   * {@link HttpServletRequest}
+   * 
+   * @param request
+   *          {@link HttpServletRequest} that came into the server
    * @throws GadgetException
    */
   public OAuth2Arguments(final HttpServletRequest request) throws GadgetException {

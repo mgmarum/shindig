@@ -16,11 +16,10 @@
  */
 package org.apache.shindig.gadgets.oauth2;
 
-
 // Probably no need to ever changes this.  Think about removing inteface.
 /**
  * 
- * see {@link OAuth2Accessor} 
+ * see {@link OAuth2Accessor}
  */
 public class BasicOAuth2Accessor implements OAuth2Accessor {
   private static final long serialVersionUID = 1L;
