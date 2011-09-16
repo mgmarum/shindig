@@ -24,8 +24,7 @@
      </Service>
     </OAuth2>
     <Require feature="oauthpopup" />
-	<!-- using google contacts api as an example-->
-    <Preload authz="oauth2" oauth_service_name="shindigOAuth2Provider" href="http://localhost:8080/social/rest/people/@me/@friends/" />
+    <Preload authz="oauth2" oauth_service_name="shindigOAuth2Provider" href="http://localhost:8080/social/rest/people/john.doe/@friends/" />
   </ModulePrefs>
   <Content type="html">
       <![CDATA[
@@ -39,7 +38,7 @@
     </style>
     
     <div id="overview" style="display: visible">
-    This demo gadget would simply pull open social friends for a predefined user -- john.doe.
+    This demo gadget would simply pull open social friends for user - john.doe.
     </div>
 
     <div id="main" style="display: none">
@@ -74,7 +73,8 @@
       }
 
       function fetchData() {
-        url = "http://localhost:8080/social/rest/people/@me/@friends/";
+        var gadgetUrl = gadgets.util.getUrlParameters().url;
+	    var url = gadgetUrl.substr(0,gadgetUrl.indexOf("/samplecontainer/examples/oauth2/shindig_authorization.xml")) + "/social/rest/people/john.doe/@friends/";
         var params = {};
         params[gadgets.io.RequestParameters.CONTENT_TYPE] =
           gadgets.io.ContentType.TEXT;
