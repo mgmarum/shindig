@@ -46,8 +46,8 @@
          "redirect_uri"  : "http://%authority%%contextRoot%/gadgets/oauth2callback",
          "type"          : "confidential",
          "grant_type"    : "code",
-         "client_id"     : "756575909974-nq6e6p8au376tjj599o5fjd37kiibjeq.apps.googleusercontent.com",
-         "client_secret" : "5MrCHchhauFpkNbutJBunzQ6"
+         "client_id"     : "YOUR_GOOGLE_APP_ID_HERE",
+         "client_secret" : "YOUR_GOOGLE_APP_SECRET_HERE"
       },
       
       "facebook_client1" : {
@@ -55,8 +55,8 @@
          "redirect_uri"  : "http://%authority%%contextRoot%/gadgets/oauth2callback",
          "type"          : "confidential",
          "grant_type"    : "code",
-         "client_id"     : "140338476061882",
-         "client_secret" : "e94b4aa758947760b09f2f872d70740b"
+         "client_id"     : "YOUR_FACEBOOK_APP_ID_HERE",
+         "client_secret" : "YOUR_FACEBOOK_APP_SECRET_HERE"
       },
       
       "shindig_client1" : {
